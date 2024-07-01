@@ -10,12 +10,12 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 ############################## Setting up MicroPython Device ##############################
-SERIAL_PORT = '/dev/ttyACM1'  # MUST FIGURE OUT
+SERIAL_PORT = '/dev/tty.usbserial-55740179931'  # MUST FIGURE OUT
 BAUD_RATE = 115200
 
 data_dict_global = {
                 "hr": 0,
-                "spo2": 0,
+                "spo2": 99,
                 "x": 0,
                 "y": 1,
                 "z": 0
