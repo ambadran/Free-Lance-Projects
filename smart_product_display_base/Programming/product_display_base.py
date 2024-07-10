@@ -8,6 +8,7 @@ from typing import Optional
 import RPi.GPIO as GPIO
 import os
 import time
+from video_player import VideoPlayer
 
 class Switch:
     '''
@@ -47,7 +48,9 @@ class SmartProductDisplayBase:
     DEFAULT_VIDEO_PATH4 = './videos/video4.mp4'
 
     BOOL_TO_GPIO_VALUE = {False: GPIO.LOW, True: GPIO.HIGH}
-    def __init__(self, proximity_sensor_pin_num: int, led_pin_num: int, video_path: str):
+    def __init__(self, ind: int, proximity_sensor_pin_num: int, led_pin_num: int, video_path: str):
+
+        self.ind = ind  # index, important for video playing management
 
         GPIO.setmode(GPIO.BCM)
 
@@ -76,27 +79,34 @@ class SmartProductDisplayBase:
         return self._led_value
 
     @led_value.setter
-    def led_value(self, value: int):
+    def led_value(self, value: int | bool):
         '''
         sets the led value
         '''
         if value in [GPIO.LOW, GPIO.HIGH]:
             GPIO.output(self.led_pin_num, value)
             self._led_value = value
+        elif type(value) == bool:
+            value = self.BOOL_TO_GPIO_VALUE[value]
+            GPIO.output(self.led_pin_num, value)
+            self._led_value = value
+
         else:
             raise ValueError("unknown value argument passed, should be GPIO.LOW or GPIO.HIGH")
 
-    def stop_video(self):
-        '''
-        Stops video playing
-        '''
-        os.system("pkill oxmplayer")
 
-    def play_video(self):
-        '''
-        Starts video playing
-        '''
-        os.system(f"omxplayer --loop --no-osd {self.video_path} &")
+def print_debug_msg(smart_product_display_base1: SmartProductDisplayBase,
+                    smart_product_display_base2: SmartProductDisplayBase, 
+                    smart_product_display_base3: SmartProductDisplayBase, 
+                    smart_product_display_base4: SmartProductDisplayBase,
+                    video_player: VideoPlayer):
+    '''
+    Debug message to console
+    '''
+    #TODO: add video player state
+    debug_msg = f"S1:{smart_product_display_base1.product_present}, L1: {smart_product_display_base1.led_value}, S2:{smart_product_display_base2.product_present}, L2: {smart_product_display_base2.led_value}, S3:{smart_product_display_base3.product_present}, L3: {smart_product_display_base3.led_value}, S4:{smart_product_display_base4.product_present}, L4: {smart_product_display_base4.led_value} \r"
+    print(debug_msg, end='')
+
 
 def main():
     '''
@@ -124,17 +134,32 @@ def main():
                     SmartProductDisplayBase.DEFAULT_PIN_NUM_LED4,
                     SmartProductDisplayBase.DEFAULT_VIDEO_PATH4
                 )
+
+        # Video Player Object to process product presence states
+        video_player = VideoPlayer()
+
         ### Main Loop ###
         while True:
 
             # Setting LEDs
-            smart_product_display_base1.led_value = smart_product_display_base1.BOOL_TO_GPIO_VALUE[smart_product_display_base1.product_present]
-            smart_product_display_base2.led_value = smart_product_display_base2.BOOL_TO_GPIO_VALUE[smart_product_display_base2.product_present]
-            smart_product_display_base3.led_value = smart_product_display_base3.BOOL_TO_GPIO_VALUE[smart_product_display_base3.product_present]
-            smart_product_display_base4.led_value = smart_product_display_base4.BOOL_TO_GPIO_VALUE[smart_product_display_base4.product_present]
+            smart_product_display_base1.led_value = smart_product_display_base1.product_present
+            smart_product_display_base2.led_value = smart_product_display_base2.product_present
+            smart_product_display_base3.led_value = smart_product_display_base3.product_present
+            smart_product_display_base4.led_value = smart_product_display_base4.product_present
 
-            debug_msg = f"S1:{smart_product_display_base1.product_present}, L1: {smart_product_display_base1.led_value}, S2:{smart_product_display_base2.product_present}, L2: {smart_product_display_base2.led_value}, S3:{smart_product_display_base3.product_present}, L3: {smart_product_display_base3.led_value}, S4:{smart_product_display_base4.product_present}, L4: {smart_product_display_base4.led_value} \r"
-            print(debug_msg, end='')
+            video_player.process(
+                    [smart_product_display_base1.product_present,
+                    smart_product_display_base2.product_present,
+                    smart_product_display_base3.product_present,
+                    smart_product_display_base4.product_present]
+                )
+
+            print_debug_msg(smart_product_display_base1,
+                            smart_product_display_base2, 
+                            smart_product_display_base3, 
+                            smart_product_display_base4,
+                            video_player)
+
 
     except KeyboardInterrupt:
         print("Program Interrupt by User!")
@@ -144,8 +169,11 @@ def main():
 
     finally:
         GPIO.cleanup()
+        video_player.stop_video()  # stops all videos
+        print("Program Stopped!!")
 
-main()
+if __name__ == '__main__':
+    main()
 
 
 
