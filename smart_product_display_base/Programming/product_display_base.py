@@ -30,26 +30,21 @@ class SmartProductDisplayBase:
     '''
     Object to abstract the sensor reading, led controlling and video viewing of one Product Display Base
     '''
-    DEFAULT_PIN_NUM_SENSOR1 = 4
-    DEFAULT_PIN_NUM_SENSOR2 = 17
-    DEFAULT_PIN_NUM_SENSOR3 = 27
-    DEFAULT_PIN_NUM_SENSOR4 = 22
-    DEFAULT_PIN_NUM_SENSOR5 = 10
-    DEFAULT_PIN_NUM_SENSOR6 = 9
-
     DEFAULT_PIN_NUM_LED1 = 18
     DEFAULT_PIN_NUM_LED2 = 23
     DEFAULT_PIN_NUM_LED3 = 24
-    DEFAULT_PIN_NUM_LED4 = 25
-    DEFAULT_PIN_NUM_LED5 = 8
-    DEFAULT_PIN_NUM_LED6 = 7
+    DEFAULT_PIN_NUM_LED4 = 8 
 
+    DEFAULT_PIN_NUM_SENSOR1 = 7
+    DEFAULT_PIN_NUM_SENSOR2 = 25
+    DEFAULT_PIN_NUM_SENSOR3 = 16
+    DEFAULT_PIN_NUM_SENSOR4 = 20
+
+    DEFAULT_VIDEO_PATH0 = './videos/video0.mp4'
     DEFAULT_VIDEO_PATH1 = './videos/video1.mp4'
     DEFAULT_VIDEO_PATH2 = './videos/video2.mp4'
     DEFAULT_VIDEO_PATH3 = './videos/video3.mp4'
     DEFAULT_VIDEO_PATH4 = './videos/video4.mp4'
-    DEFAULT_VIDEO_PATH5 = './videos/video5.mp4'
-    DEFAULT_VIDEO_PATH6 = './videos/video6.mp4'
 
     BOOL_TO_GPIO_VALUE = {False: GPIO.LOW, True: GPIO.HIGH}
     def __init__(self, proximity_sensor_pin_num: int, led_pin_num: int, video_path: str):
@@ -91,13 +86,13 @@ class SmartProductDisplayBase:
         else:
             raise ValueError("unknown value argument passed, should be GPIO.LOW or GPIO.HIGH")
 
-      def stop_video(self):
+    def stop_video(self):
         '''
         Stops video playing
         '''
         os.system("pkill oxmplayer")
 
-      def play_video(self):
+    def play_video(self):
         '''
         Starts video playing
         '''
@@ -129,35 +124,28 @@ def main():
                     SmartProductDisplayBase.DEFAULT_PIN_NUM_LED4,
                     SmartProductDisplayBase.DEFAULT_VIDEO_PATH4
                 )
-        smart_product_display_base5 = SmartProductDisplayBase(
-                    SmartProductDisplayBase.DEFAULT_PIN_NUM_SENSOR5,
-                    SmartProductDisplayBase.DEFAULT_PIN_NUM_LED5,
-                    SmartProductDisplayBase.DEFAULT_VIDEO_PATH5
-                )
-        smart_product_display_base6 = SmartProductDisplayBase(
-                    SmartProductDisplayBase.DEFAULT_PIN_NUM_SENSOR6,
-                    SmartProductDisplayBase.DEFAULT_PIN_NUM_LED6,
-                    SmartProductDisplayBase.DEFAULT_VIDEO_PATH6
-                )
-
         ### Main Loop ###
         while True:
 
-          # Setting LEDs
-          smart_product_display_base1.led_value = smart_product_display_base1.BOOL_TO_GPIO_VALUE[smart_product_display_base1.product_present]
-          smart_product_display_base2.led_value = smart_product_display_base2.BOOL_TO_GPIO_VALUE[smart_product_display_base2.product_present]
-          smart_product_display_base3.led_value = smart_product_display_base3.BOOL_TO_GPIO_VALUE[smart_product_display_base3.product_present]
-          smart_product_display_base4.led_value = smart_product_display_base4.BOOL_TO_GPIO_VALUE[smart_product_display_base4.product_present]
-          smart_product_display_base5.led_value = smart_product_display_base5.BOOL_TO_GPIO_VALUE[smart_product_display_base5.product_present]
-          smart_product_display_base6.led_value = smart_product_display_base6.BOOL_TO_GPIO_VALUE[smart_product_display_base6.product_present]
+            # Setting LEDs
+            smart_product_display_base1.led_value = smart_product_display_base1.BOOL_TO_GPIO_VALUE[smart_product_display_base1.product_present]
+            smart_product_display_base2.led_value = smart_product_display_base2.BOOL_TO_GPIO_VALUE[smart_product_display_base2.product_present]
+            smart_product_display_base3.led_value = smart_product_display_base3.BOOL_TO_GPIO_VALUE[smart_product_display_base3.product_present]
+            smart_product_display_base4.led_value = smart_product_display_base4.BOOL_TO_GPIO_VALUE[smart_product_display_base4.product_present]
 
-          # Setting Video
-          #TODO:
-          current_video_playing: Optional[None, int] = None
-          if not smart_product_display_base1.product_present:
-            if not smart_product_display_base1.video_playing:
+            debug_msg = f"S1:{smart_product_display_base1.product_present}, L1: {smart_product_display_base1.led_value}, S2:{smart_product_display_base2.product_present}, L2: {smart_product_display_base2.led_value}, S3:{smart_product_display_base3.product_present}, L3: {smart_product_display_base3.led_value}, S4:{smart_product_display_base4.product_present}, L4: {smart_product_display_base4.led_value} \r"
+            print(debug_msg, end='')
 
+    except KeyboardInterrupt:
+        print("Program Interrupt by User!")
 
+    except Exception as e:
+        print(f"Caught: {e}")
+
+    finally:
+        GPIO.cleanup()
+
+main()
 
 
 
