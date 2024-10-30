@@ -1805,7 +1805,7 @@
 	)
 	(global_label "L4"
 		(shape input)
-		(at 92.71 95.25 180)
+		(at 92.71 87.63 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1815,7 +1815,7 @@
 		)
 		(uuid "4698d18e-b064-41ca-b806-eb2c42add538")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 87.4872 95.25 0)
+			(at 87.4872 87.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1827,7 +1827,7 @@
 	)
 	(global_label "L3"
 		(shape input)
-		(at 92.71 92.71 180)
+		(at 92.71 90.17 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1837,7 +1837,7 @@
 		)
 		(uuid "473b8a7d-5770-40b1-876b-1c5c689fcf23")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 87.4872 92.71 0)
+			(at 87.4872 90.17 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1937,7 +1937,7 @@
 	)
 	(global_label "L2"
 		(shape input)
-		(at 92.71 90.17 180)
+		(at 92.71 92.71 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1947,7 +1947,7 @@
 		)
 		(uuid "a39de4d4-544c-4b65-8508-5206bd4c3166")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 87.4872 90.17 0)
+			(at 87.4872 92.71 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1959,7 +1959,7 @@
 	)
 	(global_label "L1"
 		(shape input)
-		(at 92.71 87.63 180)
+		(at 92.71 95.25 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1969,7 +1969,7 @@
 		)
 		(uuid "bd25c246-a98f-4293-a571-6b6be2bb1e8b")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 87.4872 87.63 0)
+			(at 87.4872 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2114,7 +2114,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x05")
-		(at 177.8 92.71 0)
+		(at 177.8 95.25 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2122,16 +2122,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "302e31a7-07c8-4074-a939-e91ee1ba7412")
-		(property "Reference" "stepper_output"
-			(at 180.34 91.4399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "JST-5p"
+		(property "Reference" "stepper_output1"
 			(at 180.34 93.9799 0)
 			(effects
 				(font
@@ -2140,8 +2131,17 @@
 				(justify left)
 			)
 		)
+		(property "Value" "JST-5p"
+			(at 180.34 96.5199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
 		(property "Footprint" "Connector_JST:JST_EH_B5B-EH-A_1x05_P2.50mm_Vertical"
-			(at 177.8 92.71 0)
+			(at 177.8 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2150,7 +2150,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 177.8 92.71 0)
+			(at 177.8 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2159,7 +2159,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 177.8 92.71 0)
+			(at 177.8 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2185,7 +2185,7 @@
 		(instances
 			(project ""
 				(path "/d0bfccd7-cc06-4c1b-8a8c-9fcd948798c3"
-					(reference "stepper_output")
+					(reference "stepper_output1")
 					(unit 1)
 				)
 			)
@@ -2193,7 +2193,7 @@
 	)
 	(symbol
 		(lib_id "power:+5V")
-		(at 172.72 87.63 90)
+		(at 172.72 100.33 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2202,7 +2202,7 @@
 		(fields_autoplaced yes)
 		(uuid "37f37416-1920-44c7-8e84-8154e90e20b3")
 		(property "Reference" "#PWR04"
-			(at 176.53 87.63 0)
+			(at 176.53 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2211,7 +2211,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 168.91 87.6299 90)
+			(at 168.91 100.3299 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2220,7 +2220,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 172.72 87.63 0)
+			(at 172.72 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2229,7 +2229,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 172.72 87.63 0)
+			(at 172.72 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2238,7 +2238,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 172.72 87.63 0)
+			(at 172.72 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2326,7 +2326,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 176.53 115.57 0)
+		(at 167.64 116.84 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2335,7 +2335,7 @@
 		(fields_autoplaced yes)
 		(uuid "4e5a45e6-5cec-4ca1-9308-333a12ae24c9")
 		(property "Reference" "#PWR07"
-			(at 176.53 121.92 0)
+			(at 167.64 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2344,7 +2344,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 176.53 120.65 0)
+			(at 167.64 121.92 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2352,7 +2352,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 176.53 115.57 0)
+			(at 167.64 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2361,7 +2361,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 176.53 115.57 0)
+			(at 167.64 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2370,7 +2370,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 176.53 115.57 0)
+			(at 167.64 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2392,7 +2392,7 @@
 	)
 	(symbol
 		(lib_id "Device:C_Polarized")
-		(at 176.53 111.76 0)
+		(at 167.64 113.03 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2401,7 +2401,7 @@
 		(fields_autoplaced yes)
 		(uuid "5fb7b4a9-e1fd-417c-9488-edc44e3f4add")
 		(property "Reference" "C1"
-			(at 180.34 109.6009 0)
+			(at 171.45 110.8709 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2410,7 +2410,7 @@
 			)
 		)
 		(property "Value" "220uf"
-			(at 180.34 112.1409 0)
+			(at 171.45 113.4109 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2419,7 +2419,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_THT:CP_Radial_D6.3mm_P2.50mm"
-			(at 177.4952 115.57 0)
+			(at 168.6052 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2428,7 +2428,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 176.53 111.76 0)
+			(at 167.64 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2437,7 +2437,7 @@
 			)
 		)
 		(property "Description" "Polarized capacitor"
-			(at 176.53 111.76 0)
+			(at 167.64 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2528,7 +2528,7 @@
 	)
 	(symbol
 		(lib_id "power:+5V")
-		(at 176.53 107.95 0)
+		(at 167.64 109.22 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2537,7 +2537,7 @@
 		(fields_autoplaced yes)
 		(uuid "8308c8fe-6b25-4fcf-b990-f20245aad51f")
 		(property "Reference" "#PWR06"
-			(at 176.53 111.76 0)
+			(at 167.64 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2546,7 +2546,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 176.53 102.87 0)
+			(at 167.64 104.14 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2554,7 +2554,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 176.53 107.95 0)
+			(at 167.64 109.22 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2563,7 +2563,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 176.53 107.95 0)
+			(at 167.64 109.22 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2572,7 +2572,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 176.53 107.95 0)
+			(at 167.64 109.22 0)
 			(effects
 				(font
 					(size 1.27 1.27)
