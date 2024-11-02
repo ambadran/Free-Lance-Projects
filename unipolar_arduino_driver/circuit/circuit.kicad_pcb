@@ -653,7 +653,7 @@
 		(descr "CP, Radial series, Radial, pin pitch=2.50mm, , diameter=6.3mm, Electrolytic Capacitor")
 		(tags "CP Radial series Radial pin pitch 2.50mm  diameter 6.3mm Electrolytic Capacitor")
 		(property "Reference" "C1"
-			(at 1.25 -4.4 360)
+			(at 1.25 -4.4 0)
 			(layer "F.SilkS")
 			(uuid "7ab0e36a-2a83-4e91-b404-c06f22accd89")
 			(effects
@@ -664,7 +664,7 @@
 			)
 		)
 		(property "Value" "220uf"
-			(at 1.25 4.4 360)
+			(at 1.25 4.4 0)
 			(layer "F.Fab")
 			(uuid "5c769331-714c-44d4-aa2c-84883f74e814")
 			(effects
@@ -2132,7 +2132,7 @@
 			(uuid "7fe1f1bb-a8b6-4b81-bbbb-aabad056ca91")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 1.25 -4.318 360)
+			(at 1.25 -4.318 0)
 			(layer "F.Fab")
 			(uuid "7ad722c4-8276-4964-b544-4eded36da25a")
 			(effects
@@ -2181,7 +2181,7 @@
 		(descr "Arduino Nano, http://www.mouser.com/pdfdocs/Gravitech_Arduino_Nano3_0.pdf")
 		(tags "Arduino Nano")
 		(property "Reference" "A1"
-			(at 7.62 -5.08 360)
+			(at 7.62 -5.08 0)
 			(layer "F.SilkS")
 			(uuid "384faf12-2e16-495e-8eb4-3cec16019cfb")
 			(effects
@@ -3332,6 +3332,72 @@
 		(fill none)
 		(layer "Edge.Cuts")
 		(uuid "7af01f62-fc95-44ed-8168-4eb172eaf351")
+	)
+	(dimension
+		(type aligned)
+		(layer "Eco1.User")
+		(uuid "6e122f6a-f2be-48a1-9100-049f37f42dfa")
+		(pts
+			(xy 149.352 65.532) (xy 149.352 114.3)
+		)
+		(height -8.382)
+		(gr_text "48.7680 mm"
+			(at 156.584 89.916 90)
+			(layer "Eco1.User")
+			(uuid "6e122f6a-f2be-48a1-9100-049f37f42dfa")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(format
+			(prefix "")
+			(suffix "")
+			(units 3)
+			(units_format 1)
+			(precision 4)
+		)
+		(style
+			(thickness 0.1)
+			(arrow_length 1.27)
+			(text_position_mode 0)
+			(extension_height 0.58642)
+			(extension_offset 0.5) keep_text_aligned)
+	)
+	(dimension
+		(type aligned)
+		(layer "Eco1.User")
+		(uuid "feaa1087-961f-40a3-ae5f-691aca4f99c6")
+		(pts
+			(xy 149.352 114.3) (xy 115.824 114.3)
+		)
+		(height -5.08)
+		(gr_text "33.5280 mm"
+			(at 132.588 118.23 0)
+			(layer "Eco1.User")
+			(uuid "feaa1087-961f-40a3-ae5f-691aca4f99c6")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(format
+			(prefix "")
+			(suffix "")
+			(units 3)
+			(units_format 1)
+			(precision 4)
+		)
+		(style
+			(thickness 0.1)
+			(arrow_length 1.27)
+			(text_position_mode 0)
+			(extension_height 0.58642)
+			(extension_offset 0.5) keep_text_aligned)
 	)
 	(segment
 		(start 130.048 72.39)
