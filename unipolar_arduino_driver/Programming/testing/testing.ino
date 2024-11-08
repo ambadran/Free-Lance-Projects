@@ -1,29 +1,51 @@
-#include <Stepper.h>
-
 #define MOTOR_PIN1 5
 #define MOTOR_PIN2 4
 #define MOTOR_PIN3 3
 #define MOTOR_PIN4 2
 
-// Defines the number of steps per rotation
-const int stepsPerRevolution = 2038;
-
-// Creates an instance of stepper class
-// Pins entered in sequence IN1-IN3-IN2-IN4 for proper step sequence
-Stepper myStepper = Stepper(stepsPerRevolution, MOTOR_PIN1, MOTOR_PIN2, MOTOR_PIN3, MOTOR_PIN4);
+#define DEFAULT_MICRO_DELAY 50
 
 void setup() {
-    // Nothing to do (Stepper Library sets pins as outputs)
+
+  pinMode(MOTOR_PIN1, OUTPUT);
+  pinMode(MOTOR_PIN2, OUTPUT);
+  pinMode(MOTOR_PIN3, OUTPUT);
+  pinMode(MOTOR_PIN4, OUTPUT);
+
+  pinMode(LED_BUILTIN, OUTPUT);
+
 }
 
 void loop() {
-	// Rotate CW slowly at 5 RPM
-	myStepper.setSpeed(5);
-	myStepper.step(stepsPerRevolution);
-	delay(1000);
-	
-	// Rotate CCW quickly at 10 RPM
-	myStepper.setSpeed(10);
-	myStepper.step(-stepsPerRevolution);
-	delay(1000);
+
+  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+
+  // 1010
+  digitalWrite(MOTOR_PIN1, HIGH);
+  digitalWrite(MOTOR_PIN2, LOW);
+  digitalWrite(MOTOR_PIN3, HIGH);
+  digitalWrite(MOTOR_PIN4, LOW);
+  delay(DEFAULT_MICRO_DELAY);
+
+  // 0110
+  digitalWrite(MOTOR_PIN1, LOW);
+  digitalWrite(MOTOR_PIN2, HIGH);
+  digitalWrite(MOTOR_PIN3, HIGH);
+  digitalWrite(MOTOR_PIN4, LOW);
+  delay(DEFAULT_MICRO_DELAY);
+
+  // 0101
+  digitalWrite(MOTOR_PIN1, LOW);
+  digitalWrite(MOTOR_PIN2, HIGH);
+  digitalWrite(MOTOR_PIN3, LOW);
+  digitalWrite(MOTOR_PIN4, HIGH);
+  delay(DEFAULT_MICRO_DELAY);
+
+  // 1001
+  digitalWrite(MOTOR_PIN1, HIGH);
+  digitalWrite(MOTOR_PIN2, LOW);
+  digitalWrite(MOTOR_PIN3, LOW);
+  digitalWrite(MOTOR_PIN4, HIGH);
+  delay(DEFAULT_MICRO_DELAY);
+
 }

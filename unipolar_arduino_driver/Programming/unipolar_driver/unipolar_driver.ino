@@ -64,9 +64,9 @@ const unsigned long STEP_DELAY_MICROSEC = (60L * 1000L * 1000L) / (STEPS_PER_REV
 
 // Pins controlling the motor. Change this depending on your exact wiring!
 const unsigned int MOTOR_PIN_1 = 5; // Blue   - 28BYJ48 pin 1
-const unsigned int MOTOR_PIN_2 = 4; // Yellow - 28BYJ48 pin 3
-const unsigned int MOTOR_PIN_3 = 3; // Pink   - 28BYJ48 pin 2
-const unsigned int MOTOR_PIN_4 = 2; // Orange - 28BYJ48 pin 4
+const unsigned int MOTOR_PIN_2 = 3; // Yellow - 28BYJ48 pin 3
+const unsigned int MOTOR_PIN_3 = 2; // Pink   - 28BYJ48 pin 2
+const unsigned int MOTOR_PIN_4 = 4; // Orange - 28BYJ48 pin 4
 
 const unsigned int EEPROM_MAGIC_NUMBER = 0x12345678;
 const unsigned int EEPROM_MAGIC_NUMBER_ADDR = 0;
