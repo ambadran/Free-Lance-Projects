@@ -2,8 +2,10 @@
 Main Routine
 '''
 from micropython import const
+import machine
 from station import Server
 from mic import Mic
+from terminal import Terminal
 from time import sleep
 
 mic = Mic()
@@ -11,13 +13,12 @@ server = Server()
 
 def main():
     server.wait_for_client()
+    terminal = Terminal(server.client, mic)
     try:
         while True:
-            server.client.send(mic.sample())
-            sleep(1/mic.sampling_rate)
+            terminal(server.client.recv(2).decode())
 
     finally:
-        mic.counter = 0
         server.client.close()
 
 # main()

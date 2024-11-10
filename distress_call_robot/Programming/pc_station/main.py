@@ -6,29 +6,68 @@ This Script will:
 '''
 import socket
 import wave
+import time
 
-controller_IP = '192.168.1.8'
-controller_PORT = 1234
-SAMPLING_RATE = 8000
-SAMPLE_DURATION = 6
+class Station:
+    '''
+    Abstraction to the Station that controls the Pico W
+    '''
+    controller_IP = '192.168.1.8'
+    controller_PORT = 1234
+    SAMPLING_RATE = 8000
+    SAMPLE_DURATION = 6
 
-# Create a TCP server
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect((controller_IP, controller_PORT))
-print("Connection to Pico W Successful!")
+    def __init__(self):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.connect((self.controller_IP, self.controller_PORT))
+        self.sock.settimeout(1)
+        print("Connection to Pico W Successful!")
 
-# Collect data for the specified duration
-# sample_count = sampling_rate * duration_seconds
-try:
-    while True:
-        data = sock.recv(1024)  # Each ADC reading is 2 bytes
-        print(data.decode())
+    def send(self, cmd):
+        '''
+        sends commands to Pico
+        '''
+        self.sock.send(cmd)
 
-    # if data:
-    #     sample = struct.unpack('>H', data)[0]  # Convert bytes to integer
-    #     samples.append(sample)
-    # else:
-    #     break
-finally:
-    sock.close()
+    def recv(self, size=1024) -> str | None:
+        '''
+        receives data
+        '''
+        try:
+            data = self.sock.recv(size)  # Each ADC reading is 2 bytes
+            return data.decode()
+        except TimeoutError:
+            return None
+
+    def get_audio_sample(self):
+        '''
+        get audio sample by sending command and then receiving
+        '''
+        values = []
+        self.send(b"R\n")
+        num_samples = self.SAMPLING_RATE*self.SAMPLE_DURATION
+        while True:
+            latest = self.recv()
+            if latest is None:
+                break
+            latest = latest.strip().split('\n')
+            print(f"Received: {len(values)}, latest: {latest[-1]} ", end='\r')
+            values.extend(latest)
+
+
+        # Received Values !
+        print(f"Recieved {len(values)} samples!!")
+        self.values = values
+
+        # for ind, value in enumerate(self.values):
+        #     self.values[ind] = int(value)
+
+        # print(self.values)
+
+station = Station()
+if __name__ == '__main__':
+    station.get_audio_sample()
+            
+
+
 
