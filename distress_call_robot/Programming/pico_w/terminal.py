@@ -16,14 +16,22 @@ class Terminal:
         Process Commands
         '''
         if cmd.strip() == 'R':
-            print("Sending audio sample")
-            end_time = ticks_add(ticks_ms(), self.mic.sampling_duration)
-            counter = 0
-            while ticks_diff(end_time, ticks_ms()) > 0:
-                self.client.send(self.mic.sample())
-                counter += 1
 
-            print(f"{counter} samples Sent!")
+            print(f"Capturing {self.mic.sampling_duration} sec audio..")
+
+            # dividing the audio sample into 100ms sections
+            samples = []
+            end_time = ticks_add(ticks_ms(), self.mic.sampling_duration)
+            while ticks_diff(end_time, ticks_ms()) > 0:
+                samples.append(self.mic.adc.read_u16())
+
+            print("Done!\n\nSending audio sample..")
+            s_time = ticks_ms()
+            for sample in samples:
+                self.client.send(f"{sample}\n")
+            e_time = ticks_diff(ticks_ms(), s_time)
+
+            print(f"{len(samples)} samples Sent in {e_time}ms!\n")
 
         else:
             print(f"Unknown command received: {cmd}")
