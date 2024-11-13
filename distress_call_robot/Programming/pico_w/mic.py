@@ -9,8 +9,8 @@ class Mic:
     Abstraction to read the MIC
     '''
     DEFAULT_ADC_PIN = const(26)
-    DEFAULT_SAMPLING_RATE = const(5000) 
-    DEFAULT_SAMPLE_DURATION = const(100)  # seconds
+    DEFAULT_SAMPLING_RATE = const(6000) 
+    DEFAULT_SAMPLE_DURATION = const(6000)  # seconds
 
     def __init__(self, adc_pin=DEFAULT_ADC_PIN,
             sampling_rate=DEFAULT_SAMPLING_RATE,

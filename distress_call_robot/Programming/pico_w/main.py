@@ -16,7 +16,7 @@ def main():
     terminal = Terminal(server.client, mic)
     try:
         while True:
-            terminal(server.client.recv(2).decode())
+            terminal(server.client.recv(10).decode())
 
     finally:
         server.client.close()

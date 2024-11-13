@@ -2,6 +2,8 @@
 terminal emulation
 '''
 from time import ticks_add, ticks_diff, ticks_ms, sleep
+from micropython import mem_info
+import gc
 
 class Terminal:
     '''
@@ -15,23 +17,47 @@ class Terminal:
         '''
         Process Commands
         '''
-        if cmd.strip() == 'R':
+        if cmd.isspace():
+            print('ok..')
+            return None
 
-            print(f"Capturing {self.mic.sampling_duration} sec audio..")
+        cmd = cmd.strip()
+        if cmd.startswith('R'):
 
-            # dividing the audio sample into 100ms sections
-            samples = []
-            end_time = ticks_add(ticks_ms(), self.mic.sampling_duration)
-            while ticks_diff(end_time, ticks_ms()) > 0:
-                samples.append(self.mic.adc.read_u16())
+            if len(cmd) != 1:
+                try:
+                    duration = int(cmd[1:])
+                    self.mic.sampling_duration = duration
+                except ValueError:
+                    print(f"Couldn't convert command 'R' Parameter into an integer, given command: {cmd}")
+                    return None
 
-            print("Done!\n\nSending audio sample..")
+
+            gc.collect()
+            samples = bytearray(self.mic.sampling_rate*int(self.mic.sampling_duration/1000)*2)
+            print(f"Capturing {int(len(samples)/2)} samples in {self.mic.sampling_duration} ms audio..\n")
+
             s_time = ticks_ms()
-            for sample in samples:
-                self.client.send(f"{sample}\n")
+            for ind in range(0, len(samples), 2):
+                # samples[ind:ind+2] = self.mic.adc.read_u16().to_bytes(2, 'H')
+                value = self.mic.adc.read_u16()
+                samples[i * 2] = value & 0xFF  # Lower byte
+                samples[i * 2 + 1] = (value >> 8) & 0xFF  # Upper byte
             e_time = ticks_diff(ticks_ms(), s_time)
 
-            print(f"{len(samples)} samples Sent in {e_time}ms!\n")
+            print(f"Read samples in {e_time}ms!")
+            print(f"Sample Rate: {round((int(len(samples)/2))/(e_time/1000))}\n\n")
+
+
+            print("Sending audio sample..")
+            s_time = ticks_ms()
+            self.client.send(samples)
+            e_time = ticks_diff(ticks_ms(), s_time)
+            print(f"Sent samples in {e_time}ms!\n")
+
+            gc.collect()
+            print(f"Free Memory: {gc.mem_free()}")
+            print()
 
         else:
             print(f"Unknown command received: {cmd}")
