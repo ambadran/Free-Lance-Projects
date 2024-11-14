@@ -7,7 +7,7 @@ from machine import Pin
 import network
 import socket
 import json
-from time import sleep, sleep_ms
+from time import sleep, sleep_ms, ticks_ms, ticks_diff
 import random
 
 class Server:
@@ -89,6 +89,22 @@ class Server:
         print(f"Got a connection from {str(addr)}")
         # except Exception as e:
         #     print(f"Caught: {e}")
+
+    def send_audio(self, samples: bytearray):
+        '''
+        sends start signal
+        then sends the bytearray 
+        then sends end signal
+        '''
+        print("Sending audio sample..")
+        self.client.send("Start\n\n")
+
+        s_time = ticks_ms()
+        self.client.sendall(samples)
+        e_time = ticks_diff(ticks_ms(), s_time)
+
+        self.client.send("\n\nEnd\n")
+        print(f"Sent samples in {e_time}ms!\n")
 
     def echo_session(self):
         '''

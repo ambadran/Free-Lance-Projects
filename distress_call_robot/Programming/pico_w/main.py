@@ -13,7 +13,7 @@ server = Server()
 
 def main():
     server.wait_for_client()
-    terminal = Terminal(server.client, mic)
+    terminal = Terminal(server, mic)
     try:
         while True:
             terminal(server.client.recv(10).decode())

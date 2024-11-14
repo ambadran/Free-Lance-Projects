@@ -9,8 +9,8 @@ class Terminal:
     '''
     Terminal command executing abstraction
     '''
-    def __init__(self, client, mic):
-        self.client = client
+    def __init__(self, server, mic):
+        self.server = server
         self.mic = mic
 
     def __call__(self, cmd):
@@ -32,28 +32,11 @@ class Terminal:
                     print(f"Couldn't convert command 'R' Parameter into an integer, given command: {cmd}")
                     return None
 
+            # Get samples
+            samples = self.mic.get_samples()
 
-            gc.collect()
-            samples = bytearray(self.mic.sampling_rate*int(self.mic.sampling_duration/1000)*2)
-            print(f"Capturing {int(len(samples)/2)} samples in {self.mic.sampling_duration} ms audio..\n")
-
-            s_time = ticks_ms()
-            for ind in range(0, len(samples), 2):
-                # samples[ind:ind+2] = self.mic.adc.read_u16().to_bytes(2, 'H')
-                value = self.mic.adc.read_u16()
-                samples[i * 2] = value & 0xFF  # Lower byte
-                samples[i * 2 + 1] = (value >> 8) & 0xFF  # Upper byte
-            e_time = ticks_diff(ticks_ms(), s_time)
-
-            print(f"Read samples in {e_time}ms!")
-            print(f"Sample Rate: {round((int(len(samples)/2))/(e_time/1000))}\n\n")
-
-
-            print("Sending audio sample..")
-            s_time = ticks_ms()
-            self.client.send(samples)
-            e_time = ticks_diff(ticks_ms(), s_time)
-            print(f"Sent samples in {e_time}ms!\n")
+            # Sending samples
+            self.server.send_audio(samples)
 
             gc.collect()
             print(f"Free Memory: {gc.mem_free()}")
