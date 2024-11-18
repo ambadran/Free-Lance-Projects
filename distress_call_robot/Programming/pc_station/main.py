@@ -14,7 +14,7 @@ class Station:
     '''
     Abstraction to the Station that controls the Pico W
     '''
-    controller_IP = '192.168.1.8'
+    controller_IP = '192.168.1.7'
     controller_PORT = 1234
     SAMPLING_RATE = 8000
     SAMPLE_DURATION = 6

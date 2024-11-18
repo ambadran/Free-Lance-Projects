@@ -4,43 +4,74 @@ terminal emulation
 from time import ticks_add, ticks_diff, ticks_ms, sleep
 from micropython import mem_info
 import gc
+import re
 
 class Terminal:
     '''
     Terminal command executing abstraction
     '''
-    def __init__(self, server, mic):
+    def __init__(self, server, mic, differential_drive):
         self.server = server
         self.mic = mic
+        self.differential_drive = differential_drive
+
+    def print(self, string):
+        '''
+        prints text both in micropython terminal and in tcp connection
+        '''
+        print(string)
+        self.server.client.sendall(f"{string}\n\n")
 
     def __call__(self, cmd):
         '''
         Process Commands
         '''
         if cmd.isspace():
-            print('ok..')
+            print('ok..')  # testing connection
             return None
 
+        ### Step 1:  identifying command
         cmd = cmd.strip()
-        if cmd.startswith('R'):
+        command_patterns = re.compile(r'([Rfbrl])(\d*)')
+        matched = command_patterns.match(cmd)
+        if matched:
+            matched = matched.groups()
 
-            if len(cmd) != 1:
-                try:
-                    duration = int(cmd[1:])
-                    self.mic.sampling_duration = duration
-                except ValueError:
-                    print(f"Couldn't convert command 'R' Parameter into an integer, given command: {cmd}")
-                    return None
+            ### Step 2: check for logical erros
+            if (matched[0] in ['f', 'b', 'r', 'l']) and not matched[1]:
+                self.print("Can't send a movement command without specifying how much!")
+                return None
 
-            # Get samples
-            samples = self.mic.get_samples()
+            ### Step 3: Execution
+            if matched[0] == 'R':
+                if matched[1]:
+                    self.mic.sampling_duration = int(matched[1])
 
-            # Sending samples
-            self.server.send_audio(samples)
+                # Get samples
+                samples = self.mic.get_samples()
 
-            gc.collect()
-            print(f"Free Memory: {gc.mem_free()}")
-            print()
+                # Sending samples
+                self.server.send_audio(samples)
+
+                gc.collect()
+                print(f"Free Memory: {gc.mem_free()}\n")
+
+            elif matched[0] == 'f':
+                self.differential_drive.forward(int(matched[1]))
+                self.print(f"Moved Forward for {int(matched[1])}ms")
+
+            elif matched[0] == 'b':
+                self.differential_drive.backward(int(matched[1]))
+                self.print(f"Moved Backward for {int(matched[1])}ms")
+
+            elif matched[0] == 'r':
+                self.differential_drive.right(int(matched[1]))
+                self.print(f"Moved Right: {int(matched[1])}deg")
+
+            elif matched[0] == 'l':
+                self.differential_drive.left(int(matched[1]))
+                self.print(f"Moved Left: {int(matched[1])}deg")
+
 
         else:
             print(f"Unknown command received: {cmd}")

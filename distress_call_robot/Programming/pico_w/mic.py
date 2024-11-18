@@ -33,7 +33,7 @@ class Mic:
         reads a whole bunch of samples
         '''
         gc.collect()
-        num_samples = self.sampling_rate*int(self.sampling_duration/1000)
+        num_samples = round(self.sampling_rate*(self.sampling_duration/1000))
         bytearray_size = num_samples*2
         samples = bytearray(bytearray_size)
         print(f"Capturing {int(len(samples)/2)} samples in {self.sampling_duration} ms audio..\n")
