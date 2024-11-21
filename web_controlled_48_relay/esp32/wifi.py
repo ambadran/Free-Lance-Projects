@@ -15,6 +15,8 @@ class Server:
 
     DEFAULT_PORT = 1234
 
+    DEFAULT_DHCP_NAME = const("esp32-relayboard-1")
+
     def __init__(self):
         self.reset()
         #TODO: implement try except block to avoid redefining socket
@@ -38,15 +40,17 @@ class Server:
         '''
         set up the Access Point
         '''
+        self.station.config(dhcp_hostname=self.DEFAULT_DHCP_NAME)
         self.station.connect(self.SSID, self.PASSWORD)
 
         while self.station.isconnected() == False:
             print(f"Connecting to WiFi.. ", end=' \r')
+        print()
 
         self.ip = self.station.ifconfig()[0]
-
-        print('\nConnected to Wifi!!\n')
-        print(self.station.ifconfig())
+        print(f"ipconfig: {self.station.ifconfig()}")
+        print(f"dhcp name: {self.station.config('dhcp_hostname')}")
+        print('Connected to Wifi!!\n')
 
     def init_socket(self):
         '''

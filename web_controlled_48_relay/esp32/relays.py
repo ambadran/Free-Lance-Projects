@@ -23,11 +23,10 @@ class Relays:
         Turn all relays off
         '''
         if pin_num is None:
-            self.relays[pin_num].off()
-
-        else:
-            for relay in relays:
+            for relay in self.relays:
                 relay.off()
+        else:
+            self.relays[pin_num].off()
 
     def on(self, pin_num):
         '''
@@ -35,14 +34,18 @@ class Relays:
         '''
         self.relays[pin_num].on()
 
-    def value(self, pin_num: int, state: bool=None):
+    def value(self, pin_num: int, state: int=None) -> int:
         '''
-        setting a relay to a value
+        setting a relay to a value and returning the value of the relay in any case
         '''
         if state is None:
+            # only returning current value
             return self.relays[pin_num].value()
         else:
+            # setting value
             self.relays[pin_num].value(state)
+            # and return value after being set
+            return self.relays[pin_num].value()
 
     def __getitem__(self, slicing: slice):
         '''
@@ -50,13 +53,19 @@ class Relays:
         '''
         return self.relays[slicing]
 
+    def __len__(self):
+        '''
+        returns how much relays on this board
+        '''
+        return len(self.relays)
+
     def __str__(self):
         '''
         return values of all the relays
         '''
         string = ""
         for pin_num, pin in enumerate(self.relays):
-            string += "Pin {pin_num}: {pin.value()}\n"
+            string += f"R{pin_num}V{pin.value()}\n"
 
         return string
 
