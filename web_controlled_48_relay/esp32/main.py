@@ -5,6 +5,7 @@ from wifi import Server
 from terminal import Terminal
 from relays import Relays
 from time import sleep
+import machine
 
 server = Server()
 relays = Relays()
@@ -19,4 +20,8 @@ def main():
     finally:
         server.client.close()
 
-# main()
+try:
+    main()
+except Exception as e:
+    print("Caught Exception: {e}")
+    machine.reset()

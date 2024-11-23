@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter.messagebox import showerror
 from relay_board_control import RelayBoard  # Assuming your RelayBoard class is in RelayBoard.py
+import json
 
 class RelayBoardGUI(tk.Tk):
     def __init__(self):
@@ -74,40 +75,185 @@ class RelayBoardGUI(tk.Tk):
         RelayBoardPage(self, board)
 
 class RelayBoardPage(tk.Toplevel):
+    DESCRIPTION_FILE_TEMPLATE = "relayboard_{board_id}.json"
+
     def __init__(self, master, board):
         super().__init__(master)
         self.board = board
         self.title(f"Relay Board {board.board_id}")
-        self.geometry("500x400")
+        self.geometry("600x700")
+
+        # Load existing descriptions
+        self.description_file = self.DESCRIPTION_FILE_TEMPLATE.format(board_id=board.board_id)
+        self.relay_descriptions = self.load_descriptions()
 
         ttk.Label(self, text=f"Relay Board {board.board_id}", font=("Arial", 16)).pack(pady=10)
 
-        # Relay control switches
-        self.relay_switches = []
-        for relay_id in range(1, RelayBoard.MAX_RELAY_NUM + 1):
-            frame = ttk.Frame(self)
-            frame.pack(pady=5, fill=tk.X)
+        # Relay switches and entries
+        self.switch_vars = {}
+        self.switch_frames = ttk.Frame(self)
+        self.switch_frames.pack(fill=tk.BOTH, expand=True)
 
-            ttk.Label(frame, text=f"Relay {relay_id}", width=10).pack(side=tk.LEFT, padx=5)
+        for relay_id in range(RelayBoard.MAX_RELAY_NUM):  # Relay IDs start from 0
+            self.create_relay_control(relay_id)
 
-            var = tk.IntVar()
-            var.set(int(self.board.value(relay_id)))  # Initialize with current relay state
+    def create_relay_control(self, relay_id):
+        """Create a control row with label, entry, and toggle switch."""
+        frame = ttk.Frame(self.switch_frames)
+        frame.pack(pady=5, fill=tk.X)
 
-            switch = ttk.Checkbutton(
-                frame,
-                variable=var,
-                command=lambda r_id=relay_id, var=var: self.toggle_relay(r_id, var)
-            )
-            switch.pack(side=tk.LEFT)
+        # Label for the relay ID
+        ttk.Label(frame, text=f"Relay {relay_id}:", width=15).pack(side=tk.LEFT, padx=5)
 
-            self.relay_switches.append(var)
+        # Entry for relay description
+        description_var = tk.StringVar(value=self.relay_descriptions.get(str(relay_id), ""))
+        entry = ttk.Entry(frame, textvariable=description_var, width=30)
+        entry.pack(side=tk.LEFT, padx=10)
 
-    def toggle_relay(self, relay_id, var):
-        """Toggle a relay and update its state."""
+        # Save description whenever it changes
+        description_var.trace_add("write", lambda *_: self.save_description(relay_id, description_var.get()))
+
+        # Get the current relay state
         try:
-            new_state = var.get()
-            self.board.value(relay_id, new_state)
+            current_state = int(self.board.value(relay_id))  # Assuming 0 for OFF and 1 for ON
+        except Exception:
+            current_state = 0  # Default to OFF if there's an error
+
+        # Create the toggle switch
+        var = tk.BooleanVar(value=bool(current_state))
+        self.switch_vars[relay_id] = var
+
+        switch = tk.Canvas(frame, width=60, height=30, bg="lightgray", highlightthickness=0)
+        switch.pack(side=tk.LEFT, padx=10)
+
+        # Draw the toggle
+        self.draw_toggle(switch, var)
+
+        # Bind click event
+        switch.bind("<Button-1>", lambda event, r_id=relay_id, var=var: self.toggle_relay(r_id, var, switch))
+
+    def draw_toggle(self, canvas, var):
+        """Draw the switch on the canvas."""
+        canvas.delete("all")
+        state = var.get()
+
+        # Draw background (green for ON, red for OFF)
+        canvas.create_rectangle(0, 0, 60, 30, fill="green" if state else "red", outline="")
+
+        # Draw the toggle circle
+        canvas.create_oval(
+            5 if state else 35, 5, 25 if state else 55, 25,
+            fill="white",
+            outline="",
+        )
+
+    def toggle_relay(self, relay_id, var, canvas):
+        """Toggle relay state and update its UI."""
+        try:
+            new_state = not var.get()
+            var.set(new_state)
+
+            # Update the switch UI
+            self.draw_toggle(canvas, var)
+
+            # Send the new state to the relay board
+            self.board.value(relay_id, int(new_state))
         except Exception as e:
-            showerror("Error", f"Failed to toggle relay {relay_id}: {e}")
+            tk.messagebox.showerror("Error", f"Failed to toggle relay {relay_id}: {e}")
+
+    def load_descriptions(self):
+        """Load relay descriptions from a JSON file."""
+        try:
+            with open(self.description_file, "r") as file:
+                return json.load(file)
+        except FileNotFoundError:
+            return {}  # No descriptions saved yet
+        except json.JSONDecodeError:
+            tk.messagebox.showerror("Error", "Failed to load descriptions. File may be corrupted.")
+            return {}
+
+    def save_description(self, relay_id, description):
+        """Save the description of a relay to the JSON file."""
+        self.relay_descriptions[str(relay_id)] = description
+        try:
+            with open(self.description_file, "w") as file:
+                json.dump(self.relay_descriptions, file, indent=4)
+        except Exception as e:
+            tk.messagebox.showerror("Error", f"Failed to save description for relay {relay_id}: {e}")
+
+# class RelayBoardPage(tk.Toplevel):
+#     def __init__(self, master, board):
+#         super().__init__(master)
+#         self.board = board
+#         self.title(f"Relay Board {board.board_id}")
+#         self.geometry("300x700")  # Adjusted size for better visibility
+
+#         # Title Label
+#         ttk.Label(self, text=f"Relay Board {board.board_id}", font=("Arial", 16)).pack(pady=10)
+
+#         # Relay switches
+#         self.switch_vars = {}
+#         self.switch_frames = ttk.Frame(self)  # Frame to hold all relay switches
+#         self.switch_frames.pack(fill=tk.BOTH, expand=True)
+
+#         for relay_id in range(RelayBoard.MAX_RELAY_NUM):
+#             self.create_relay_switch(relay_id)
+
+#     def create_relay_switch(self, relay_id):
+#         """Create a toggle switch for each relay."""
+#         frame = ttk.Frame(self.switch_frames)
+#         frame.pack(pady=5, fill=tk.X)
+
+#         # Label for the relay ID
+#         ttk.Label(frame, text=f"Relay {relay_id}:", width=15).pack(side=tk.LEFT, padx=5)
+
+#         # Get the current relay state
+#         try:
+#             current_state = int(self.board.value(relay_id))  # Assuming 0 for OFF and 1 for ON
+#         except Exception:
+#             current_state = 0  # Default to OFF if there's an error
+
+#         # Create the toggle switch
+#         var = tk.BooleanVar(value=bool(current_state))
+#         self.switch_vars[relay_id] = var
+
+#         switch = tk.Canvas(frame, width=60, height=30, bg="lightgray", highlightthickness=0)
+#         switch.pack(side=tk.LEFT, padx=10)
+
+#         # Draw the toggle
+#         self.draw_toggle(switch, var)
+
+#         # Bind click event
+#         switch.bind("<Button-1>", lambda event, r_id=relay_id, var=var: self.toggle_relay(r_id, var, switch))
+
+#     def draw_toggle(self, canvas, var):
+#         """Draw the switch on the canvas."""
+#         canvas.delete("all")
+#         state = var.get()
+
+#         # Draw background (green for ON, red for OFF)
+#         canvas.create_rectangle(0, 0, 60, 30, fill="green" if state else "red", outline="")
+
+#         # Draw the toggle circle
+#         canvas.create_oval(
+#             5 if state else 35, 5, 25 if state else 55, 25,
+#             fill="white",
+#             outline="",
+#         )
+
+#     def toggle_relay(self, relay_id, var, canvas):
+#         """Toggle relay state and update its UI."""
+#         try:
+#             new_state = not var.get()
+#             var.set(new_state)
+
+#             # Update the switch UI
+#             self.draw_toggle(canvas, var)
+
+#             # Send the new state to the relay board
+#             self.board.value(relay_id, int(new_state))
+#         except Exception as e:
+#             tk.messagebox.showerror("Error", f"Failed to toggle relay {relay_id}: {e}")
 
 app = RelayBoardGUI()
+app.mainloop()

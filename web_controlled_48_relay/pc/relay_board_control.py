@@ -14,6 +14,8 @@ class RelayBoard:
 
     COMMAND_PATTERNS = re.compile(r'R(-?\d+)V?(\d?)')
 
+    BOARD_ID_IP_ADD = {1: '192.168.1.10', 2: '192.168.1.11', 3: '192.168.1.12'}
+
     def __init__(self, board_id):
         self.board_id = board_id
         self.ip_address = self.find_ip_address(board_id)
@@ -41,8 +43,7 @@ class RelayBoard:
         the name is specifically set as the dhcp hostname. 
         '''
         #TODO: implement someway to read dhcp hostname
-        tmp = '192.168.1.10'
-        return tmp
+        return self.BOARD_ID_IP_ADD[board_id]
 
     @classmethod
     def decode_cmd(cls, cmd) -> int | None:

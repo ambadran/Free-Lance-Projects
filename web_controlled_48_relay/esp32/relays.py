@@ -7,8 +7,8 @@ class Relays:
     '''
     Abstraction to controls Relays
     '''
-    DEFAULT_PIN_NUMS = [2, 
-                        4]
+    DEFAULT_PIN_NUMS = [2, 4, 16, 17, 18, 19, 21, 22, 
+                        13, 12, 14, 27, 26, 25, 33, 32]
     def __init__(self, pin_nums: list[int]=DEFAULT_PIN_NUMS):
 
         # Initializing the Pins

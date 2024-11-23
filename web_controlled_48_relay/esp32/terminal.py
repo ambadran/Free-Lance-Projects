@@ -35,7 +35,7 @@ class Terminal:
             ### Step 2: check for logical erros
             # check if relay id is out of range
             pin_value = int(matched.group(1))
-            if pin_value > len(self.relays) or pin_value < -1:
+            if pin_value >= len(self.relays) or pin_value < -1:
                 self.print(f"Error: Relay id range: 0-{len(self.relays)}")
                 return None
 
