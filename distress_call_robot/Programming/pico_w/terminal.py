@@ -27,7 +27,7 @@ class Terminal:
         Process Commands
         '''
         if cmd.isspace():
-            print('ok..')  # testing connection
+            self.print('ok..')  # testing connection
             return None
 
         ### Step 1:  identifying command
@@ -40,6 +40,10 @@ class Terminal:
             ### Step 2: check for logical erros
             if (matched[0] in ['f', 'b', 'r', 'l']) and not matched[1]:
                 self.print("Can't send a movement command without specifying how much!")
+                return None
+
+            if (int(matched[1])) == 0:
+                self.print("Can't record or move 0 anything!")
                 return None
 
             ### Step 3: Execution
@@ -58,19 +62,19 @@ class Terminal:
 
             elif matched[0] == 'f':
                 self.differential_drive.forward(int(matched[1]))
-                self.print(f"Moved Forward for {int(matched[1])}ms")
+                self.print(f"Moving Forward for {int(matched[1])}ms")
 
             elif matched[0] == 'b':
                 self.differential_drive.backward(int(matched[1]))
-                self.print(f"Moved Backward for {int(matched[1])}ms")
+                self.print(f"Moving Backward for {int(matched[1])}ms")
 
             elif matched[0] == 'r':
                 self.differential_drive.right(int(matched[1]))
-                self.print(f"Moved Right: {int(matched[1])}deg")
+                self.print(f"Moving Right: {int(matched[1])}deg")
 
             elif matched[0] == 'l':
                 self.differential_drive.left(int(matched[1]))
-                self.print(f"Moved Left: {int(matched[1])}deg")
+                self.print(f"Moving Left: {int(matched[1])}deg")
 
 
         else:

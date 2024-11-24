@@ -23,4 +23,10 @@ def main():
     finally:
         server.client.close()
 
-# main()
+try:
+    main()
+except Exception as e:
+    print("Exception: {e}")
+    sleep(2)
+    machine.reset()
+
