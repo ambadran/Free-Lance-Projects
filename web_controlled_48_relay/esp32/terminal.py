@@ -23,7 +23,7 @@ class Terminal:
         Process Commands
         '''
         if cmd.isspace():
-            print('ok..')  # testing connection
+            self.print('ok..')  # testing connection
             return None
 
         ### Step 1:  identifying command

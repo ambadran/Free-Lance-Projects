@@ -4,6 +4,7 @@
 import socket
 from time import sleep
 import re
+import scapy.all as scapy
 
 class RelayBoard:
     '''
@@ -14,7 +15,8 @@ class RelayBoard:
 
     COMMAND_PATTERNS = re.compile(r'R(-?\d+)V?(\d?)')
 
-    BOARD_ID_IP_ADD = {1: '192.168.1.10', 2: '192.168.1.11', 3: '192.168.1.12'}
+    # BOARD_ID_IP_ADD = {1: '192.168.1.10', 2: '192.168.1.11', 3: '192.168.1.12'}
+    BOARD_ID_IP_ADD = {1: '192.168.1.10', 2: '192.168.1.11', 3: '172.20.10.5'}
 
     def __init__(self, board_id):
         self.board_id = board_id
@@ -26,14 +28,19 @@ class RelayBoard:
         try:
             self.sock.send(b'\n')
 
-        except BrokenPipeError:
-
+        except (BrokenPipeError, OSError):  # MacOS returns this when not connected :P
             self.sock.connect((self.ip_address, self.DEFAULT_PORT))
             print("Connection to 'esp32-relayboard-{self.board_id}' Successful!")
 
             self.sock.send(b'\n')
 
         self.relays = []
+
+    def list_ip_addresses(self) -> list[str]:
+        '''
+        lists all connected devices on wifi network
+        '''
+        #TODO: import who_is_on_my_wifi library code :D
 
     def find_ip_address(self, board_id: int):
         '''
