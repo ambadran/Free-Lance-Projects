@@ -2,10 +2,11 @@
 
 '''
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, simpledialog
 from tkinter.messagebox import showerror
 from relay_board_control import RelayBoard  # Assuming your RelayBoard class is in RelayBoard.py
 import json
+import re
 
 class RelayBoardGUI(tk.Tk):
     def __init__(self):
@@ -34,6 +35,9 @@ class RelayBoardGUI(tk.Tk):
         # Connect button
         ttk.Button(self, text="Connect", command=self.connect_to_board).pack(pady=5)
 
+        # IP Configuration Dialog
+        ttk.Button(self, text="Configure IP", command=self.open_ip_config).pack(pady=10)
+
         # Connected boards list
         self.connected_boards_frame = ttk.Frame(self)
         self.connected_boards_frame.pack(pady=20, fill=tk.BOTH, expand=True)
@@ -58,6 +62,12 @@ class RelayBoardGUI(tk.Tk):
         except Exception as e:
             showerror("Connection Error", f"Failed to connect to board: {e}")
 
+    def open_ip_config(self):
+        """Open the IP Configuration Dialog."""
+        board_id = simpledialog.askinteger("Board ID", "Enter Board ID:")
+        if board_id is not None:
+            IPConfigDialog(self, board_id)
+
     def refresh_connected_boards(self):
         """Update the list of connected boards."""
         for widget in self.connected_boards_frame.winfo_children():
@@ -75,6 +85,42 @@ class RelayBoardGUI(tk.Tk):
         """Open the page for a specific relay board."""
         board = self.boards[board_id]
         RelayBoardPage(self, board)
+
+class IPConfigDialog(tk.Toplevel):
+    def __init__(self, master, board_id):
+        super().__init__(master)
+        self.board_id = board_id
+        self.title(f"Configure IP for Board {board_id}")
+        self.geometry("300x150")
+
+        ttk.Label(self, text=f"Enter IP for Board {board_id}:").pack(pady=10)
+
+        self.ip_var = tk.StringVar()
+        ttk.Entry(self, textvariable=self.ip_var, width=25).pack(pady=5)
+
+        ttk.Button(self, text="Save", command=self.save_ip).pack(pady=10)
+
+    def save_ip(self):
+        """
+        Save the manually entered IP.
+        """
+        ip_address = self.ip_var.get()
+        if self.validate_ip(ip_address):
+            RelayBoard.save_ip_address(self.board_id, ip_address)
+            tk.messagebox.showinfo("Success", f"IP address for board {self.board_id} saved!")
+            self.destroy()
+        else:
+            tk.messagebox.showerror("Error", "Invalid IP address. Please try again.")
+
+    @staticmethod
+    def validate_ip(ip):
+        """
+        Validate the entered IP address format 
+        """
+        pattern = re.compile(
+            r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
+        )  # Basic IPv4 validation
+        return pattern.match(ip) is not None
 
 class RelayBoardPage(tk.Toplevel):
     DESCRIPTION_FILE_TEMPLATE = "relayboard_{board_id}.json"

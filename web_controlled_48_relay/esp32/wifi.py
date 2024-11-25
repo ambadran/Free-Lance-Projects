@@ -10,14 +10,16 @@ class Server:
     '''
     Wifi, TCP/IP, HTML Request abstraction
     '''
-    # SSID = const("Mr.A's Lab")
-    # PASSWORD = const("lskdmin2938#")
-    SSID = const('Mr.A\u2019s iPhone')  # apparently this is how the micropython device sees it, otherwise, it will not see the AP and return STAT_NO_AP_FOUND status
-    PASSWORD = const("bdkdinvg")
+    SSID = const("Mr.A's Lab")
+    PASSWORD = const("lskdmin2938#")
+    # SSID = const('Mr.A\u2019s iPhone')  # apparently this is how the micropython device sees it, otherwise, it will not see the AP and return STAT_NO_AP_FOUND status
+    # PASSWORD = const("bdkdinvg")
 
     DEFAULT_PORT = 1234
 
-    DEFAULT_DHCP_NAME = const("esp32-relayboard-3")
+    ### MAKE SURE TO WRITE THE CORRECT ID HERE
+    ### esp32-relayboard-x where x is the board id
+    DEFAULT_DHCP_NAME = const("esp32-relayboard-3") 
 
     def __init__(self):
         self.reset()

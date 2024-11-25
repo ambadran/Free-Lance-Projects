@@ -2,6 +2,7 @@
 Terminal Abstraction to process commands coming through tcp connection
 '''
 import re
+import machine
 
 class Terminal:
     '''
@@ -22,6 +23,14 @@ class Terminal:
         '''
         Process Commands
         '''
+        # Receiving Command
+        try:
+            cmd = cmd.decode()
+
+        except UnicodeError:
+            self.print("Unicode Error: User sent wrong characters")
+            return None
+
         if cmd.isspace():
             self.print('ok..')  # testing connection
             return None

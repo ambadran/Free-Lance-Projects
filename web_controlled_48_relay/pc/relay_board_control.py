@@ -5,6 +5,8 @@ import socket
 from time import sleep
 import re
 import scapy.all as scapy
+from tkinter.messagebox import showerror
+import json
 
 class RelayBoard:
     '''
@@ -12,11 +14,9 @@ class RelayBoard:
     '''
     MAX_RELAY_NUM = 16
     DEFAULT_PORT = 1234
+    IP_STORAGE_FILE = "relayboard_ips.json"
 
     COMMAND_PATTERNS = re.compile(r'R(-?\d+)V?(\d?)')
-
-    # BOARD_ID_IP_ADD = {1: '192.168.1.10', 2: '192.168.1.11', 3: '192.168.1.12'}
-    BOARD_ID_IP_ADD = {1: '192.168.1.10', 2: '192.168.1.11', 3: '172.20.10.5'}
 
     def __init__(self, board_id):
         self.board_id = board_id
@@ -26,13 +26,12 @@ class RelayBoard:
 
         # Establishing connection
         try:
-            self.sock.send(b'\n')
+            self.sock.send(b'Connected\n')
 
         except (BrokenPipeError, OSError):  # MacOS returns this when not connected :P
             self.sock.connect((self.ip_address, self.DEFAULT_PORT))
             print("Connection to 'esp32-relayboard-{self.board_id}' Successful!")
-
-            self.sock.send(b'\n')
+            self.sock.send(b'Connected\n')
 
         self.relays = []
 
@@ -41,6 +40,7 @@ class RelayBoard:
         lists all connected devices on wifi network
         '''
         #TODO: import who_is_on_my_wifi library code :D
+        pass
 
     def find_ip_address(self, board_id: int):
         '''
@@ -49,8 +49,46 @@ class RelayBoard:
         the ESP32's each are named esp32-relayboard-x where x is the board_id
         the name is specifically set as the dhcp hostname. 
         '''
-        #TODO: implement someway to read dhcp hostname
-        return self.BOARD_ID_IP_ADD[board_id]
+        # Attempt algorithm to find the IP
+        # TODO: Implement actual IP-finding logic
+        ip_address = None
+
+        # Check manual override in IP storage
+        stored_ips = self.load_stored_ips()
+        if str(board_id) in stored_ips:
+            ip_address = stored_ips[str(board_id)]
+
+        if not ip_address:
+            raise ValueError(f"Failed to find IP address for board {board_id}. Configure manually.")
+
+        return ip_address
+
+    @staticmethod
+    def load_stored_ips():
+        """
+        Load stored IP addresses from a file
+        """
+        try:
+            with open(RelayBoard.IP_STORAGE_FILE, "r") as file:
+                return json.load(file)
+        except FileNotFoundError:
+            return {}  # No manual IPs saved yet
+        except json.JSONDecodeError:
+            showerror("Error", "Failed to load stored IPs. File may be corrupted.")
+            return {}
+
+    @staticmethod
+    def save_ip_address(board_id: int, ip_address: str):
+        """
+        Save a manually configured IP address for a board
+        """
+        stored_ips = RelayBoard.load_stored_ips()
+        stored_ips[str(board_id)] = ip_address
+        try:
+            with open(RelayBoard.IP_STORAGE_FILE, "w") as file:
+                json.dump(stored_ips, file, indent=4)
+        except Exception as e:
+            showerror("Error", f"Failed to save IP address for board {board_id}: {e}")
 
     @classmethod
     def decode_cmd(cls, cmd) -> int | None:
@@ -73,6 +111,8 @@ class RelayBoard:
         else:
             self.sock.send(f"R{pin_num}V{state}".encode())  # sending set command to esp32
             value = self.sock.recv(20).decode().strip()  # receiving confirmation of relay value
+
+            showerror("Error", f"Failed to save IP address for board {board_id}: {e}")
             #TODO: make sure received is same as set
             return value #TODO: re decode it
 
