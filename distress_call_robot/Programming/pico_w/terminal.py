@@ -3,6 +3,7 @@ terminal emulation
 '''
 from time import ticks_add, ticks_diff, ticks_ms, sleep
 from micropython import mem_info
+import machine
 import gc
 import re
 
@@ -26,6 +27,14 @@ class Terminal:
         '''
         Process Commands
         '''
+        # Receiving Command
+        try:
+            cmd = cmd.decode()
+
+        except UnicodeError:
+            self.print("Unicode Error: User sent wrong characters")
+            return None
+
         if cmd.isspace():
             self.print('ok..')  # testing connection
             return None
@@ -76,6 +85,12 @@ class Terminal:
                 self.differential_drive.left(int(matched[1]))
                 self.print(f"Moving Left: {int(matched[1])}deg")
 
+        elif cmd == '':
+            # empty string is what telnet and nc commands send when they close 
+            # their session for some reason, therefore, will reset device
+            # when detected
+            self.print("Received empty string, could be session close \n\nRestarting Machine..\n")
+            machine.reset()
 
         else:
             print(f"Unknown command received: {cmd}")

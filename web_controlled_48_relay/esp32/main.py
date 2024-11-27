@@ -23,3 +23,4 @@ except Exception as e:
     print("Caught Exception: {e}")
     server.client.close()
     machine.reset()
+

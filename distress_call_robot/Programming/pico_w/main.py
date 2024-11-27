@@ -18,7 +18,7 @@ def main():
     terminal = Terminal(server, mic, differential_drive)
     try:
         while True:
-            terminal(server.client.recv(10).decode())
+            terminal(server.client.recv(10))
 
     finally:
         server.client.close()
@@ -26,7 +26,7 @@ def main():
 try:
     main()
 except Exception as e:
-    print("Exception: {e}")
+    print(f"Exception: {e}")
     sleep(2)
     machine.reset()
 

@@ -28,6 +28,7 @@ class Server:
         #TODO: implement try except block to avoid redefining socket
         self.init_wifi_connection()
         self.init_socket()
+        self.led.on()
 
     def reset(self):
         '''
@@ -51,7 +52,6 @@ class Server:
         while self.station.isconnected() == False:
             print(f"Connecting to WiFi.. ", end=' \r')
 
-        self.led.on()
         self.ip = self.station.ifconfig()[0]
 
         print('\nConnected to Wifi!!\n')

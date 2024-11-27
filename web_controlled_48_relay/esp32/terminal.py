@@ -73,6 +73,12 @@ class Terminal:
                 #TODO: send warning
                 self.print("Turning ALL relays ON is unsafe!!!")
 
+        elif cmd == '':
+            # empty string is what telnet and nc commands send when they close 
+            # their session for some reason, therefore, will reset device
+            # when detected
+            self.print("Received empty string, could be session close \n\nRestarting Machine..\n")
+            machine.reset()
 
         else:
             print(f"Unknown command received: {cmd}")

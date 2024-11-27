@@ -30,12 +30,12 @@ class RelayBoard:
 
         except (BrokenPipeError, OSError):  # MacOS returns this when not connected :P
             self.sock.connect((self.ip_address, self.DEFAULT_PORT))
-            print("Connection to 'esp32-relayboard-{self.board_id}' Successful!")
+            print(f"Connection to 'esp32-relayboard-{self.board_id}' Successful!")
             self.sock.send(b'Connected\n')
 
         self.relays = []
 
-    def list_ip_addresses(self) -> list[str]:
+    def list_ip_addresses(self):
         '''
         lists all connected devices on wifi network
         '''
@@ -91,45 +91,59 @@ class RelayBoard:
             showerror("Error", f"Failed to save IP address for board {board_id}: {e}")
 
     @classmethod
-    def decode_cmd(cls, cmd) -> int | None:
+    def decode_cmd(cls, cmd):
         '''
-        returns the value of given command
+        return a tuple of the `pin_num` and the `value`.
+        e.g R3V1 -> (3, 1) -> pin_num=3, value=1
         '''
         cmd = cmd.strip()
-        matched = self.COMMAND_PATTERNS.match(cmd)
-        return cmd.groups()[2]
+        matched = cls.COMMAND_PATTERNS.match(cmd)
+        if not matched:
+            #TODO: do sth
+            print(f"Received corrupted answer from esp32?!? -> {cmd}")
+            showerror("Error", f"Received corrupted confirmation reply from esp32 -> {cmd}")
 
-    def value(self, pin_num: int, state: int=None) -> int:
+        return matched.groups()
+
+    def value(self, pin_num: int, state: int=None):
         '''
         Main function to set and read the value of a specific relay
         '''
         if state is None:
+            # Reading Value
             self.sock.send(f'R{pin_num}\n'.encode())  # sending read command to esp32 
-            value = self.sock.recv(20).decode().strip()  # receiving value of relay
-            return value #TODO: re decode it
+            reply = self.sock.recv(20).decode().strip()  # receiving value of relay
+            cmd_values = self.decode_cmd(reply)
 
         else:
+            # Setting Value
             self.sock.send(f"R{pin_num}V{state}".encode())  # sending set command to esp32
-            value = self.sock.recv(20).decode().strip()  # receiving confirmation of relay value
+            reply = self.sock.recv(20).decode().strip()  # receiving confirmation of relay value
 
-            showerror("Error", f"Failed to save IP address for board {board_id}: {e}")
-            #TODO: make sure received is same as set
-            return value #TODO: re decode it
+            # Checking if value is indeed set properly from esp32 reply
+            cmd_values = self.decode_cmd(reply)
+            if cmd_values[0] != str(pin_num) or cmd_values[1] != str(state):
+                showerror("Error", f"Failed to set relay value {self.board_id}. Received: {reply}")
 
-    def values(self) -> list[int]:
+        return cmd_values[1]
+
+    def values(self):
         '''
         Reads values of ALL relays
         '''
         self.sock.send("R-1".encode())
-        values = self.sock.recv(100).decode().strip()
-        print(values)
+        reply = self.sock.recv(100).decode().strip()
+        print(reply)
+        print()
 
     def off(self):
         '''
         turns all relays off
         '''
         self.sock.send("R-1V0".encode())
-        values = self.sock.recv(100).decode().strip()
-        print(values)
+        reply = self.sock.recv(100).decode().strip()
+        #TODO: check if all replies have 0 as state
+        print(reply)
+        print()
 
 

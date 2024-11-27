@@ -201,11 +201,12 @@ class RelayBoardPage(tk.Toplevel):
             new_state = not var.get()
             var.set(new_state)
 
+            # Send the new state to the relay board
+            self.board.value(relay_id, int(new_state))
+
             # Update the switch UI
             self.draw_toggle(canvas, var)
 
-            # Send the new state to the relay board
-            self.board.value(relay_id, int(new_state))
         except Exception as e:
             tk.messagebox.showerror("Error", f"Failed to toggle relay {relay_id}: {e}")
 
