@@ -10,16 +10,19 @@ class Server:
     '''
     Wifi, TCP/IP, HTML Request abstraction
     '''
-    SSID = const("Mr.A's Lab")
-    PASSWORD = const("lskdmin2938#")
+    # SSID = const("Mr.A's Lab")
+    # PASSWORD = const("lskdmin2938#")
     # SSID = const('Mr.A\u2019s iPhone')  # apparently this is how the micropython device sees it, otherwise, it will not see the AP and return STAT_NO_AP_FOUND status
     # PASSWORD = const("bdkdinvg")
+
+    SSID = const("Fabric3")
+    PASSWORD = const("3033330333fa3")
 
     DEFAULT_PORT = 1234
 
     ### MAKE SURE TO WRITE THE CORRECT ID HERE
     ### esp32-relayboard-x where x is the board id
-    DEFAULT_DHCP_NAME = const("esp32-relayboard-3") 
+    DEFAULT_DHCP_NAME = const("esp32-relayboard-1") 
 
     def __init__(self):
         self.reset()
@@ -47,8 +50,8 @@ class Server:
         set up the Access Point
         '''
         self.station.config(dhcp_hostname=self.DEFAULT_DHCP_NAME)
-        self.station.connect(self.SSID, self.PASSWORD)
 
+        self.station.connect(self.SSID, self.PASSWORD)
         while self.station.isconnected() == False:
             print(f"Connecting to WiFi.. ", end=' \r')
         print()

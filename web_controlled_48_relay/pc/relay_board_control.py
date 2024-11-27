@@ -4,7 +4,6 @@
 import socket
 from time import sleep
 import re
-import scapy.all as scapy
 from tkinter.messagebox import showerror
 import json
 
