@@ -9,11 +9,13 @@ class Mic:
     '''
     Abstraction to read the MIC
     '''
-    DEFAULT_ADC_PIN = const(26)
+    MIC1_ADC_PIN = const(26)
+    MIC2_ADC_PIN = const(27)
+    MIC3_ADC_PIN = const(28)
     DEFAULT_SAMPLING_RATE = const(14000) 
     DEFAULT_SAMPLE_DURATION = const(6000)  # seconds
 
-    def __init__(self, adc_pin=DEFAULT_ADC_PIN,
+    def __init__(self, adc_pin: int,
             sampling_rate=DEFAULT_SAMPLING_RATE,
             sampling_duration=DEFAULT_SAMPLE_DURATION):
         self.adc = ADC(Pin(adc_pin))
@@ -22,11 +24,21 @@ class Mic:
         self.sample_time_ms_2 = (1/sampling_rate)*500 # needed for the loop which counts in 2s
         self.sampling_duration = sampling_duration
 
-    def sample(self):
+    def pretty_sample(self) -> str:
         '''
         returns a sample read
         '''
         return f"{self.adc.read_u16()}\n"
+
+    def avg_sample(self, samples:int=200) -> int:
+        '''
+        reads <samples> and takes average
+        '''
+        sum_value = self.adc.read_u16()
+        for _ in range(samples-1):
+            sum_value += self.adc.read_u16()
+
+        return round(sum_value/samples)
 
     def get_samples(self) -> bytearray:
         '''
@@ -57,5 +69,12 @@ class Mic:
         print()
 
         return samples
+
+    def max_record_length(self) -> int:
+        '''
+        return max millisecond possible of record duration according to memory availability
+        '''
+        #TODO:
+        return 5000
 
 

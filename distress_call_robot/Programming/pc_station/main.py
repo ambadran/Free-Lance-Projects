@@ -134,7 +134,7 @@ class Station:
         # Exporting to .wave file
         self.export_wav_file(data, 'audio.wav')
 
-        return data
+        # return data
 
 
 

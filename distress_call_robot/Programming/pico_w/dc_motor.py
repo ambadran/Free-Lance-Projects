@@ -29,15 +29,15 @@ class DCMotor:
         '''
         sets Motor to rotate clockwise
         '''
-        self.in1.on()
-        self.in2.off()
+        self.in1.off()
+        self.in2.on()
 
     def ccw(self):
         '''
         sets Motor to rotate anti-clockwise
         '''
-        self.in1.off()
-        self.in2.on()
+        self.in1.on()
+        self.in2.off()
 
     def off(self):
         '''
@@ -127,10 +127,20 @@ class DifferencialDrive:
         turns {angle} degrees to the left
         '''
         #TODO: take feedback from GPS module
+        #TODO: check if angle is >0 and is int
         self.stop_timer.deinit()
         self.right_motor.cw()
         self.left_motor.ccw()
         self.stop_timer = Timer(period=round(angle*self.ANGLE_TO_TIME_CONSTANT), 
             mode=Timer.ONE_SHOT, 
             callback=self.stop)
+
+    def orient(self, absolute_angle: int):
+        '''
+        turns left or right according integer sign
+        '''
+        if absolute_angle > 0:
+            self.right(absolute_angle)
+        else
+            self.left(-absolute_angle)
 
