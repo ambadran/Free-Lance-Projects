@@ -7,6 +7,8 @@ from station import Server
 from mic import Mic
 from dc_motor import DifferencialDrive
 from gps import GPS
+from hcsr04 import HCSR04
+from pir_sensor import PIRSensor
 from terminal import Terminal
 from time import sleep
 
@@ -18,7 +20,14 @@ def main():
                         Mic(Mic.MIC2_ADC_PIN),
                         Mic(Mic.MIC3_ADC_PIN),
                         DifferencialDrive(),
-                        GPS())
+                        GPS(),
+                        HCSR04(HCSR04.DEFAULT_TRIGGER_PIN1,
+                               HCSR04.DEFAULT_ECHO_PIN1),
+                        HCSR04(HCSR04.DEFAULT_TRIGGER_PIN2,
+                               HCSR04.DEFAULT_ECHO_PIN2),
+                        PIRSensor(PIRSensor.PIN_NUM1),
+                        PIRSensor(PIRSensor.PIN_NUM2)
+                        )
     try:
         while True:
             terminal(server.client.recv(10))

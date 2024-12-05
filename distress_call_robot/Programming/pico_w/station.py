@@ -12,9 +12,8 @@ import random
 
 class Server:
     # Access Point Parameters
-    SSID = const("Mr.A's Lab")
-    PASSWORD = const("lskdmin2938#")
-
+    SSID = "WE_DE3960"
+    PASSWORD = "01003889419$"
     DEFAULT_PORT = 1234
 
     def __init__(self):

@@ -71,7 +71,6 @@ class DifferencialDrive:
 
     #TODO: needs real-life testing
     ANGLE_TO_TIME_CONSTANT = 8.9  # how much milliseconds to turn 1 degree
-
     def __init__(self, left_motor: DCMotor=DEFAULT_LEFT_DC_MOTOR,
             right_motor: DCMotor=DEFAULT_RIGHT_DC_MOTOR):
         self.left_motor = left_motor
@@ -135,12 +134,14 @@ class DifferencialDrive:
             mode=Timer.ONE_SHOT, 
             callback=self.stop)
 
+    COMMAND_TO_UNIT = {'f': 'ms', 'b': 'ms', 'r': 'deg', 'l': 'deg'}
+
     def orient(self, absolute_angle: int):
         '''
         turns left or right according integer sign
         '''
         if absolute_angle > 0:
             self.right(absolute_angle)
-        else
+        else:
             self.left(-absolute_angle)
 
