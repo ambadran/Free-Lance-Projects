@@ -1,30 +1,3 @@
-#include "project-defs.h"
-
-/**** MUST DECLARE INTERRUPTS IN MAIN.C FILE AS PER SDCC REQUIREMENT ****/
-INTERRUPT(STEPPER_TIMER_ISR, STEPPER_TIMER_INTERRUPT);
-INTERRUPT(GLOBAL_TIMER_ISR, GLOBAL_TIMER_INTERRUPT);
-
-void main(void) {
-
-  // inits
-  INIT_EXTENDED_SFR();
-  serialConsoleInitialise(
-      CONSOLE_UART, 
-      CONSOLE_SPEED, 
-      CONSOLE_PIN_CONFIG
-      );
-  global_timer_init();
-  buttons_init();
-  switch_init();
-  encoder_init();
-  stepper_motor_init();
-  EA = 1; // enable interrupts
-
-  // Sending start 
-  delay1ms(1000);
-
-  // Main Routine
-  uint32_t time;
   while(1) {
     // encoder testing
     /* encoder_process(); */
@@ -46,9 +19,5 @@ void main(void) {
 
     // switch test
     /* printf("Switch value: %d \r", get_switch_status()); */
-
-    // stepper_driver test
-
-
   }
-}
+

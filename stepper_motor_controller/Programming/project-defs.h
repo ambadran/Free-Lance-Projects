@@ -6,26 +6,44 @@
 #define CONSOLE_UART UART1
 #define CONSOLE_PIN_CONFIG 0
 
-/* Buttons Pin Definitions */
-#define BUTTON1_PORT
-#define BUTTON1_PIN
-#define BUTTON2_PORT
-#define BUTTON2_PIN
-#define ENCODER_BUTTON_PORT
-#define ENCODER_BUTTON_PIN
+/* Buttons Pin Definitions - external pin interrupts */
+#define BUTTON1_PORT 3
+#define BUTTON1_PIN 6
+#define BUTTON2_PORT 3
+#define BUTTON2_PIN 3
+#define ENCODER_BUTTON_PORT 3
+#define ENCODER_BUTTON_PIN 2
 #define BUTTON_COOLDOWN_PERIOD 300 // time in ms to stop reading button if pressed
 
 /* Switch Pin Definitions */
-#define SWITCH1_PORT
-#define SWITCH1_PIN
+#define SWITCH_PORT 3
+#define SWITCH_PIN 7
 
 /* Encoder Pin Definitions */
+#define HAL_PWM_API_QUADRATURE_ENCODER
+
+/* Stepper Motor Settings */
+#define STEPPER_MOTOR_PORT 2
+#define STEPPER_ENABLE_PIN 0
+#define STEPPER_STEP_PIN 1
+#define STEPPER_DIR_PIN 2
+#define DEFAULT_STEPPER_FREQUENCY 50
+#define STEPPER_CM_TO_STEPS 100 //TODO: needs testing
+
+/* timer-hal configs */
+#define HAL_TIMER_API_STOP_TIMER
+#define STEPPER_TIMER TIMER2
+#define STEPPER_TIMER_ISR timer2_isr
+#define STEPPER_TIMER_INTERRUPT TIMER2_INTERRUPT
+#define GLOBAL_TIMER TIMER3
+#define GLOBAL_TIMER_ISR timer3_isr
+#define GLOBAL_TIMER_INTERRUPT TIMER3_INTERRUPT
 
 
+/* includes */
 #include <STC/8H8KxxU/SKDIP28.h>
 #include <stdio.h>
 #include <stdint.h>
-#include <string.h>
 #include <delay.h>
 #include <gpio-hal.h>
 #include <uart-hal.h>
@@ -33,9 +51,11 @@
 #include <timer-hal.h>
 #include <advpwm-hal.h>
 #include <i2c-hal.h>
+#include "global_timer.h"
 #include "buttons.h"
 #include "switch.h"
 #include "encoder.h"
+#include "stepper_driver.h"
 
 
 #endif
