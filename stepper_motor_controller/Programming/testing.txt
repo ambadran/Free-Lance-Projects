@@ -19,5 +19,10 @@
 
     // switch test
     /* printf("Switch value: %d \r", get_switch_status()); */
+
+    // stepper_driver test
+    /* stepper_motor_move(distance); */
+    /* distance *= -1; */
+    /* while(get_stepper_state()); // wait until finish */
   }
 

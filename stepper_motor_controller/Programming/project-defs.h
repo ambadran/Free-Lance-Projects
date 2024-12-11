@@ -24,11 +24,14 @@
 
 /* Stepper Motor Settings */
 #define STEPPER_MOTOR_PORT 2
-#define STEPPER_ENABLE_PIN 0
+#define STEPPER_ENABLE_PIN 4
+#define STEPPER_MS1_pin 3
+#define STEPPER_MS2_pin 2
 #define STEPPER_STEP_PIN 1
-#define STEPPER_DIR_PIN 2
+#define STEPPER_DIR_PIN 0
 #define DEFAULT_STEPPER_FREQUENCY 50
 #define STEPPER_CM_TO_STEPS 100 //TODO: needs testing
+#define DEFAULT_MICROSTEPPING STEP_1X8
 
 /* timer-hal configs */
 #define HAL_TIMER_API_STOP_TIMER
@@ -56,6 +59,7 @@
 #include "switch.h"
 #include "encoder.h"
 #include "stepper_driver.h"
+#include "oled.h"
 
 
 #endif

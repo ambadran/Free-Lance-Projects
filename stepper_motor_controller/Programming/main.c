@@ -24,7 +24,8 @@ void main(void) {
   delay1ms(1000);
 
   // Main Routine
-  uint32_t time;
+  /* uint32_t time; */
+  int16_t distance = 30;
   while(1) {
     // encoder testing
     /* encoder_process(); */
@@ -48,7 +49,8 @@ void main(void) {
     /* printf("Switch value: %d \r", get_switch_status()); */
 
     // stepper_driver test
-
-
+    /* stepper_motor_move(distance); */
+    /* distance *= -1; */
+    /* while(get_stepper_state()); // wait until finish */
   }
 }
