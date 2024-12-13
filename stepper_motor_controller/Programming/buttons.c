@@ -82,6 +82,8 @@ void buttons_process(void) {
 }
 
 // return current button index
+// if it's BUTTON_PRESSED, it will return that and make it BUTTON_COOLDOWN
+// this is make sure a button press is not processed more than once
 button_status_t get_button_status(uint8_t button_ind) {
   if (buttons[button_ind]->button_status == BUTTON_PRESSED) {
     buttons[button_ind]->button_status = BUTTON_COOLDOWN;
@@ -89,5 +91,9 @@ button_status_t get_button_status(uint8_t button_ind) {
   }
   return buttons[button_ind]->button_status;
 }
+
+button_status_t get_encoder_button_status(void) { return encoder_button.button_status; }
+button_status_t get_button1_status(void) { return button1.button_status; }
+button_status_t get_button2_status(void) { return button2.button_status; }
 
 

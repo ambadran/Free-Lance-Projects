@@ -18,39 +18,22 @@ void main(void) {
   switch_init();
   encoder_init();
   stepper_motor_init();
+  SSD1306_Init();
   EA = 1; // enable interrupts
+  delay1ms(500);
+  application_init();
 
   // Sending start 
-  delay1ms(1000);
 
   // Main Routine
-  /* uint32_t time; */
-  int16_t distance = 30;
   while(1) {
-    // encoder testing
-    /* encoder_process(); */
-    /* printf("Encoder Value: %d \r", encoder_count()); */
-    /* delay1ms(200); */
 
-    // global timer testing
-    /* time = get_current_time(); */
-    /* printf("Time since power on: %lu ms\n", time-1); */
-    /* delay1ms(997); */
+    // Reading latest inputs
+    // switch doesn't need any processing
+    encoder_process();  // getting latest encoder readings
+    buttons_process();  // getting latest button readings
+    
+    // Processing application
 
-    // buttons test
-    /* buttons_process(); */
-    /* for(uint8_t button_ind=0; button_ind<BUTTON_COUNT ; button_ind++) { */
-    /*   if(get_button_status(button_ind) == BUTTON_PRESSED) { */
-    /*     printf("Button%d: Pressed\n", button_ind); */
-    /*   } */
-    /* } */
-
-    // switch test
-    /* printf("Switch value: %d \r", get_switch_status()); */
-
-    // stepper_driver test
-    /* stepper_motor_move(distance); */
-    /* distance *= -1; */
-    /* while(get_stepper_state()); // wait until finish */
   }
 }

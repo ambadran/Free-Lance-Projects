@@ -8,6 +8,7 @@
 
 void encoder_init(void);
 void encoder_process(void);
-int8_t encoder_count(void);
+int8_t get_encoder_count(void);
+void encoder_count_reset(void);
 
 #endif

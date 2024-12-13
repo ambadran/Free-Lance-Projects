@@ -21,5 +21,8 @@ typedef struct {
 void buttons_init(void);
 void buttons_process(void);
 button_status_t get_button_status(uint8_t button_ind);
+button_status_t get_encoder_button_status(void);
+button_status_t get_button1_status(void);
+button_status_t get_button2_status(void);
 
 #endif

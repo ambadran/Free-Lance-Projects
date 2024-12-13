@@ -6,7 +6,6 @@ typedef enum {
   SWITCH_ON
 } switch_status_t;
 
-
 void switch_init(void);
 switch_status_t get_switch_status(void);
 

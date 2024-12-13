@@ -47,6 +47,7 @@
 #include <STC/8H8KxxU/SKDIP28.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <delay.h>
 #include <gpio-hal.h>
 #include <uart-hal.h>
@@ -59,7 +60,9 @@
 #include "switch.h"
 #include "encoder.h"
 #include "stepper_driver.h"
+#include "font.h"
 #include "oled.h"
+#include "application.h"
 
 
 #endif

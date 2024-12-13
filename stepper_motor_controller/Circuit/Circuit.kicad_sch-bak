@@ -5089,7 +5089,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Screw_Terminal_01x02")
-		(at 139.7 49.53 0)
+		(at 140.97 50.8 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -5098,7 +5098,7 @@
 		(dnp no)
 		(uuid "18a52bd4-c87e-44d8-ba2d-59ece97b59ff")
 		(property "Reference" "PowerIn1"
-			(at 147.32 46.99 0)
+			(at 148.59 48.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5107,7 +5107,7 @@
 			)
 		)
 		(property "Value" "Terminal2Pin"
-			(at 147.32 44.45 0)
+			(at 148.59 45.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5116,7 +5116,7 @@
 			)
 		)
 		(property "Footprint" "TerminalBlock:TerminalBlock_bornier-2_P5.08mm"
-			(at 139.7 49.53 0)
+			(at 140.97 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5125,7 +5125,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 139.7 49.53 0)
+			(at 140.97 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5134,7 +5134,7 @@
 			)
 		)
 		(property "Description" "Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 139.7 49.53 0)
+			(at 140.97 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6119,7 +6119,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 144.78 52.07 90)
+		(at 146.05 53.34 90)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -6128,7 +6128,7 @@
 		(dnp no)
 		(uuid "6f92140f-b7e8-4ecb-83c4-5bdaec3d0b5f")
 		(property "Reference" "#PWR02"
-			(at 151.13 52.07 0)
+			(at 152.4 53.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6137,7 +6137,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 149.86 52.324 90)
+			(at 151.13 53.594 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6145,7 +6145,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 144.78 52.07 0)
+			(at 146.05 53.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6154,7 +6154,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 144.78 52.07 0)
+			(at 146.05 53.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6163,7 +6163,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 144.78 52.07 0)
+			(at 146.05 53.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6714,7 +6714,7 @@
 	)
 	(symbol
 		(lib_id "power:+24V")
-		(at 144.78 49.53 270)
+		(at 146.05 50.8 270)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -6723,7 +6723,7 @@
 		(dnp no)
 		(uuid "8b66c6f9-30c8-4d18-b369-f2cfa9d10dc5")
 		(property "Reference" "#PWR01"
-			(at 140.97 49.53 0)
+			(at 142.24 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6732,7 +6732,7 @@
 			)
 		)
 		(property "Value" "+24V"
-			(at 149.86 49.53 90)
+			(at 151.13 50.8 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6740,7 +6740,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 144.78 49.53 0)
+			(at 146.05 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6749,7 +6749,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 144.78 49.53 0)
+			(at 146.05 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6758,7 +6758,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+24V\""
-			(at 144.78 49.53 0)
+			(at 146.05 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6780,7 +6780,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 157.48 55.88 0)
+		(at 158.75 57.15 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -6789,7 +6789,7 @@
 		(dnp no)
 		(uuid "987cad72-9fdf-4d19-bdd1-4445e0d536e9")
 		(property "Reference" "#PWR025"
-			(at 157.48 62.23 0)
+			(at 158.75 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6798,7 +6798,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 156.972 59.69 0)
+			(at 158.242 60.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6806,7 +6806,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 157.48 55.88 0)
+			(at 158.75 57.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6815,7 +6815,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 157.48 55.88 0)
+			(at 158.75 57.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6824,7 +6824,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 157.48 55.88 0)
+			(at 158.75 57.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7059,7 +7059,7 @@
 	)
 	(symbol
 		(lib_id "Device:C_Polarized")
-		(at 157.48 52.07 0)
+		(at 158.75 53.34 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7068,7 +7068,7 @@
 		(fields_autoplaced yes)
 		(uuid "c9d54bec-f463-4f8e-b030-da96c36c05c0")
 		(property "Reference" "C3"
-			(at 161.29 49.9109 0)
+			(at 162.56 51.1809 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7077,7 +7077,7 @@
 			)
 		)
 		(property "Value" "470uf"
-			(at 161.29 52.4509 0)
+			(at 162.56 53.7209 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7086,7 +7086,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_THT:CP_Radial_D8.0mm_P3.50mm"
-			(at 158.4452 55.88 0)
+			(at 159.7152 57.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7095,7 +7095,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 157.48 52.07 0)
+			(at 158.75 53.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7104,7 +7104,7 @@
 			)
 		)
 		(property "Description" "Polarized capacitor"
-			(at 157.48 52.07 0)
+			(at 158.75 53.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7524,7 +7524,7 @@
 	)
 	(symbol
 		(lib_id "power:+24V")
-		(at 157.48 48.26 0)
+		(at 158.75 49.53 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -7533,7 +7533,7 @@
 		(dnp no)
 		(uuid "f1a1b37f-629f-4aad-abaf-c43f38da88b9")
 		(property "Reference" "#PWR023"
-			(at 157.48 52.07 0)
+			(at 158.75 53.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7542,7 +7542,7 @@
 			)
 		)
 		(property "Value" "+24V"
-			(at 157.226 44.196 0)
+			(at 158.496 45.466 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7550,7 +7550,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 157.48 48.26 0)
+			(at 158.75 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7559,7 +7559,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 157.48 48.26 0)
+			(at 158.75 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7568,7 +7568,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+24V\""
-			(at 157.48 48.26 0)
+			(at 158.75 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
