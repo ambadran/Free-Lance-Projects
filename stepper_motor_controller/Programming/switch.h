@@ -2,7 +2,7 @@
 #define SWITCH_H
 
 typedef enum {
-  SWITCH_OFF,
+  SWITCH_OFF = 0,
   SWITCH_ON
 } switch_status_t;
 

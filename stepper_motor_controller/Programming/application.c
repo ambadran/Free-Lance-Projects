@@ -5,9 +5,11 @@ const void (*application_process_func[])(void) = {application_process_welcome_pa
                                             application_process_menu_page, // MENU_PAGE
                                             application_process_step_control_page,
                                             application_process_distance_control_page,
-                                            application_process_encoder_control_page
+                                            application_process_encoder_control_page,
+                                            application_process_step_control_set_frequency,
+                                            application_process_step_control_set_microstepping,
+                                            application_process_step_control_set_steps,
                                             };
-
 
 all_inputs_t inputs = {
     .button1 = {BUTTON_IDLE, get_button1_status},
@@ -18,25 +20,19 @@ all_inputs_t inputs = {
 };
 
 stepper_movement_t stepper_movement = {
+  .stepper_enable_status = STEPPER_DISABLE,
   .stepper_direction = STEPPER_CLOCKWISE_DIR,
   .microstepping_value = DEFAULT_MICROSTEPPING,
   .frequency = DEFAULT_STEPPER_FREQUENCY,
   .steps = DEFAULT_STEP_NUM
 };
 
-
-void application_update_input_values(void) {
-  inputs.button1.current_val = inputs.button1.get_func();
-  inputs.button2.current_val = inputs.button2.get_func();
-  inputs.encoder_button.current_val = inputs.encoder_button.get_func();
-  inputs.switch_.current_val = inputs.switch_.get_func();
-  inputs.encoder_value.current_val = inputs.encoder_value.get_func();
-}
-
 void application_process_welcome_page(void) {
 
   // Read inputs
-  application_update_input_values();
+  inputs.button1.current_val = inputs.button1.get_func();
+  inputs.button2.current_val = inputs.button2.get_func();
+  inputs.encoder_button.current_val = inputs.encoder_button.get_func();
 
   // Process inputs
   if (inputs.button1.current_val == BUTTON_PRESSED \
@@ -70,16 +66,19 @@ void application_process_menu_page(void) {
     switch(inputs.encoder_value.current_val) {
       case 0:
         current_page = STEP_CONTROL_PAGE;
+        encoder_count_reset();
         display_step_control_page_first_time();
         return;
 
       case 1:
         current_page = DISTANCE_CONTROL_PAGE;
+        encoder_count_reset();
         display_distance_control_page_first_time();
         return;
 
       case 2:
         current_page = ENCODER_CONTROL_PAGE;
+        encoder_count_reset();
         display_encoder_control_page_first_time();
         return;
     }
@@ -93,17 +92,155 @@ void application_process_menu_page(void) {
 void application_process_step_control_page(void) {
 
   /* Read inputs */
-  application_process_inputs();
+  inputs.button1.current_val = inputs.button1.get_func();
+  inputs.button2.current_val = inputs.button2.get_func();
+  inputs.encoder_button.current_val = inputs.encoder_button.get_func();
+  inputs.encoder_value.current_val = inputs.encoder_value.get_func();
+  inputs.switch_.current_val = inputs.switch_.get_func();
 
   /* Process inputs */
+  // toggling CW and CCW if button2 is pushed
+  if (inputs.button2.current_val == BUTTON_PRESSED) {
+    stepper_movement.stepper_direction = !stepper_movement.stepper_direction;
+    stepper_set_dir(stepper_movement.stepper_direction);
+    display_update_stepper_dir(stepper_movement.stepper_direction);
+  }
 
-  /* Executing */
+  // checking if switch is changed
+  if (inputs.switch_.current_val != stepper_movement.stepper_enable_status) {
+    stepper_movement.stepper_enable_status = !stepper_movement.stepper_enable_status;
+    stepper_set_enable(stepper_movement.stepper_enable_status);
+    display_update_stepper_enable(stepper_movement.stepper_enable_status);
+  }
+
+  // constraining the encoder value to (0-STEP_CONTROL_PAGE_OPTIONS_NUM)
+  if (inputs.encoder_value.current_val >= STEP_CONTROL_PAGE_OPTIONS_NUM) {
+    encoder_count_reset();
+    inputs.encoder_value.current_val = inputs.encoder_value.get_func();
+
+  } else if (inputs.encoder_value.current_val < 0) {
+    encoder_count_set(STEP_CONTROL_PAGE_OPTIONS_NUM-1);
+    inputs.encoder_value.current_val = inputs.encoder_value.get_func();
+  }
+  // Go to selected option if encoder button is pressed
+  if(inputs.encoder_button.current_val == BUTTON_PRESSED) {
+    switch(inputs.encoder_value.current_val) {
+      case 0:
+        current_page = STEP_CONTROL_SET_FREQUENCY_OPTION;
+        encoder_count_set(stepper_movement.frequency);
+        return;
+
+      case 1:
+        current_page = STEP_CONTROL_SET_MICROSTEPPING_OPTION;
+        encoder_count_set(stepper_movement.microstepping_value);
+        return;
+
+      case 2:
+        current_page = STEP_CONTROL_SET_STEPS_OPTION;
+        encoder_count_set(stepper_movement.steps);
+        return;
+
+      case 3:  // Go Back Option
+        current_page = MENU_PAGE;
+        display_menu_page(NOTHING_SELECTED);
+        return;
+
+      case 4:
+        // Run the stepper motor movement!!
+        if(!get_stepper_state()){
+          stepper_motor_move(&stepper_movement);
+          printf("Runing Stepper Motor!\n");
+        }
+        break;
+    }
+  }
 
   /* Displaying */
+  display_step_control_page(inputs.encoder_value.current_val);
+
+}
+
+void application_process_step_control_set_frequency(void) {
+  /* Read inputs */
+  inputs.encoder_button.current_val = inputs.encoder_button.get_func();
+  inputs.encoder_value.current_val = inputs.encoder_value.get_func();
+
+  /* Process inputs */
+  if(inputs.encoder_value.current_val < 0) { 
+    inputs.encoder_value.current_val = 0; 
+  }
+  if(inputs.encoder_button.current_val == BUTTON_PRESSED) {
+    // set stepper steps
+    stepper_movement.frequency = inputs.encoder_value.current_val;
+
+    // Go back to step control page
+    current_page = STEP_CONTROL_PAGE;
+    encoder_count_reset();
+    display_step_control_page_first_time();
+
+    return;
+
+  }
+
+  /* Display */
+  display_step_control_set_frequency_option(inputs.encoder_value.current_val);
+}
+void application_process_step_control_set_microstepping(void) {
+  /* Read inputs */
+  inputs.encoder_button.current_val = inputs.encoder_button.get_func();
+  inputs.encoder_value.current_val = inputs.encoder_value.get_func();
+
+  /* Process inputs */
+  if(inputs.encoder_value.current_val < 0) { 
+    inputs.encoder_value.current_val = 0; 
+  }
+  if(inputs.encoder_button.current_val == BUTTON_PRESSED) {
+    // set stepper steps
+    /* stepper_movement.microstepping_value = inputs.encoder_value.current_val; */
+    //TODO:
+
+    // Go back to step control page
+    current_page = STEP_CONTROL_PAGE;
+    encoder_count_reset();
+    display_step_control_page_first_time();
+
+    return;
+
+  }
+
+  /* Display */
+  display_step_control_set_microstepping_option(inputs.encoder_value.current_val);
+}
+void application_process_step_control_set_steps(void) {
+
+  /* Read inputs */
+  inputs.encoder_button.current_val = inputs.encoder_button.get_func();
+  inputs.encoder_value.current_val = inputs.encoder_value.get_func();
+
+  /* Process inputs */
+  if(inputs.encoder_value.current_val < 0) { 
+    inputs.encoder_value.current_val = 0; 
+  }
+  if(inputs.encoder_button.current_val == BUTTON_PRESSED) {
+    // set stepper steps
+    stepper_movement.steps = inputs.encoder_value.current_val;
+
+    // Go back to step control page
+    current_page = STEP_CONTROL_PAGE;
+    encoder_count_reset();
+    display_step_control_page_first_time();
+
+    return;
+
+  }
+
+  /* Display */
+  display_step_control_set_steps_option(inputs.encoder_value.current_val);
 
 }
 
 void application_process_distance_control_page(void) {
+
   printf("distance control page not implemented!\n");
   application_process_welcome_page();
 }

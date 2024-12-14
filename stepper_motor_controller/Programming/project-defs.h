@@ -32,7 +32,7 @@
 #define DEFAULT_STEPPER_FREQUENCY 50
 #define STEPPER_CM_TO_STEPS 100 //TODO: needs testing
 #define DEFAULT_MICROSTEPPING STEP_1X8
-#define DEFAULT_STEP_NUM 10
+#define DEFAULT_STEP_NUM 500
 
 /* timer-hal configs */
 #define HAL_TIMER_API_STOP_TIMER

@@ -32,5 +32,6 @@ void main(void) {
     
     // Processing application
     application_process_current_page();
+    printf("Stepper State: %d \r", get_stepper_state());
   }
 }

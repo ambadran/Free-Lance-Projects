@@ -29,14 +29,14 @@ typedef struct {
 } all_inputs_t;
 
 void application_init(void);
-void application_update_input_values(void);
-
 void application_process_welcome_page(void);
 void application_process_menu_page(void);
 void application_process_step_control_page(void);
+void application_process_step_control_set_frequency(void);
+void application_process_step_control_set_microstepping(void);
+void application_process_step_control_set_steps(void);
 void application_process_distance_control_page(void);
 void application_process_encoder_control_page(void);
-
 void application_process_current_page(void);
 
 #endif

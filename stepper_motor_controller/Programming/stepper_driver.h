@@ -2,8 +2,8 @@
 #define STEPPER_MOTOR_H
 
 typedef enum {
-  STEPPER_DISABLE = 0,
-  STEPPER_ENABLE,
+  STEPPER_ENABLE = 0,
+  STEPPER_DISABLE,
 } stepper_enable_status_t;
 
 typedef enum {
@@ -19,6 +19,7 @@ typedef enum {
 } microstepping_value_t;
 
 typedef struct {
+  stepper_enable_status_t stepper_enable_status;  // refers to the value of the EN when not in motion.
   stepper_direction_t stepper_direction;
   microstepping_value_t microstepping_value;
   uint32_t frequency;
@@ -31,6 +32,7 @@ void stepper_motor_move(stepper_movement_t* stepper_movement);
 __bit get_stepper_state(void);
 void stepper_set_microstep(microstepping_value_t microstepping_value);
 void stepper_set_enable(stepper_enable_status_t stepper_enable_status);
+void stepper_set_dir(stepper_direction_t stepper_direction);
 
 
 #endif

@@ -12,6 +12,7 @@ static GpioConfig stepper_ms2_pin = GPIO_PIN_CONFIG(STEPPER_MOTOR_PORT, STEPPER_
 static volatile uint16_t step_counter = 0;
 static volatile __bit stepper_active = 0;
 static volatile uint32_t frequency = DEFAULT_STEPPER_FREQUENCY;
+static stepper_enable_status_t stepper_enable_after_move;
 
 void stepper_motor_init(void) {
 
@@ -31,6 +32,7 @@ void stepper_motor_set_freq(uint32_t frequency_input) { frequency = frequency_in
 
 void stepper_motor_move(stepper_movement_t* stepper_movement) {
 
+  stepper_enable_after_move = stepper_movement->stepper_enable_status;
   stepper_set_microstep(stepper_movement->microstepping_value);
   gpioWrite(&stepper_dir_pin, stepper_movement->stepper_direction);
   frequency = stepper_movement->frequency;
@@ -63,6 +65,10 @@ void stepper_set_enable(stepper_enable_status_t stepper_enable_status) {
   }
 }
 
+void stepper_set_dir(stepper_direction_t stepper_direction) { 
+  gpioWrite(&stepper_dir_pin, stepper_direction);
+}
+
 INTERRUPT(STEPPER_TIMER_ISR, STEPPER_TIMER_INTERRUPT) {
 
   if (step_counter) {
@@ -72,7 +78,7 @@ INTERRUPT(STEPPER_TIMER_ISR, STEPPER_TIMER_INTERRUPT) {
 
   } else if (stepper_active) {
 
-    gpioWrite(&stepper_enable_pin, STEPPER_DISABLE);
+    gpioWrite(&stepper_enable_pin, stepper_enable_after_move);
     stepper_active = 0;
     stopTimer(STEPPER_TIMER);
 
