@@ -92,8 +92,8 @@ button_status_t get_button_status(uint8_t button_ind) {
   return buttons[button_ind]->button_status;
 }
 
-button_status_t get_encoder_button_status(void) { return encoder_button.button_status; }
-button_status_t get_button1_status(void) { return button1.button_status; }
-button_status_t get_button2_status(void) { return button2.button_status; }
+button_status_t get_encoder_button_status(void) { return get_button_status(ENCODER_BUTTON_IND); }
+button_status_t get_button1_status(void) { return get_button_status(BUTTON1_IND); }
+button_status_t get_button2_status(void) { return get_button_status(BUTTON2_IND); }
 
 

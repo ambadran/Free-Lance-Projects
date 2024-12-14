@@ -3,7 +3,8 @@
 static volatile __bit direction = 0; // 0 = count up, 1 = count down
 static volatile __bit ready = 0;
 static int8_t BIT_TO_INCREMENT[] = {-1, 1};
-static int8_t count = 0;
+static int16_t count = 0;
+static int16_t prev_count = 0;
 
 
 /* **IMPORTANT:** You MUST define both pwmOnCounterInterrupt() and
@@ -38,10 +39,14 @@ void encoder_init(void) {
 
 void encoder_process(void) {
   if (ready) {
+    prev_count = count;
     count += BIT_TO_INCREMENT[direction];
     ready = 0;
   }
 }
 
-int8_t get_encoder_count(void) { return count; }
+int16_t get_encoder_count(void) { return count; }
+int8_t get_encoder_dir(void) {  return (count-prev_count); }
 void encoder_count_reset(void) { count = 0; }
+void encoder_count_set(int16_t value) { count = value; }
+

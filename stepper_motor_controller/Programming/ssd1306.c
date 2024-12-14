@@ -37,7 +37,7 @@ static char cacheMemLcd[CACHE_SIZE_MEM];
 void SSD1306_Init(void) { 
 
   // initializing the I2C Drivers
-  i2cInitialiseMaster(0, I2C_CLOCK_100kHz);
+  i2cInitialiseMaster(0, I2C_CLOCK_400kHz);
 
   /* // Sending Initializations */
   /* int i; */

@@ -29,18 +29,15 @@ void stepper_motor_init(void) {
 
 void stepper_motor_set_freq(uint32_t frequency_input) { frequency = frequency_input; }
 
-void stepper_motor_move(int16_t distance) {
+void stepper_motor_move(stepper_movement_t* stepper_movement) {
 
-  if (distance < 0) {
-    distance = -distance;
-    gpioWrite(&stepper_dir_pin, STEPPER_CLOCKWISE_DIR);
-  } else if (distance > 0) {
-    gpioWrite(&stepper_dir_pin, STEPPER_ANTICLOCKWISE_DIR);
-  }
+  stepper_set_microstep(stepper_movement->microstepping_value);
+  gpioWrite(&stepper_dir_pin, stepper_movement->stepper_direction);
+  frequency = stepper_movement->frequency;
+  step_counter = stepper_movement->steps;
 
-  step_counter = distance * STEPPER_CM_TO_STEPS;
   stepper_active = 1;
-  printf("Steps to move: %d \n", step_counter);
+  gpioWrite(&stepper_enable_pin, STEPPER_ENABLE);
 
   // Timer init
 	startTimer(
@@ -55,11 +52,15 @@ void stepper_motor_move(int16_t distance) {
 
 __bit get_stepper_state(void) { return stepper_active; }
 
-void stepper_set_microstep(microstepping_value_t microstepping_value) {
+void stepper_set_microstep(microstepping_value_t microstepping_value) { 
+  gpioWrite(&stepper_ms1_pin, MICROSTEP_TO_MS1_VALUE[microstepping_value]);
+  gpioWrite(&stepper_ms2_pin, MICROSTEP_TO_MS2_VALUE[microstepping_value]);
+}
 
-  gpioWrite(&stepper_ms1_pin, MICROSTEP_TO_MS1_VALUE[microstepping_value]) ;
-  gpioWrite(&stepper_ms2_pin, MICROSTEP_TO_MS2_VALUE[microstepping_value]) ;
-
+void stepper_set_enable(stepper_enable_status_t stepper_enable_status) {
+  if(!stepper_active) {
+    gpioWrite(&stepper_enable_pin, stepper_enable_status);
+  }
 }
 
 INTERRUPT(STEPPER_TIMER_ISR, STEPPER_TIMER_INTERRUPT) {

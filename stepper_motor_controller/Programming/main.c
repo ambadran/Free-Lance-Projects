@@ -19,21 +19,18 @@ void main(void) {
   encoder_init();
   stepper_motor_init();
   SSD1306_Init();
+
+  display_welcome_page();
+
   EA = 1; // enable interrupts
   delay1ms(500);
-  application_init();
-
-  // Sending start 
 
   // Main Routine
   while(1) {
-
-    // Reading latest inputs
-    // switch doesn't need any processing
     encoder_process();  // getting latest encoder readings
     buttons_process();  // getting latest button readings
     
     // Processing application
-
+    application_process_current_page();
   }
 }

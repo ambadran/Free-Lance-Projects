@@ -13,7 +13,7 @@
 #define BUTTON2_PIN 3
 #define ENCODER_BUTTON_PORT 3
 #define ENCODER_BUTTON_PIN 2
-#define BUTTON_COOLDOWN_PERIOD 300 // time in ms to stop reading button if pressed
+#define BUTTON_COOLDOWN_PERIOD 400 // time in ms to stop reading button if pressed
 
 /* Switch Pin Definitions */
 #define SWITCH_PORT 3
@@ -32,6 +32,7 @@
 #define DEFAULT_STEPPER_FREQUENCY 50
 #define STEPPER_CM_TO_STEPS 100 //TODO: needs testing
 #define DEFAULT_MICROSTEPPING STEP_1X8
+#define DEFAULT_STEP_NUM 10
 
 /* timer-hal configs */
 #define HAL_TIMER_API_STOP_TIMER
@@ -61,7 +62,8 @@
 #include "encoder.h"
 #include "stepper_driver.h"
 #include "font.h"
-#include "oled.h"
+#include "ssd1306.h"
+#include "display.h"
 #include "application.h"
 
 
