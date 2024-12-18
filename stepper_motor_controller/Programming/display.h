@@ -1,6 +1,14 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
+typedef enum {
+  HUNDREDS = 0,
+  TENS,
+  ONES,
+  TENTH,
+  HUNDREDTH,
+} float_digit_pointer_t;
+
 #define CONTROL_PAGE_NUM 3
 #define STEP_CONTROL_PAGE_OPTIONS_NUM 5
 
@@ -36,7 +44,7 @@ void display_welcome_page(void);
 void display_menu_page(menu_page_selected_page_t selected_page);
 void display_step_control_page_first_time(void);
 void display_step_control_page(step_control_page_options_t step_control_page_options);
-void display_step_control_set_steps_option(int16_t encoder_value);
+void display_step_control_set_steps_option(uint8_t* float_digits, float_digit_pointer_t float_digit_pointer);
 void display_step_control_set_microstepping_option(int16_t encoder_value);
 void display_step_control_set_frequency_option(int16_t encoder_value);
 void display_distance_control_page_first_time(void);

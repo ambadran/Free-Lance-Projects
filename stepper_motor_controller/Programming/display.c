@@ -79,7 +79,7 @@ void display_step_control_page_first_time(void) {
     SSD1306_SetPosition(1, 0);
     SSD1306_DrawString("     Step Control");
     SSD1306_SetPosition(1, 1);
-    SSD1306_DrawString("Dir: CW          FREE");
+    SSD1306_DrawString("Dir: CCW         FREE");
     SSD1306_SetPosition(1, 2);
     SSD1306_DrawString("> Frequency");
     SSD1306_SetPosition(1, 3);
@@ -245,15 +245,41 @@ void display_update_stepper_enable(stepper_enable_status_t stepper_enable_status
 
 }
 
-void display_step_control_set_steps_option(int16_t encoder_value) {
+void display_step_control_set_steps_option(uint8_t* float_digits, float_digit_pointer_t float_digit_pointer) {
     SSD1306_ClearScreen();
     SSD1306_SetPosition(1, 2);
     SSD1306_DrawString("Setting Steps:");
 
-    char buffer[5];
-    sprintf(buffer,    "      %d", encoder_value);
-
+    // Updating float value for user
+    char buffer[20];
+    sprintf(buffer, "      %d%d%d.%d%d", float_digits[0], float_digits[1], float_digits[2], float_digits[3], float_digits[4]);
     SSD1306_SetPosition(1, 5);
+    SSD1306_DrawString(buffer);
+
+    // Updating float pointer for user
+    switch (float_digit_pointer) {
+      case HUNDREDS:
+        sprintf(buffer, "      ^");
+        break;
+
+      case TENS:
+        sprintf(buffer, "       ^");
+        break;
+
+      case ONES:
+        sprintf(buffer, "        ^");
+        break;
+
+      case TENTH:
+        sprintf(buffer, "          ^");
+        break;
+
+      case HUNDREDTH:
+        sprintf(buffer, "           ^");
+        break;
+
+    }
+    SSD1306_SetPosition(1, 6);
     SSD1306_DrawString(buffer);
 
     SSD1306_UpdateScreen();

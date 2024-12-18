@@ -11,6 +11,10 @@ const void (*application_process_func[])(void) = {application_process_welcome_pa
                                             application_process_step_control_set_steps,
                                             };
 
+#define FLOAT_POINTER_MAX 4
+float_digit_pointer_t float_digit_pointer = 0;
+uint8_t float_digits[] = {0, 0, 0, 0, 0};  // 000.00\0
+
 all_inputs_t inputs = {
     .button1 = {BUTTON_IDLE, get_button1_status},
     .button2 = {BUTTON_IDLE, get_button2_status},
@@ -106,7 +110,7 @@ void application_process_step_control_page(void) {
     display_update_stepper_dir(stepper_movement.stepper_direction);
   }
 
-  // checking if switch is changed
+  // toggling ENABLE/DISABLE state by checking if switch is changed
   if (inputs.switch_.current_val != stepper_movement.stepper_enable_status) {
     stepper_movement.stepper_enable_status = !stepper_movement.stepper_enable_status;
     stepper_set_enable(stepper_movement.stepper_enable_status);
@@ -117,11 +121,19 @@ void application_process_step_control_page(void) {
   if (inputs.encoder_value.current_val >= STEP_CONTROL_PAGE_OPTIONS_NUM) {
     encoder_count_reset();
     inputs.encoder_value.current_val = inputs.encoder_value.get_func();
-
   } else if (inputs.encoder_value.current_val < 0) {
     encoder_count_set(STEP_CONTROL_PAGE_OPTIONS_NUM-1);
     inputs.encoder_value.current_val = inputs.encoder_value.get_func();
   }
+
+  // Run Movement if button1 triggered
+  if (inputs.button1.current_val == BUTTON_PRESSED) {
+    if(!get_stepper_state()){
+      stepper_motor_move(&stepper_movement);
+      printf("Runing Stepper Motor!\n");
+    }
+  }
+
   // Go to selected option if encoder button is pressed
   if(inputs.encoder_button.current_val == BUTTON_PRESSED) {
     switch(inputs.encoder_value.current_val) {
@@ -218,24 +230,39 @@ void application_process_step_control_set_steps(void) {
   inputs.encoder_value.current_val = inputs.encoder_value.get_func();
 
   /* Process inputs */
+  // constraining the encoder value
   if(inputs.encoder_value.current_val < 0) { 
-    inputs.encoder_value.current_val = 0; 
-  }
-  if(inputs.encoder_button.current_val == BUTTON_PRESSED) {
-    // set stepper steps
-    stepper_movement.steps = inputs.encoder_value.current_val;
-
-    // Go back to step control page
-    current_page = STEP_CONTROL_PAGE;
+    encoder_count_set(9);
+    inputs.encoder_value.current_val = inputs.encoder_value.get_func();
+  } else if (inputs.encoder_value.current_val >= 10) {
     encoder_count_reset();
-    display_step_control_page_first_time();
+    inputs.encoder_value.current_val = inputs.encoder_value.get_func();
+  }
+  float_digits[float_digit_pointer] = inputs.encoder_value.current_val;
 
-    return;
+  // Processing current digit
+  if(inputs.encoder_button.current_val == BUTTON_PRESSED) {
 
+    encoder_count_reset();
+    if(float_digit_pointer >= FLOAT_POINTER_MAX) {
+
+        float_digit_pointer = 0;
+
+        // set stepper steps
+        stepper_set_steps_from_float_digits(&stepper_movement, float_digits);
+
+        // Go back to step control page
+        current_page = STEP_CONTROL_PAGE;
+        encoder_count_reset();
+        display_step_control_page_first_time();
+
+        return;
+    }
+    float_digit_pointer++;
   }
 
   /* Display */
-  display_step_control_set_steps_option(inputs.encoder_value.current_val);
+  display_step_control_set_steps_option(float_digits, float_digit_pointer);
 
 }
 
