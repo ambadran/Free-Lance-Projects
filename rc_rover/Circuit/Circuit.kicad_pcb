@@ -10863,16 +10863,16 @@
 	)
 	(dimension
 		(type aligned)
-		(layer "User.1")
-		(uuid "55e19d22-e0bb-404c-bd7a-4fc6855b8f2f")
+		(layer "User.4")
+		(uuid "8cb0d18c-2501-4fa0-81d3-44b9988383de")
 		(pts
-			(xy 162 46.5) (xy 162 110.25)
+			(xy 162 110.25) (xy 75.25 110.25)
 		)
 		(height -5.5)
-		(gr_text "63.7500 mm"
-			(at 166.35 78.375 90)
-			(layer "User.1")
-			(uuid "55e19d22-e0bb-404c-bd7a-4fc6855b8f2f")
+		(gr_text "86.7500 mm"
+			(at 118.625 114.6 0)
+			(layer "User.4")
+			(uuid "8cb0d18c-2501-4fa0-81d3-44b9988383de")
 			(effects
 				(font
 					(size 1 1)
@@ -10896,16 +10896,16 @@
 	)
 	(dimension
 		(type aligned)
-		(layer "User.1")
-		(uuid "b2ac5322-69e8-436d-a16e-73148b9994d6")
+		(layer "User.4")
+		(uuid "f7121a49-7ea7-4bf6-9576-ff2ee23f5caa")
 		(pts
-			(xy 162 110.25) (xy 75.25 110.25)
+			(xy 162 46.5) (xy 162 110.25)
 		)
-		(height -4.75)
-		(gr_text "86.7500 mm"
-			(at 118.625 113.85 0)
-			(layer "User.1")
-			(uuid "b2ac5322-69e8-436d-a16e-73148b9994d6")
+		(height -5)
+		(gr_text "63.7500 mm"
+			(at 165.85 78.375 90)
+			(layer "User.4")
+			(uuid "f7121a49-7ea7-4bf6-9576-ff2ee23f5caa")
 			(effects
 				(font
 					(size 1 1)

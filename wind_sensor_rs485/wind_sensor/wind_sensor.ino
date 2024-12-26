@@ -1,37 +1,50 @@
-// Wind Speed Sensor PR-3000-FSJT-N01
+#include <DHT11.h>
 
-// --------------------- Define Pins ------------------------
+#define TXD2 23   
+#define RXD2 22  
+#define DHT11PIN 32
 
-//   [Sensor Pin]   --->   [RS485 to TTL Pin]
-//    Brown         --->    10-30V DC+ (Power Supply)
-//    Black         --->    GND DC-    (Power Supply)
-//    Green         --->    A+
-//    Blue          --->    B-
-//
-//   [ESP32 Pin]    --->   [RS485 to TTL Pin]
-//    VIN           --->    Vcc
-//    TX2           --->    TXD
-//    RX2           --->    RXD
-//    GND           --->    GND
-
-//------------------------------------------------------------
-
-#define RXD2 16   // ESP32 Pin [RX2]
-#define TXD2 17   // ESP32 Pin [TX2]
 byte ByteArray[250];
 int ByteData[20];
+int humidity = 0;
+int temperature = 0;
+
+DHT11 dht11(DHT11PIN);
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial2.begin(4800, SERIAL_8N1, RXD2, TXD2);
 }
 
 void loop() {
   readWindSpeesSensor();
+  read_DHT11_sensor();
+
+  delay(200);
+
 }
 
+void read_DHT11_sensor(void) {
+    // Attempt to read the temperature and humidity values from the DHT11 sensor.
+    int result = dht11.readTemperatureHumidity(temperature, humidity);
+
+    // Check the results of the readings.
+    // If the reading is successful, print the temperature and humidity values.
+    // If there are errors, print the appropriate error messages.
+    if (result == 0) {
+        Serial.print("Temperature: ");
+        Serial.print(temperature);
+        Serial.print(" °C\tHumidity: ");
+        Serial.print(humidity);
+        Serial.println(" %");
+    } else {
+        // Print error message based on the error code.
+        Serial.println(DHT11::getErrorString(result));
+    }
+}
+
+
 void readWindSpeesSensor() {
-  delay(200);
   byte msgfs[] = { 0x01, 0x03, 0x00, 0x00, 0x00, 0x02, 0xC4, 0x0B };
   int i;
   int len = 8;
@@ -56,6 +69,5 @@ void readWindSpeesSensor() {
   Serial.print("Wind Speed = ");
   Serial.print(winds);
   Serial.println(" m/s");
-  //delay(50);//200
 }
 
