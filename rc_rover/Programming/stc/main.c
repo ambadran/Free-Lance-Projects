@@ -10,12 +10,12 @@ void main(void) {
       CONSOLE_SPEED, 
       CONSOLE_PIN_CONFIG
       );
+  neo_m8n_init();
 
-
-  delay1ms(500);
+  delay1ms(2000);
 
   //initializing nrf24l01+ as a receiver device
-  nrf24_device(RECEIVER, RESET);
+  /* nrf24_device(RECEIVER, RESET); */
 
   // Main Routine
   protocol_main_loop();

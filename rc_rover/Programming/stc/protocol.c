@@ -76,20 +76,23 @@ void protocol_main_loop(void) {
 
   while(1) {
 
-    if (uartGetCharacter_modified(&c, 1) != UART_RECEIVE_EMPTY) {
+    /* if (uartGetCharacter_modified(&c, 1) != UART_RECEIVE_EMPTY) { */
 
-      protocol_read_line(uart_receive_func_ptr, UART_RECEIVE_EMPTY);
+    /*   protocol_read_line(uart_receive_func_ptr, UART_RECEIVE_EMPTY); */
 
-    } else if (nrf24_receive(&c, 1) != RECEIVE_FIFO_EMPTY) {
+    /* } else if (nrf24_receive(&c, 1) != RECEIVE_FIFO_EMPTY) { */
 
-      protocol_read_line(nrf24_receive_func_ptr, RECEIVE_FIFO_EMPTY);
+    /*   protocol_read_line(nrf24_receive_func_ptr, RECEIVE_FIFO_EMPTY); */
 
-    }
+    /* } */
 
-#if ULTRASONIC_STATE_MACHINE
-    // ultrasonic_reading
-    processs_ultrasonic_phases();
-#endif
+/* #if ULTRASONIC_STATE_MACHINE */
+/*     // ultrasonic_reading */
+/*     processs_ultrasonic_phases(); */
+/* #endif */
+
+    // testing GPS
+    neo_m8n_get_position();
 
     // toggle led
     gpioToggle(&led_pin);
