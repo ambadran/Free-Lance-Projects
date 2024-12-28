@@ -1,26 +1,43 @@
 #include <DHT11.h>
+#include <Wire.h>
+#include <BH1750.h>
 
 #define TXD2 23   
-#define RXD2 22  
+#define RXD2 19
 #define DHT11PIN 32
 
 byte ByteArray[250];
 int ByteData[20];
 int humidity = 0;
 int temperature = 0;
+float lux;
 
 DHT11 dht11(DHT11PIN);
+BH1750 lightMeter;
 
 void setup() {
   Serial.begin(115200);
   Serial2.begin(4800, SERIAL_8N1, RXD2, TXD2);
+
+  Wire.begin();
+  lightMeter.begin();
 }
 
 void loop() {
   readWindSpeesSensor();
   read_DHT11_sensor();
+  read_light_meter();
 
-  delay(200);
+  delay(500);
+
+}
+
+void read_light_meter(void) {
+
+  lux = lightMeter.readLightLevel();
+  Serial.print("Light: ");
+  Serial.print(lux);
+  Serial.println(" lx");
 
 }
 
