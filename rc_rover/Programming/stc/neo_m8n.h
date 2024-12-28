@@ -1,15 +1,9 @@
 #ifndef NEO_M8N_H
 #define NEO_M8N_H
 
-#define NEO_M8N_BUFFER_SIZE 100
-
-typedef enum {
-  CONNECTED,
-  SEARCHING,
-} neo_m8n_status_t;
+#define NMEA_STATEMENT_SIZE UART2_RX_BUFFER_SIZE
 
 void neo_m8n_init(void);
-neo_m8n_status_t neo_m8n_get_position(void);
-char* neo_get_string(void);
+void neo_m8n_read_statement(void);
 
 #endif

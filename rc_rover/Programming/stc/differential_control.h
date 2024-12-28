@@ -1,5 +1,0 @@
-#ifndef DIFFERENTIAL_CONTROL_H
-#define DIFFERENTIAL_CONTROL_H
-
-
-#endif

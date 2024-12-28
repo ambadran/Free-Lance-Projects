@@ -2,24 +2,28 @@
 #define PROJECT_DEFS_H
 
 /* gpio-hal Settings */
-#define NRF24_CSN_PORT 2
-#define NRF24_CSN_PIN 7
-#define NRF24_CE_PORT 5
-#define NRF24_CE_PIN 4
+#define NRF24_CSN_PORT GPIO_PORT2
+#define NRF24_CSN_PIN GPIO_PIN2
+#define NRF24_CE_PORT GPIO_PORT2
+#define NRF24_CE_PIN GPIO_PIN6
 
-#define ULTRASONIC_TRIGGER_PORT 3
-#define ULTRASONIC_TRIGGER_PIN 3
-#define ULTRASONIC_ECHO_PORT 3
-#define ULTRASONIC_ECHO_PIN 2
+#define ULTRASONIC_TRIGGER_PORT GPIO_PORT3
+#define ULTRASONIC_TRIGGER_PIN GPIO_PIN2
+#define ULTRASONIC_ECHO_PORT GPIO_PORT3
+#define ULTRASONIC_ECHO_PIN GPIO_PIN3
 
-#define LED_PORT 1
-#define LED_PIN 3
+#define NEO_M8N_PORT GPIO_PORT1
+#define NEO_M8N_RX_PIN GPIO_PIN0
+#define NEO_M8N_TX_PIN GPIO_PIN1
 
+#define LED_PORT GPIO_PORT1
+#define LED_PIN GPIO_PIN3
 
 /* uart-hal Settings */
 #define HAL_UARTS 2
+#define UART2_RX_BUFFER_SIZE 233
 
-#define CONSOLE_SPEED 115200UL
+#define CONSOLE_SPEED 115200
 #define CONSOLE_UART UART1
 #define CONSOLE_PIN_CONFIG 0  // TX->P3.1, RX->P3.0
 
@@ -64,9 +68,6 @@
 
 /* Differential Control Settings */
 
-
-
-
 // Others 
 /* #define GPIO_HAS_INT_WK */
 
@@ -83,12 +84,6 @@
 #include <spi-hal.h>
 // #include <i2c-hal.h>
 #include <serial-console.h>
-#include "nrf24l01.h"
-#include "ultrasonic.h"
-#include "differential_control.h"
 #include "neo_m8n.h"
-#include "mpu9250.h"
-#include "terminal.h"
-#include "protocol.h"
 
 #endif

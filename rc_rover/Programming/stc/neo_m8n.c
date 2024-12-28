@@ -1,26 +1,40 @@
 #include "project-defs.h"
 
-static uint8_t* neo_m8n_string;
+static GpioConfig neo_m8n_tx_pin = GPIO_PIN_CONFIG(NEO_M8N_PORT, NEO_M8N_TX_PIN, GPIO_BIDIRECTIONAL_MODE);
+static GpioConfig neo_m8n_rx_pin = GPIO_PIN_CONFIG(NEO_M8N_PORT, NEO_M8N_RX_PIN, GPIO_BIDIRECTIONAL_MODE);
+
+static volatile uint8_t temp;
+static uint8_t* nmea_statement;
+static volatile uint8_t nmea_statement_pointer = 0;
 
 void neo_m8n_init(void) {
 
-	uartInitialise(
-     NEO_M8N_UART, 
-     NEO_M8N_UART_SPEED, 
-     NEO_M8N_TIMER, 
-     UART_8N1, 
-     NEO_M8N_UART_PIN_CONFIG);
+  uartInitialise(
+      NEO_M8N_UART,
+      NEO_M8N_UART_SPEED,
+      UART_USE_OWN_TIMER,
+      UART_8N1,
+      NEO_M8N_UART_PIN_CONFIG
+      );
+
+  gpioConfigure(&neo_m8n_tx_pin);
+  gpioConfigure(&neo_m8n_rx_pin);
 
 }
 
-neo_m8n_status_t neo_m8n_get_position(void) {
+void neo_m8n_read_statement(void) {
 
-  if (uartGetBlock(NEO_M8N_UART, neo_m8n_string, NEO_M8N_BUFFER_SIZE, NON_BLOCKING)) { 
-    printf("Got\n%s\n", neo_m8n_string);
-    /* printf("test\n"); */
-  } else {
-    printf("Nothing\r");
+  while(temp = uartGetCharacter(NEO_M8N_UART, BLOCKING)) {
+    nmea_statement[nmea_statement_pointer++] = temp;
+
+    /* printf("Counter: %d, char: %c\n", nmea_statement_pointer, temp); */
+
+    if (nmea_statement_pointer == NMEA_STATEMENT_SIZE) { 
+      nmea_statement_pointer = 0; 
+      printf("%s", nmea_statement);
+    }
+
   }
-  return SEARCHING;
+  printf("\n\n");
 
 }
