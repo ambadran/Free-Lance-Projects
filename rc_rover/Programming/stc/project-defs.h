@@ -2,6 +2,19 @@
 #define PROJECT_DEFS_H
 
 /* gpio-hal Settings */
+#define EnA_PORT 2
+#define EnA_PIN 1
+#define EnB_PORT 2
+#define EnB_PIN 6
+#define IN1_PORT 2
+#define IN1_PIN 0
+#define IN2_PORT 3
+#define IN2_PIN 7
+#define IN3_PORT 3
+#define IN3_PIN 5
+#define IN4_PORT 3
+#define IN4_PIN 6
+
 #define NRF24_CSN_PORT GPIO_PORT2
 #define NRF24_CSN_PIN GPIO_PIN2
 #define NRF24_CE_PORT GPIO_PORT2
@@ -32,18 +45,34 @@
 #define NEO_M8N_UART_PIN_CONFIG 0  // TX->P1.1, RX->P1.0
 
 /* adv-pwm Settings */
-/* #define PWM_MOTOR_FREQ 100UL */
-/* #define PWM_MOTOR_COUNTER PWM_COUNTER_A */
-/* #define PWM_MOTOR_CHANNEL PWM_Channel0 */
-/* #define PWM_MOTOR_PIN_CONFIG 0 */
+#define PWM_MOTOR_FREQ 100UL
+
+// EnA pin is P2.1/PWM2P_2
+#define PWM_MOTOR_RIGHT_COUNTER PWM_COUNTER_A
+#define PWM_MOTOR_RIGHT_CHANNEL PWM_Channel0
+#define PWM_MOTOR_RIGHT_PIN_CONFIG 1
+#define PWM_MOTOR_RIGHT_OUTPUT_MODE PWM_OUTPUT_N_ONLY 
+
+// EnB in is P3.4/PWM4P_4
+#define PWM_MOTOR_LEFT_COUNTER PWM_COUNTER_A
+#define PWM_MOTOR_LEFT_CHANNEL PWM_Channel3
+#define PWM_MOTOR_LEFT_PIN_CONFIG 3
+#define PWM_MOTOR_LEFT_OUTPUT_MODE PWM_OUTPUT_P_ONLY
 
 /* timer-hal configs */
-// TIMER1 is used for CONSOLE_UART
-#define NEO_M8N_TIMER UART_USE_OWN_TIMER // TIMER2 is used for UART2
 #define HAL_TIMER_API_STOP_TIMER
-#define ULTRASONIC_TIMER TIMER3
-#define ULTRASONIC_TIMER_ISR timer3_isr
-#define ULTRASONIC_TIMER_INTERRUPT TIMER3_INTERRUPT
+
+// TIMER1 is used for CONSOLE_UART
+//
+#define NEO_M8N_TIMER UART_USE_OWN_TIMER // TIMER2 is used for UART2
+                                         //
+#define GLOBAL_TIMER TIMER3
+#define GLOBAL_TIMER_ISR timer3_isr
+#define GLOBAL_TIMER_INTERRUPT TIMER3_INTERRUPT
+
+#define ULTRASONIC_TIMER TIMER4
+#define ULTRASONIC_TIMER_ISR timer4_isr
+#define ULTRASONIC_TIMER_INTERRUPT TIMER4_INTERRUPT
 
 /* external pin interrupts */
 #define ULTRASONIC_INT_PIN_ISR extint0_isr
@@ -84,6 +113,10 @@
 #include <spi-hal.h>
 // #include <i2c-hal.h>
 #include <serial-console.h>
+#include "global_timer.h"
+#include "differential_control.h"
+#include "terminal.h"
+#include "protocol.h"
 #include "neo_m8n.h"
 
 #endif
