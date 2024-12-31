@@ -79,8 +79,8 @@
 #define ULTRASONIC_INT_PIN_INTERRUPT EXTINT0_INTERRUPT
 
 /* SPI settings */
-#define SPI_PIN_CONFIG 0
-#define SPI_SPEED 4000000UL
+#define SPI_PIN_CONFIG 1
+#define SPI_SPEED 1000000UL
 
 /* I2C settings */
 
@@ -109,12 +109,15 @@
 #include <delay.h>
 #include <gpio-hal.h>
 #include <timer-hal.h>
+#include <advpwm-hal.h>
 #include <uart-hal.h>
 #include <spi-hal.h>
-// #include <i2c-hal.h>
+/* #include <i2c-hal.h> */
 #include <serial-console.h>
 #include "global_timer.h"
 #include "differential_control.h"
+#include "nrf24l01.h"
+#include "report.h"
 #include "terminal.h"
 #include "protocol.h"
 #include "neo_m8n.h"

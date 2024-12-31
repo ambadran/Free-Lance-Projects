@@ -5,7 +5,7 @@ INTERRUPT(GLOBAL_TIMER_ISR, GLOBAL_TIMER_INTERRUPT);
 
 void main(void) {
 
-  // inits
+  // Inits
   INIT_EXTENDED_SFR();
   EA = 1;
   serialConsoleInitialise(
@@ -13,18 +13,11 @@ void main(void) {
       CONSOLE_SPEED, 
       CONSOLE_PIN_CONFIG
       );
+  nrf24_device(RECEIVER, RESET);
   differential_control_init();
   neo_m8n_init();
 
   // Main Routine
-  while(1) {
-
-    // Testing NEO module
-    /* neo_m8n_read_statement(); */
-
-    // Testing Differential Control
-    differential_control_process();
-
-  }
+  protocol_main_loop();
 
 }

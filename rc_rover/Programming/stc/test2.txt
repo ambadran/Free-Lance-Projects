@@ -334,14 +334,18 @@ void nrf24_device(uint8_t device_mode, uint8_t reset_state)
   /* nrf24_read(0x00, &register_current_value, 1, CLOSE); */
 
   /* testing to see if nrf24 Hardware is responding */
-  uint8_t register_to_write_to = 0x00;  // 1000 0000
+  uint8_t register_to_write_to = 0x01;  // 1000 0000
   bool hardwareCheckPassed = false;
   uint8_t new_value;
   while (!hardwareCheckPassed) {
     // reading current value!
-    nrf24_read(register_to_write_to, &register_current_value, 1, CLOSE);
-    printf("\rRead from %d: %d\n", register_to_write_to, register_current_value);
+    while(1) {
 
+      nrf24_read(register_to_write_to, &register_current_value, 1, CLOSE);
+      printf("\rRead from %d: %d\n", register_to_write_to, register_current_value);
+      delay1ms(100);
+
+    }
     // writing new value
     new_value = register_current_value + 3;
     register_new_value = new_value;
@@ -357,6 +361,7 @@ void nrf24_device(uint8_t device_mode, uint8_t reset_state)
       hardwareCheckPassed = true;
     } else {
       printf("\rRead value doesn't match the newly written value ;(\n");
+      nrf24_CE(CE_ON);
       printf("\rRead: %d\n", register_current_value);
     }
 
@@ -651,8 +656,8 @@ void nrf24_read(uint8_t address, uint8_t *value, uint8_t data_length, uint8_t sp
   
   SPI_command = R_REGISTER | address;    /*in order to read CONFIG, then change one bit*/
   SPI_send_command(SPI_command);
-  SPI_command = NOP_CMD;
-  /* SPI_command = 0; */
+  /* SPI_command = NOP_CMD; */
+  SPI_command = 0;
   for (; data_length ; data_length--) {
     *value = SPI_send_command(SPI_command);
     value++;
