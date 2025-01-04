@@ -4,18 +4,22 @@
 INTERRUPT(GLOBAL_TIMER_ISR, GLOBAL_TIMER_INTERRUPT);
 
 void main(void) {
+  INIT_EXTENDED_SFR();
 
   // Inits
-  INIT_EXTENDED_SFR();
   EA = 1;
   serialConsoleInitialise(
       CONSOLE_UART, 
       CONSOLE_SPEED, 
       CONSOLE_PIN_CONFIG
       );
-  nrf24_device(RECEIVER, RESET);
+
+  uartSendBlock(CONSOLE_UART, "\rStarting..\n\n", 12, NON_BLOCKING);
+
+  mpu9250_init();
   differential_control_init();
   neo_m8n_init();
+  nrf24_device(RECEIVER, RESET);
 
   // Main Routine
   protocol_main_loop();

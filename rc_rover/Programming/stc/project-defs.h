@@ -2,18 +2,18 @@
 #define PROJECT_DEFS_H
 
 /* gpio-hal Settings */
-#define EnA_PORT 2
-#define EnA_PIN 1
-#define EnB_PORT 2
-#define EnB_PIN 6
-#define IN1_PORT 2
-#define IN1_PIN 0
-#define IN2_PORT 3
-#define IN2_PIN 7
-#define IN3_PORT 3
-#define IN3_PIN 5
-#define IN4_PORT 3
-#define IN4_PIN 6
+#define EnA_PORT GPIO_PORT2
+#define EnA_PIN GPIO_PIN1
+#define EnB_PORT GPIO_PORT3
+#define EnB_PIN GPIO_PIN4
+#define IN1_PORT GPIO_PORT2
+#define IN1_PIN GPIO_PIN0
+#define IN2_PORT GPIO_PORT3
+#define IN2_PIN GPIO_PIN7
+#define IN3_PORT GPIO_PORT3
+#define IN3_PIN GPIO_PIN5
+#define IN4_PORT GPIO_PORT3
+#define IN4_PIN GPIO_PIN6
 
 #define NRF24_CSN_PORT GPIO_PORT2
 #define NRF24_CSN_PIN GPIO_PIN2
@@ -63,9 +63,8 @@
 #define HAL_TIMER_API_STOP_TIMER
 
 // TIMER1 is used for CONSOLE_UART
-//
 #define NEO_M8N_TIMER UART_USE_OWN_TIMER // TIMER2 is used for UART2
-                                         //
+                                         
 #define GLOBAL_TIMER TIMER3
 #define GLOBAL_TIMER_ISR timer3_isr
 #define GLOBAL_TIMER_INTERRUPT TIMER3_INTERRUPT
@@ -80,13 +79,14 @@
 
 /* SPI settings */
 #define SPI_PIN_CONFIG 1
-#define SPI_SPEED 1000000UL
+/* #define SPI_SPEED 8000000 */
+#define SPI_SPEED 4000000UL
 
 /* I2C settings */
 
 /* nRF24L01 settings */
-/* #define PRINT_NRF24_REGISTERS */ //uncomment to print all the nrf24l01 registers after setting them with nrf24_device()
-#define RF_CHANNEL_DEFAULT 43
+#define PRINT_NRF24_REGISTERS  //uncomment to print all the nrf24l01 registers after setting them with nrf24_device()
+#define RF_CHANNEL_DEFAULT 40
 
 /* Ultrasonic Sensor Settings*/
 /* #define ULTRASONIC_STATE_MACHINE */
@@ -111,15 +111,16 @@
 #include <timer-hal.h>
 #include <advpwm-hal.h>
 #include <uart-hal.h>
-#include <spi-hal.h>
-/* #include <i2c-hal.h> */
 #include <serial-console.h>
+#include <spi-hal.h>
+#include <i2c-hal.h>
 #include "global_timer.h"
-#include "differential_control.h"
-#include "nrf24l01.h"
 #include "report.h"
+#include "differential_control.h"
+#include "mpu9250.h"
+#include "nrf24l01.h"
+#include "neo_m8n.h"
 #include "terminal.h"
 #include "protocol.h"
-#include "neo_m8n.h"
 
 #endif

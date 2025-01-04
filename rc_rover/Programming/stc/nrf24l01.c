@@ -1,31 +1,10 @@
 #include "project-defs.h"
 
 
-// bit reverse hash table for efficient bit reversals
-const uint8_t bitReverseTable256[256] = {
-    0, 128, 64, 192, 32, 160, 96, 224, 16, 144, 80, 208, 48, 176, 112, 240,
-    8, 136, 72, 200, 40, 168, 104, 232, 24, 152, 88, 216, 56, 184, 120, 248,
-    4, 132, 68, 196, 36, 164, 100, 228, 20, 148, 84, 212, 52, 180, 116, 244,
-    12, 140, 76, 204, 44, 172, 108, 236, 28, 156, 92, 220, 60, 188, 124, 252,
-    2, 130, 66, 194, 34, 162, 98, 226, 18, 146, 82, 210, 50, 178, 114, 242,
-    10, 138, 74, 202, 42, 170, 106, 234, 26, 154, 90, 218, 58, 186, 122, 250,
-    6, 134, 70, 198, 38, 166, 102, 230, 22, 150, 86, 214, 54, 182, 118, 246,
-    14, 142, 78, 206, 46, 174, 110, 238, 30, 158, 94, 222, 62, 190, 126, 254,
-    1, 129, 65, 193, 33, 161, 97, 225, 17, 145, 81, 209, 49, 177, 113, 241,
-    9, 137, 73, 201, 41, 169, 105, 233, 25, 153, 89, 217, 57, 185, 121, 249,
-    5, 133, 69, 197, 37, 165, 101, 229, 21, 149, 85, 213, 53, 181, 117, 245,
-    13, 141, 77, 205, 45, 173, 109, 237, 29, 157, 93, 221, 61, 189, 125, 253,
-    3, 131, 67, 195, 35, 163, 99, 227, 19, 147, 83, 211, 51, 179, 115, 243,
-    11, 139, 75, 203, 43, 171, 107, 235, 27, 155, 91, 219, 59, 187, 123, 251,
-    7, 135, 71, 199, 39, 167, 103, 231, 23, 151, 87, 215, 55, 183, 119, 247,
-    15, 143, 79, 207, 47, 175, 111, 239, 31, 159, 95, 223, 63, 191, 127, 255
-};
-
-
 /*global variables related to this file*/
 volatile bool dataReady = 0;
 GpioConfig CSN_pin = GPIO_PIN_CONFIG(NRF24_CSN_PORT, NRF24_CSN_PIN, GPIO_BIDIRECTIONAL_MODE);
-GpioConfig CE_pin = GPIO_PIN_CONFIG(NRF24_CE_PORT, NRF24_CE_PIN, GPIO_BIDIRECTIONAL_MODE);
+GpioConfig CE_pin = GPIO_PIN_CONFIG(NRF24_CE_PORT, NRF24_CE_PIN, GPIO_PUSH_PULL_MODE);
 
 static uint8_t SPI_command;                                       /*1 byte spi command*/
 static uint8_t register_current_value;                            /*in order to change some bits of internal registers or to check their content*/
@@ -326,12 +305,8 @@ void nrf24_device(uint8_t device_mode, uint8_t reset_state)
 {
   SPI_Initializer();
   pinout_Initializer();
-  delay_function(STARTUP_DELAY);
   nrf24_CE(CE_OFF);
-
-  // I found that the first read is always 0 then the nrf24 device acts normally
-  // dummy read
-  /* nrf24_read(0x00, &register_current_value, 1, CLOSE); */
+  delay_function(STARTUP_DELAY);
 
   /* testing to see if nrf24 Hardware is responding */
   uint8_t register_to_write_to = 0x00;  // 1000 0000
@@ -343,7 +318,7 @@ void nrf24_device(uint8_t device_mode, uint8_t reset_state)
     printf("\rRead from %d: %d\n", register_to_write_to, register_current_value);
 
     // writing new value
-    new_value = register_current_value + 3;
+    new_value = register_current_value+3;
     register_new_value = new_value;
     nrf24_write(register_to_write_to, &register_new_value, 1, CLOSE); // restarts the nrf?!?!? where is requires two read calls to return 8 again
     printf("Sending to %d: %d\n", register_to_write_to, register_new_value);
@@ -357,7 +332,6 @@ void nrf24_device(uint8_t device_mode, uint8_t reset_state)
       hardwareCheckPassed = true;
     } else {
       printf("\rRead value doesn't match the newly written value ;(\n");
-      printf("\rRead: %d\n", register_current_value);
     }
 
   }
@@ -645,28 +619,23 @@ void nrf24_mode(uint8_t mode)
 
 /*reads the number of bytes (data_length) from the register in nrf24l01+ (address) and stores them inside an array (value),
   then closes the spi connection (spi_state = CLOSE) or leaves it open (spi_state = OPEN)*/
-void nrf24_read(uint8_t address, uint8_t *value, uint8_t data_length, uint8_t spi_state)
-{
+void nrf24_read(uint8_t address, uint8_t *value, uint8_t data_length, uint8_t spi_state) {
   nrf24_SPI(SPI_ON);
   
   SPI_command = R_REGISTER | address;    /*in order to read CONFIG, then change one bit*/
   SPI_send_command(SPI_command);
-  SPI_command = NOP_CMD;
-  /* SPI_command = 0; */
+  /* SPI_command = NOP_CMD; */
+  SPI_command = 0;
   for (; data_length ; data_length--) {
     *value = SPI_send_command(SPI_command);
     value++;
   }
-
   if (spi_state == CLOSE) {
     nrf24_SPI(SPI_OFF);
   }
 }
-
-/*writes the number of bytes (data_length) from an array (value) inside registers in nrf24l01+ (address),
-  then closes the spi connection (spi_state = CLOSE) or leaves it open (spi_state = OPEN)*/
-void nrf24_write(uint8_t address, uint8_t *value, uint8_t data_length, uint8_t spi_state)
-{
+/*writes the number of bytes (data_length) from an array (value) inside registers in nrf24l01+ (address), then closes the spi connection (spi_state = CLOSE) or leaves it open (spi_state = OPEN)*/
+void nrf24_write(uint8_t address, uint8_t *value, uint8_t data_length, uint8_t spi_state) {
   nrf24_SPI(SPI_ON);
 
   SPI_command = W_REGISTER | address;    /*in order to read CONFIG, then change one bit*/
@@ -676,7 +645,6 @@ void nrf24_write(uint8_t address, uint8_t *value, uint8_t data_length, uint8_t s
     value++;
     SPI_send_command(SPI_command);
   }
-
   if (spi_state == CLOSE) {
     nrf24_SPI(SPI_OFF);
   }

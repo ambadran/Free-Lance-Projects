@@ -51,9 +51,10 @@ FLUSH_TX = const(0xE1)  # flush TX FIFO
 FLUSH_RX = const(0xE2)  # flush RX FIFO
 NOP = const(0xFF)  # use to read STATUS register
 
+DEFAULT_CHANNEL = 40
 
 class NRF24L01:
-    def __init__(self, spi, cs, ce, channel=46, payload_size=16):
+    def __init__(self, spi, cs, ce, channel=DEFAULT_CHANNEL, payload_size=16):
         assert payload_size <= 32
 
         self.buf = bytearray(1)

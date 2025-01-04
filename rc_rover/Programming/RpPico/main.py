@@ -29,8 +29,16 @@ class Station:
 
         self.nrf.open_tx_pipe(self.PIPES[0])
         self.nrf.open_rx_pipe(1, self.PIPES[1])
-        self.nrf.set_channel(self.CHANNEL)
         self.nrf.start_listening()
+
+    def test(self):
+        '''
+        sends enter
+        '''
+        # self.nrf.set_channel(self.AXIS_CHANNEL[axe_num])
+        # sleep_ms(300)
+
+        self.nrf.send_ascii_m("")
 
     def forward(self, distance_cm: int):
         '''
