@@ -76,7 +76,9 @@ LINE_STATUS terminal_execute_line(char* line) {
   uint8_t char_count = 0;
   char letter;
   uint16_t int_value;  // temporary int value that gets read from the terminal then assigned to another variable of any other c component
-  command_modal_status_t command_modal_status;
+
+  // Resetting the command
+  memset(&command, 0, sizeof(command_t));
 
   while (line[char_count] != 0) {
 
@@ -113,6 +115,18 @@ LINE_STATUS terminal_execute_line(char* line) {
 
         command.command_type = COMMAND_TEST_INT_READING;
         break;
+
+      case 'T':
+        command.command_type = COMMAND_GET_CURRENT_TIME;
+        break;
+
+      case 'F':
+        if (command.command_type != COMMAND_NOT_SET) {
+          printf("Can't have >1 command letter in one command!\n");
+          return LINE_FAILED;
+        }
+        command.command_type = COMMAND_MOVE_FORWARD;
+        break;
   
       case 'i':
         // reading int argument for a multi-argument command
@@ -142,6 +156,31 @@ LINE_STATUS terminal_execute_line(char* line) {
   switch(command.command_type) {
 
     case COMMAND_TEST_INT_READING:
+    case COMMAND_GET_CURRENT_TIME:
+      break;
+
+    case COMMAND_MOVE_FORWARD:
+      if (command.i <= 0 || command.i > 100) {
+
+        printf("Distance Parameter 'i' out of range!\n");
+        return LINE_FAILED;
+
+      } else if (command.j < 0 || command.j > 65535) {
+
+        printf("PWM Duty Cycle Parameter 'j' out of range!\n");
+        return LINE_FAILED;
+
+      } else if (command.j == 0) {
+        // support for default PWM duty cycle 'j' value
+        command.j = 50000; //TODO: replace all these constant with #defs
+      }
+
+      if (differential_control_is_moving()) {
+        printf("Robot ALready Moving!\n");
+        return LINE_FAILED;
+      }
+
+      // Passed
       break;
 
     default:
@@ -149,7 +188,7 @@ LINE_STATUS terminal_execute_line(char* line) {
       // then a correct command wasn't passed in Step2.
       // which means that the default: of Step2 should run
       // so WTF?!??!
-      printf("SHOULD NEVER REACH HERE.");
+      printf("SHOULD NEVER REACH HERE.\n");
       return LINE_FAILED;
   }
 
@@ -160,6 +199,15 @@ LINE_STATUS terminal_execute_line(char* line) {
       printf("Read INT value: %d\n", int_value);
       break;
 
+    case COMMAND_GET_CURRENT_TIME:
+      printf("Current Time Passed: %lu\n", get_current_time());
+      break;
+
+    case COMMAND_MOVE_FORWARD:
+      command.j = 0; //TODO: fix getting the j
+      printf("Forward: %d @ freq: %d\n", command.i, command.j);
+      differential_control_forward(command.i, command.j);
+      break;
 
     default:
       // if the command_type is not set (COMMAND_NOT_SET).

@@ -63,8 +63,6 @@ static void protocol_execute_line(char* line) {
 void protocol_main_loop(void) {
 
   while(1) {
-    report_toggle_led();
-
     if (uartGetCharacter_modified(&c, 1) != UART_RECEIVE_EMPTY) {
 
       protocol_read_line(uart_receive_func_ptr, UART_RECEIVE_EMPTY);
@@ -74,6 +72,9 @@ void protocol_main_loop(void) {
       protocol_read_line(nrf24_receive_func_ptr, RECEIVE_FIFO_EMPTY);
 
     }
+
+    report_toggle_led();
+    differential_control_process();
 
   }
 }

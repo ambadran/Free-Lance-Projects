@@ -99,8 +99,7 @@
 
 // Others 
 /* #define GPIO_HAS_INT_WK */
-
-
+#define LED_BLINK_PERIOD 400
 
 #include <STC/8H8KxxU/SKDIP28.h>
 #include <stdio.h>

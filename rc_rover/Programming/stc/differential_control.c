@@ -111,10 +111,11 @@ void differential_control_forward(uint8_t distance_cm, uint16_t duty_cycle) {
   gpioWrite(&in2_pin, 0);
   gpioWrite(&in3_pin, 1);
   gpioWrite(&in4_pin, 0);
-  pwmSetDutyCycle(PWM_MOTOR_RIGHT_CHANNEL, duty_cycle);
-  pwmSetDutyCycle(PWM_MOTOR_LEFT_CHANNEL, duty_cycle);
+  /* pwmSetDutyCycle(PWM_MOTOR_RIGHT_CHANNEL, duty_cycle); */
+  /* pwmSetDutyCycle(PWM_MOTOR_LEFT_CHANNEL, duty_cycle); */
 
   differential_control_movement_ms = get_current_time()+distance_cm*CM_TO_MOVEMENT_MS;
+  printf("d: %lu", differential_control_movement_ms);
   is_moving = 1;
 
 }
@@ -183,3 +184,6 @@ void differential_control_process(void) {
   }
 
 }
+
+
+__bit differential_control_is_moving(void) { return is_moving; }

@@ -14,5 +14,6 @@ void differential_control_right(uint8_t angle_deg, uint16_t duty_cycle);
 void differential_control_left(uint8_t angle_deg, uint16_t duty_cycle);
 void differential_control_stop(void);
 void differential_control_process(void);
+__bit differential_control_is_moving(void);
 
 #endif
