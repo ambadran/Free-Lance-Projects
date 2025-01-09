@@ -17,6 +17,9 @@ static uint8_t current_payload_width;                             /*payload widt
 static uint8_t current_acknowledgement_state = NO_ACK_MODE;       
 static uint8_t dynamic_payload = DISABLE;
 
+// for first time hardware checking upon system power up
+static bool hardwareCheckPassed = false;
+
 
 /*2 dimensional array of pipe addresses (5 byte address width) by default. you can change addresses using a new array later.
   Pipe 1 address could be anything. pipe 3 to 6 addresses share the first 4 bytes with pipe 2 and only differ in byte 5*/
@@ -299,29 +302,29 @@ void nrf24_reset(void)
   level of abstraction than nrf24_mode and must be used by user*/
 void nrf24_device(uint8_t device_mode, uint8_t reset_state)
 {
-  SPI_Initializer();
-  pinout_Initializer();
+  if(!hardwareCheckPassed) {
+    SPI_Initializer();
+    pinout_Initializer();
+    delay_function(STARTUP_DELAY);
+  }
   nrf24_CE(CE_OFF);
-  delay_function(STARTUP_DELAY);
 
   /* testing to see if nrf24 Hardware is responding */
-  uint8_t register_to_write_to = 0x00;  // 1000 0000
-  bool hardwareCheckPassed = false;
   uint8_t new_value;
   while (!hardwareCheckPassed) {
     // reading current value!
-    nrf24_read(register_to_write_to, &register_current_value, 1, CLOSE);
-    printf("\rRead from %d: %d\n", register_to_write_to, register_current_value);
+    nrf24_read(HARDWARE_TEST_REGISTER, &register_current_value, 1, CLOSE);
+    printf("\rRead from %d: %d\n", HARDWARE_TEST_REGISTER, register_current_value);
 
     // writing new value
     new_value = register_current_value+3;
     register_new_value = new_value;
-    nrf24_write(register_to_write_to, &register_new_value, 1, CLOSE); // restarts the nrf?!?!? where is requires two read calls to return 8 again
-    printf("Sending to %d: %d\n", register_to_write_to, register_new_value);
+    nrf24_write(HARDWARE_TEST_REGISTER, &register_new_value, 1, CLOSE); // restarts the nrf?!?!? where is requires two read calls to return 8 again
+    printf("Sending to %d: %d\n", HARDWARE_TEST_REGISTER, register_new_value);
 
     // reading current value again then comparing it!
-    nrf24_read(register_to_write_to, &register_current_value, 1, CLOSE);
-    printf("\rRead from %d: %d\n", register_to_write_to, register_current_value);
+    nrf24_read(HARDWARE_TEST_REGISTER, &register_current_value, 1, CLOSE);
+    printf("\rRead from %d: %d\n", HARDWARE_TEST_REGISTER, register_current_value);
 
     if (register_current_value == new_value) {
       printf("\rRead value matches the newly written value :D\n");
@@ -331,10 +334,8 @@ void nrf24_device(uint8_t device_mode, uint8_t reset_state)
     }
 
   }
-  printf("\rHardware Detected!\n");
 
-  if ((reset_state == RESET) || (reset_flag == 0))
-  {
+  if ((reset_state == RESET) || (reset_flag == 0)) {
     nrf24_reset();
   }
 
@@ -367,14 +368,18 @@ void nrf24_device(uint8_t device_mode, uint8_t reset_state)
   }
 
 #ifdef PRINT_NRF24_REGISTERS
+nrf24_print_internal_register_values();
+#endif
+
+}
+
+void nrf24_print_internal_register_values(void) {
   for (int i=0; i<24; i++) {
     nrf24_read(i, &register_current_value, 1, CLOSE);
     printf("\rRegister %d: %d\n", i, register_current_value);
     delay1ms(20);
   }
   printf("\n\n");
-#endif
-
 }
 
 /*setting automatic retransmit delay time and maximum number of retransmits*/

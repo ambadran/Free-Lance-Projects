@@ -3,6 +3,14 @@
 static GpioConfig led_pin = GPIO_PIN_CONFIG(LED_PORT, LED_PIN, GPIO_BIDIRECTIONAL_MODE);
 static uint32_t led_timer_count;
 
+size_t uint8_strlen(const uint8_t *str) {
+    size_t length = 0;
+    while (str[length] != '\0') { // Check for the null terminator
+        length++;
+    }
+    return length;
+}
+
 void report_init(void) {
 
   gpioConfigure(&led_pin);
@@ -20,10 +28,14 @@ void report_toggle_led(void) {
 }
 
 void report(const uint8_t* string) {
+  // report to Station through nrf24l01
+  nrf24_device(TRANSMITTER, RESET);
+  while(nrf24_transmit(string, uint8_strlen(string), ACK_MODE) == TRANSMIT_FAIL) { printf("nrf24 failed to send!"); }
+  while(nrf24_transmit_status() == TRANSMIT_IN_PROGRESS);
+  nrf24_device(RECEIVER, RESET);
+
+  // report to serial monitor
   printf("%s", string);
-  // TODO: payload_size
-  // TODO: check transmit status
-  /* bool transmit_status = nrf24_transmit(string, 20); */
 } 
 
 

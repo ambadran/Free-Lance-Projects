@@ -279,7 +279,7 @@ class NRF24L01:
     def print_registers(self):
         for i in range(24):
             print(f"Register {i}: {self.reg_read(i)}")
-            utime.sleep_ms(200)
+            utime.sleep_ms(20)
 
 
 

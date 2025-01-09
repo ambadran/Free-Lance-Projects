@@ -34,7 +34,7 @@
 
 /* uart-hal Settings */
 #define HAL_UARTS 2
-#define UART2_RX_BUFFER_SIZE 233
+#define UART2_RX_BUFFER_SIZE 233 //MUST DO THIS TO RECEIVE ALL NMEA STATEMENT!
 
 #define CONSOLE_SPEED 115200
 #define CONSOLE_UART UART1
@@ -85,7 +85,7 @@
 /* I2C settings */
 
 /* nRF24L01 settings */
-#define PRINT_NRF24_REGISTERS  //uncomment to print all the nrf24l01 registers after setting them with nrf24_device()
+//#define PRINT_NRF24_REGISTERS  //uncomment to print all the nrf24l01 registers after setting them with nrf24_device()
 #define RF_CHANNEL_DEFAULT 40
 
 /* Ultrasonic Sensor Settings*/

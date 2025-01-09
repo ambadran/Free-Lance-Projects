@@ -1,9 +1,9 @@
 #include "project-defs.h"
 
-static GpioConfig in1_pin = GPIO_PIN_CONFIG(IN1_PORT, IN1_PIN, GPIO_PUSH_PULL_MODE); 
-static GpioConfig in2_pin = GPIO_PIN_CONFIG(IN2_PORT, IN2_PIN, GPIO_PUSH_PULL_MODE); 
-static GpioConfig in3_pin = GPIO_PIN_CONFIG(IN3_PORT, IN3_PIN, GPIO_PUSH_PULL_MODE); 
-static GpioConfig in4_pin = GPIO_PIN_CONFIG(IN4_PORT, IN4_PIN, GPIO_PUSH_PULL_MODE); 
+static GpioConfig in1_pin = GPIO_PIN_CONFIG(IN1_PORT, IN1_PIN, GPIO_BIDIRECTIONAL_MODE); 
+static GpioConfig in2_pin = GPIO_PIN_CONFIG(IN2_PORT, IN2_PIN, GPIO_BIDIRECTIONAL_MODE); 
+static GpioConfig in3_pin = GPIO_PIN_CONFIG(IN3_PORT, IN3_PIN, GPIO_BIDIRECTIONAL_MODE); 
+static GpioConfig in4_pin = GPIO_PIN_CONFIG(IN4_PORT, IN4_PIN, GPIO_BIDIRECTIONAL_MODE); 
 
 static volatile __bit is_moving = 0;
 // This is a very important value which determines the movement of the DC Motors will continue till when. It's basically the current time + the time needed to achieve a specific cm moved or a degree rotated.
@@ -111,11 +111,10 @@ void differential_control_forward(uint8_t distance_cm, uint16_t duty_cycle) {
   gpioWrite(&in2_pin, 0);
   gpioWrite(&in3_pin, 1);
   gpioWrite(&in4_pin, 0);
-  /* pwmSetDutyCycle(PWM_MOTOR_RIGHT_CHANNEL, duty_cycle); */
-  /* pwmSetDutyCycle(PWM_MOTOR_LEFT_CHANNEL, duty_cycle); */
+  pwmSetDutyCycle(PWM_MOTOR_RIGHT_CHANNEL, duty_cycle);
+  pwmSetDutyCycle(PWM_MOTOR_LEFT_CHANNEL, duty_cycle);
 
   differential_control_movement_ms = get_current_time()+distance_cm*CM_TO_MOVEMENT_MS;
-  printf("d: %lu", differential_control_movement_ms);
   is_moving = 1;
 
 }
@@ -126,8 +125,8 @@ void differential_control_backward(uint8_t distance_cm, uint16_t duty_cycle) {
   gpioWrite(&in2_pin, 1);
   gpioWrite(&in3_pin, 0);
   gpioWrite(&in4_pin, 1);
-  pwmSetDutyCycle(PWM_MOTOR_RIGHT_CHANNEL, duty_cycle);
-  pwmSetDutyCycle(PWM_MOTOR_LEFT_CHANNEL, duty_cycle);
+  /* pwmSetDutyCycle(PWM_MOTOR_RIGHT_CHANNEL, duty_cycle); */
+  /* pwmSetDutyCycle(PWM_MOTOR_LEFT_CHANNEL, duty_cycle); */
 
   differential_control_movement_ms = get_current_time()+distance_cm*CM_TO_MOVEMENT_MS;
   is_moving = 1;
@@ -140,8 +139,8 @@ void differential_control_right(uint8_t angle_deg, uint16_t duty_cycle) {
   gpioWrite(&in2_pin, 0);
   gpioWrite(&in3_pin, 0);
   gpioWrite(&in4_pin, 1);
-  pwmSetDutyCycle(PWM_MOTOR_RIGHT_CHANNEL, duty_cycle);
-  pwmSetDutyCycle(PWM_MOTOR_LEFT_CHANNEL, duty_cycle);
+  /* pwmSetDutyCycle(PWM_MOTOR_RIGHT_CHANNEL, duty_cycle); */
+  /* pwmSetDutyCycle(PWM_MOTOR_LEFT_CHANNEL, duty_cycle); */
 
   differential_control_movement_ms = get_current_time()+angle_deg*DEGREE_TO_MOVEMENT_MS;
   is_moving = 1;
@@ -154,8 +153,8 @@ void differential_control_left(uint8_t angle_deg, uint16_t duty_cycle) {
   gpioWrite(&in2_pin, 1);
   gpioWrite(&in3_pin, 1);
   gpioWrite(&in4_pin, 0);
-  pwmSetDutyCycle(PWM_MOTOR_RIGHT_CHANNEL, duty_cycle);
-  pwmSetDutyCycle(PWM_MOTOR_LEFT_CHANNEL, duty_cycle);
+  /* pwmSetDutyCycle(PWM_MOTOR_RIGHT_CHANNEL, duty_cycle); */
+  /* pwmSetDutyCycle(PWM_MOTOR_LEFT_CHANNEL, duty_cycle); */
 
   differential_control_movement_ms = get_current_time()+angle_deg*DEGREE_TO_MOVEMENT_MS;
   is_moving = 1;
@@ -168,8 +167,8 @@ void differential_control_stop(void) {
   gpioWrite(&in2_pin, 0);
   gpioWrite(&in3_pin, 0);
   gpioWrite(&in4_pin, 0);
-  pwmSetDutyCycle(PWM_MOTOR_RIGHT_CHANNEL, DUTY_CYCLE_MIN);
-  pwmSetDutyCycle(PWM_MOTOR_LEFT_CHANNEL, DUTY_CYCLE_MIN);
+  /* pwmSetDutyCycle(PWM_MOTOR_RIGHT_CHANNEL, DUTY_CYCLE_MIN); */
+  /* pwmSetDutyCycle(PWM_MOTOR_LEFT_CHANNEL, DUTY_CYCLE_MIN); */
 
   is_moving = 0;
 

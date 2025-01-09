@@ -116,6 +116,10 @@ LINE_STATUS terminal_execute_line(char* line) {
         command.command_type = COMMAND_TEST_INT_READING;
         break;
 
+      case 'N':
+        command.command_type = COMMAND_GET_NRF24_REGISTERS;
+        break;
+
       case 'T':
         command.command_type = COMMAND_GET_CURRENT_TIME;
         break;
@@ -157,6 +161,7 @@ LINE_STATUS terminal_execute_line(char* line) {
 
     case COMMAND_TEST_INT_READING:
     case COMMAND_GET_CURRENT_TIME:
+    case COMMAND_GET_NRF24_REGISTERS:
       break;
 
     case COMMAND_MOVE_FORWARD:
@@ -165,7 +170,7 @@ LINE_STATUS terminal_execute_line(char* line) {
         printf("Distance Parameter 'i' out of range!\n");
         return LINE_FAILED;
 
-      } else if (command.j < 0 || command.j > 65535) {
+      } else if (command.j > 4096) {
 
         printf("PWM Duty Cycle Parameter 'j' out of range!\n");
         return LINE_FAILED;
@@ -199,14 +204,19 @@ LINE_STATUS terminal_execute_line(char* line) {
       printf("Read INT value: %d\n", int_value);
       break;
 
+    case COMMAND_GET_NRF24_REGISTERS:
+      nrf24_print_internal_register_values();
+      break;
+
     case COMMAND_GET_CURRENT_TIME:
-      printf("Current Time Passed: %lu\n", get_current_time());
+      /* printf("Current Time Passed: %lu\n", get_current_time()); */
+      report("testing!\n");
       break;
 
     case COMMAND_MOVE_FORWARD:
-      command.j = 0; //TODO: fix getting the j
-      printf("Forward: %d @ freq: %d\n", command.i, command.j);
+      command.j = 10000; //TODO: fix getting the j
       differential_control_forward(command.i, command.j);
+      printf("Forward: %d @ freq: %d\n", command.i, command.j);
       break;
 
     default:

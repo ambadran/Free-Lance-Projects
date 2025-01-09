@@ -4,6 +4,7 @@ Main Routine
 from micropython import const
 from machine import Pin, SPI
 from nrf24l01 import NRF24L01
+from time import sleep_ms
 
 class Station:
     '''
@@ -30,6 +31,15 @@ class Station:
         self.nrf.open_tx_pipe(self.PIPES[0])
         self.nrf.open_rx_pipe(1, self.PIPES[1])
         self.nrf.start_listening()
+
+    def receive(self) -> str:
+        '''
+        listens, prints if received and saves values in internal attributes
+        '''
+        if self.nrf.any():
+            while self.nrf.any():
+                buf = self.nrf.recv()
+                print(buf, "received")
 
     def test(self):
         '''

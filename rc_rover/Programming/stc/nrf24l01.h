@@ -1,7 +1,9 @@
 #ifndef NRF24l01_H
 #define NRF24l01_H
 
-#define STARTUP_DELAY                 500             /*in milliseconds*/
+#define HARDWARE_TEST_REGISTER 0x00 // register to write to test hardware
+
+#define STARTUP_DELAY                 150             /*in milliseconds*/
 #define POWER_DOWN_DELAY              2
 #define STANDBYI_DELAY                2
 #define PRX_MODE_DELAY                100
@@ -199,6 +201,7 @@ void nrf24_automatic_retransmit_setup(uint16_t delay_time, uint8_t retransmit_co
 void nrf24_auto_acknowledgment_setup(uint8_t datapipe);
 void nrf24_dynamic_payload(uint8_t state, uint8_t datapipe);
 void nrf24_device(uint8_t device_mode, uint8_t reset_state);
+void nrf24_print_internal_register_values(void);
 void nrf24_send_payload(uint8_t *payload, uint8_t payload_width);
 uint8_t nrf24_receive(uint8_t *payload, uint8_t payload_width) __reentrant;
 uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state);
