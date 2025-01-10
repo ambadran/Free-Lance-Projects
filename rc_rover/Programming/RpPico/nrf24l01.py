@@ -6,6 +6,7 @@ from micropython import const
 import utime
 import struct
 
+
 # nRF24L01+ registers
 CONFIG = const(0x00)
 EN_RXADDR = const(0x02)

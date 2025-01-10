@@ -30,8 +30,11 @@ void report_toggle_led(void) {
 void report(const uint8_t* string) {
   // report to Station through nrf24l01
   nrf24_device(TRANSMITTER, RESET);
+  nrf24_CE(0);
   while(nrf24_transmit(string, uint8_strlen(string), ACK_MODE) == TRANSMIT_FAIL) { printf("nrf24 failed to send!"); }
-  while(nrf24_transmit_status() == TRANSMIT_IN_PROGRESS);
+  nrf24_CE(1);
+  while(nrf24_transmit_status() == TRANSMIT_IN_PROGRESS) {printf(".");}
+  nrf24_CE(0);
   nrf24_device(RECEIVER, RESET);
 
   // report to serial monitor

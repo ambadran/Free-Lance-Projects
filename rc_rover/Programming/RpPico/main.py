@@ -14,6 +14,7 @@ class Station:
     DEFAULT_PAYLOAD_SIZE = const(16)
     CHANNEL = const(40)
     PIPES = (b"\xe1\xf0\xf0\xf0\xf0", b"\xd2\xf0\xf0\xf0\xf0")  # Addresses are in little-endian format. They correspond to big-endian
+    RX_POLL_DELAY = const(15)
 
     SCK_PIN = const(18)
     MOSI_PIN = const(19)
@@ -40,6 +41,14 @@ class Station:
             while self.nrf.any():
                 buf = self.nrf.recv()
                 print(buf, "received")
+
+    def keep_receiving(self):
+        '''
+        
+        '''
+        while True:
+            self.receive()
+            sleep_ms(self.RX_POLL_DELAY)
 
     def test(self):
         '''

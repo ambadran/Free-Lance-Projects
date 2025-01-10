@@ -127,6 +127,7 @@ uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowle
     if (dynamic_payload == ENABLE)
       payload_width = current_payload_width;
     nrf24_send_payload(payload, payload_width);                 /*the actual function to send data*/
+    printf("hapnd\n");
     return (TRANSMIT_BEGIN);                                     /*TX FIFO is not full and nrf24l01+ mode is standby ii or ptx*/
   }
   else
@@ -174,7 +175,7 @@ uint8_t nrf24_transmit_status(void)
 
 /*the receive function output is used as a polling method to check the received data inside RX FIFOs. 
 If there is any data available, it will be loaded inside payload array*/
-uint8_t  nrf24_receive(uint8_t *payload, uint8_t payload_width) __reentrant
+uint8_t nrf24_receive(uint8_t *payload, uint8_t payload_width) __reentrant
 {
   if (current_mode == PRX)
   {
@@ -314,23 +315,31 @@ void nrf24_device(uint8_t device_mode, uint8_t reset_state)
   while (!hardwareCheckPassed) {
     // reading current value!
     nrf24_read(HARDWARE_TEST_REGISTER, &register_current_value, 1, CLOSE);
+#ifdef NRF_DEBUGGING
     printf("\rRead from %d: %d\n", HARDWARE_TEST_REGISTER, register_current_value);
+#endif
 
     // writing new value
     new_value = register_current_value+3;
     register_new_value = new_value;
     nrf24_write(HARDWARE_TEST_REGISTER, &register_new_value, 1, CLOSE); // restarts the nrf?!?!? where is requires two read calls to return 8 again
+#ifdef NRF_DEBUGGING
     printf("Sending to %d: %d\n", HARDWARE_TEST_REGISTER, register_new_value);
+#endif
 
     // reading current value again then comparing it!
     nrf24_read(HARDWARE_TEST_REGISTER, &register_current_value, 1, CLOSE);
+#ifdef NRF_DEBUGGING
     printf("\rRead from %d: %d\n", HARDWARE_TEST_REGISTER, register_current_value);
+#endif
 
     if (register_current_value == new_value) {
+#ifdef NRF_DEBUGGING
       printf("\rRead value matches the newly written value :D\n");
+#endif
       hardwareCheckPassed = true;
     } else {
-      printf("\rRead value doesn't match the newly written value ;(\n");
+      printf("\rnrf24l01 Failed to Initialize:\nRead value doesn't match the newly written value ;(\n");
     }
 
   }
@@ -594,12 +603,12 @@ void nrf24_mode(uint8_t mode)
       delay_function(STANDBYI_DELAY);
       break;
     case STANDBYII:                                 /*standby ii is related to a ptx device*/
-      nrf24_CE(CE_ON);
+      /* nrf24_CE(CE_ON); */
       register_new_value = ((register_current_value) | (1 << PWR_UP)) & (~(1 << PRIM_RX));
       delay_function(STANDBYI_DELAY);
       break;
     case PTX:
-      nrf24_CE(CE_ON);
+      /* nrf24_CE(CE_ON); */
       register_new_value = ((register_current_value) | (1 << PWR_UP)) & (~(1 << PRIM_RX));
       delay_function(STANDBYI_DELAY);
       break;

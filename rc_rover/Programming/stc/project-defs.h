@@ -85,7 +85,7 @@
 /* I2C settings */
 
 /* nRF24L01 settings */
-//#define PRINT_NRF24_REGISTERS  //uncomment to print all the nrf24l01 registers after setting them with nrf24_device()
+//#define NRF_DEBUGGING  //uncomment to print all the nrf24l01 registers after setting them with nrf24_device()
 #define RF_CHANNEL_DEFAULT 40
 
 /* Ultrasonic Sensor Settings*/
