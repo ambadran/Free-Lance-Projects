@@ -73,7 +73,7 @@ void protocol_main_loop(void) {
 
     }
 
-    report_toggle_led();
+    /* report_toggle_led(); */
     differential_control_process();
 
   }

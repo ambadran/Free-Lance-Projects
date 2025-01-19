@@ -116,6 +116,10 @@ LINE_STATUS terminal_execute_line(char* line) {
         command.command_type = COMMAND_TEST_INT_READING;
         break;
 
+      case 'B':
+        command.command_type = COMMAND_TOGGLE_LED;
+        break;
+
       case 'N':
         command.command_type = COMMAND_GET_NRF24_REGISTERS;
         break;
@@ -162,6 +166,7 @@ LINE_STATUS terminal_execute_line(char* line) {
     case COMMAND_TEST_INT_READING:
     case COMMAND_GET_CURRENT_TIME:
     case COMMAND_GET_NRF24_REGISTERS:
+    case COMMAND_TOGGLE_LED:
       break;
 
     case COMMAND_MOVE_FORWARD:
@@ -204,13 +209,18 @@ LINE_STATUS terminal_execute_line(char* line) {
       printf("Read INT value: %d\n", int_value);
       break;
 
+    case COMMAND_TOGGLE_LED:
+      /* printf("toggling\n"); */
+      report_toggle_led();
+      break;
+
     case COMMAND_GET_NRF24_REGISTERS:
       nrf24_print_internal_register_values();
       break;
 
     case COMMAND_GET_CURRENT_TIME:
-      /* printf("Current Time Passed: %lu\n", get_current_time()); */
-      report("testing!\n");
+      printf("Current Time Passed: %lu\n", get_current_time());
+      /* report("testing!\n"); */
       break;
 
     case COMMAND_MOVE_FORWARD:
