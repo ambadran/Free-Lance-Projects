@@ -876,16 +876,27 @@
 				(xyz 0 0 0)
 			)
 		)
+		(model "/home/mr-a-717/electronics/Step files/arduino-pro-micro-usb-type-c-1.snapshot.2/Arduino Pro Micro USB Type C.step"
+			(offset
+				(xyz -1.26 -27.94 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 -90)
+			)
+		)
 	)
 	(footprint "speaker_terminal_spring:speaker_terminal_spring_4"
 		(layer "F.Cu")
-		(uuid "485a3e33-923c-4119-b31c-df68a9afbd55")
+		(uuid "338ec625-13aa-4b55-8435-11b684f6d3a5")
 		(at 114 102 90)
 		(property "Reference" "J2"
-			(at 0 1.25 90)
+			(at -0.1 14.8 90)
 			(unlocked yes)
 			(layer "F.SilkS")
-			(uuid "d442c685-4f39-487e-b025-b4e414db0a38")
+			(uuid "b15e47ca-9b3e-4e3f-88cf-0abb79b52e9f")
 			(effects
 				(font
 					(size 1 1)
@@ -894,10 +905,10 @@
 			)
 		)
 		(property "Value" "Screw_Terminal_01x04"
-			(at -0.25 -1.25 90)
+			(at -0.1 16.3 90)
 			(unlocked yes)
 			(layer "F.Fab")
-			(uuid "33db84e5-3119-440f-a37a-029cbacab8ff")
+			(uuid "68139cb3-6b98-4c09-a457-8cf2c15ca8ea")
 			(effects
 				(font
 					(size 1 1)
@@ -910,7 +921,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "e61ff11b-f9b5-4a1d-b6ed-807ee9bf98ef")
+			(uuid "0b551e02-5058-4772-9d4e-3ae24cd1b68d")
 			(effects
 				(font
 					(size 1 1)
@@ -923,7 +934,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "b7899f30-60bf-47da-890a-5e8643cc2d53")
+			(uuid "642ea38c-7f0d-4e89-a9cc-a34574364103")
 			(effects
 				(font
 					(size 1 1)
@@ -936,7 +947,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "389f36fc-10eb-4a91-abcf-eb5bc61ebae3")
+			(uuid "76ecee72-3e86-49e4-946b-e424dd0085c0")
 			(effects
 				(font
 					(size 1 1)
@@ -945,7 +956,7 @@
 			)
 		)
 		(property ki_fp_filters "TerminalBlock*:*")
-		(path "/363867bf-b6b8-4a48-a6a7-7af9a8fba1c3")
+		(path "/2ee4fc72-ad86-46ab-b861-9b72d5fc8bad")
 		(sheetname "Root")
 		(sheetfile "Circuit.kicad_sch")
 		(attr through_hole)
@@ -958,13 +969,13 @@
 			)
 			(fill none)
 			(layer "F.SilkS")
-			(uuid "dac43129-61b1-4dcc-97c5-59a63f4a964c")
+			(uuid "77aa37ad-2916-4c10-b2d8-4e1c886a7124")
 		)
 		(fp_text user "${REFERENCE}"
 			(at -0.1 17.8 90)
 			(unlocked yes)
 			(layer "F.Fab")
-			(uuid "8c4dbf1f-4bb9-432f-b7c2-2dab1338a9a3")
+			(uuid "13cd5904-a0c4-40fb-b8fc-7db2c9f26835")
 			(effects
 				(font
 					(size 1 1)
@@ -978,7 +989,7 @@
 			(drill 2)
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
-			(uuid "6669d6f6-ec1e-45d9-ab2d-5101626ead4f")
+			(uuid "f0761739-848d-42ca-b8bc-c32751119eac")
 		)
 		(pad "" thru_hole circle
 			(at 30 0 180)
@@ -986,7 +997,7 @@
 			(drill 2)
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
-			(uuid "627e581d-4bfa-47be-8b42-f4422ac0c8b5")
+			(uuid "1605087d-2852-4db8-825e-09107bc80b7e")
 		)
 		(pad "1" thru_hole oval
 			(at -19.5 7 180)
@@ -997,7 +1008,7 @@
 			(net 21 "Button1")
 			(pinfunction "Pin_1")
 			(pintype "passive")
-			(uuid "6c8412f3-a28f-4eaa-b04e-7858bd282c25")
+			(uuid "886db7da-b3e6-48b7-a0f0-028cb3ed9281")
 		)
 		(pad "2" thru_hole oval
 			(at -6.5 7 180)
@@ -1008,7 +1019,7 @@
 			(net 8 "GND")
 			(pinfunction "Pin_2")
 			(pintype "passive")
-			(uuid "c0058362-e259-4aeb-bc54-36a94f4d390e")
+			(uuid "3ebf8959-a38f-49aa-baca-de67ee61a463")
 		)
 		(pad "3" thru_hole oval
 			(at 6.5 7 180)
@@ -1019,7 +1030,7 @@
 			(net 22 "Button2")
 			(pinfunction "Pin_3")
 			(pintype "passive")
-			(uuid "8090e797-38b1-4f58-b5d2-54b49d6c54a2")
+			(uuid "a5de6d36-c888-43bd-8321-f44ef8e72aef")
 		)
 		(pad "4" thru_hole oval
 			(at 19.5 7 180)
@@ -1030,163 +1041,18 @@
 			(net 8 "GND")
 			(pinfunction "Pin_4")
 			(pintype "passive")
-			(uuid "065c35c8-f397-4829-a583-951951f1c046")
+			(uuid "ef3313f8-df84-4b12-8b7f-78292d387382")
 		)
-	)
-	(footprint "speaker_terminal_spring:speaker_terminal_spring_4"
-		(layer "F.Cu")
-		(uuid "64c1ade6-7462-4928-badd-6416811b3a72")
-		(at 190 102 -90)
-		(property "Reference" "J1"
-			(at 0 0.75 -90)
-			(unlocked yes)
-			(layer "F.SilkS")
-			(uuid "4c12df02-86d6-42fa-a8a3-2cf1c0d7fd5b")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.1)
-				)
+		(model "/home/mr-a-717/electronics/Step files/speaker-terminal-4p-electrical-1.snapshot.1(1)/Speaker terminal_4p.stp"
+			(offset
+				(xyz 0 -1.3 0)
 			)
-		)
-		(property "Value" "Screw_Terminal_01x04"
-			(at -0.1 -1.25 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(uuid "1c3f5d72-776d-42e7-ad61-49bf2b23ac72")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
+			(scale
+				(xyz 1 1 1)
 			)
-		)
-		(property "Footprint" "speaker_terminal_spring:speaker_terminal_spring_4"
-			(at -0.1 15.3 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "385e543a-7902-40e2-8635-22841a4fd2be")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
+			(rotate
+				(xyz 0 0 180)
 			)
-		)
-		(property "Datasheet" ""
-			(at -0.1 15.3 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "062f92db-8288-4d87-90ab-60071bd53f7b")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Description" "Generic screw terminal, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at -0.1 15.3 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "9c1bdcb4-01f6-4203-95dd-20a2677a7798")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property ki_fp_filters "TerminalBlock*:*")
-		(path "/58d3648f-5772-441f-af05-763d4e3ffff9")
-		(sheetname "Root")
-		(sheetfile "Circuit.kicad_sch")
-		(attr through_hole)
-		(fp_rect
-			(start -35 -12)
-			(end 35 12)
-			(stroke
-				(width 0.1)
-				(type default)
-			)
-			(fill none)
-			(layer "F.SilkS")
-			(uuid "df42f30a-8379-4f1c-96cd-66d358a5f543")
-		)
-		(fp_text user "${REFERENCE}"
-			(at -0.1 17.8 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(uuid "c428242b-8f20-4c7c-a597-7e7b3008716d")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(pad "" thru_hole circle
-			(at -30 0)
-			(size 2.5 2.5)
-			(drill 2)
-			(layers "*.Cu" "*.Mask")
-			(remove_unused_layers no)
-			(uuid "5fc2e108-e63f-4fc4-b668-c17929b0884f")
-		)
-		(pad "" thru_hole circle
-			(at 30 0)
-			(size 2.5 2.5)
-			(drill 2)
-			(layers "*.Cu" "*.Mask")
-			(remove_unused_layers no)
-			(uuid "0667873c-8ab6-48f0-a393-b3a62a68dd42")
-		)
-		(pad "1" thru_hole oval
-			(at -19.5 7)
-			(size 1 4.2)
-			(drill oval 0.5 3.7)
-			(layers "*.Cu" "*.Mask")
-			(remove_unused_layers no)
-			(net 1 "Button3")
-			(pinfunction "Pin_1")
-			(pintype "passive")
-			(uuid "601b9d0a-1abf-4dcf-9ca4-2633368db26f")
-		)
-		(pad "2" thru_hole oval
-			(at -6.5 7)
-			(size 1 4.2)
-			(drill oval 0.5 3.7)
-			(layers "*.Cu" "*.Mask")
-			(remove_unused_layers no)
-			(net 8 "GND")
-			(pinfunction "Pin_2")
-			(pintype "passive")
-			(uuid "29e29c60-abf9-4885-8abf-420c44036397")
-		)
-		(pad "3" thru_hole oval
-			(at 6.5 7)
-			(size 1 4.2)
-			(drill oval 0.5 3.7)
-			(layers "*.Cu" "*.Mask")
-			(remove_unused_layers no)
-			(net 16 "Button4")
-			(pinfunction "Pin_3")
-			(pintype "passive")
-			(uuid "bfb3a270-c7ec-4d6c-aa7c-45637c61f6bc")
-		)
-		(pad "4" thru_hole oval
-			(at 19.5 7)
-			(size 1 4.2)
-			(drill oval 0.5 3.7)
-			(layers "*.Cu" "*.Mask")
-			(remove_unused_layers no)
-			(net 8 "GND")
-			(pinfunction "Pin_4")
-			(pintype "passive")
-			(uuid "263cdfe1-2df6-4f15-93c7-615f9c7e8ba8")
 		)
 	)
 	(footprint "push_button_big_oval:push_button_oval"
@@ -1443,6 +1309,173 @@
 			(pinfunction "2")
 			(pintype "passive")
 			(uuid "178a19b7-1552-488a-810c-413aa30dadbe")
+		)
+	)
+	(footprint "speaker_terminal_spring:speaker_terminal_spring_4"
+		(layer "F.Cu")
+		(uuid "af0e48d7-fdce-4fbb-bb87-b05bea1439fa")
+		(at 190 102 -90)
+		(property "Reference" "J1"
+			(at -0.1 14.8 -90)
+			(unlocked yes)
+			(layer "F.SilkS")
+			(uuid "901476d6-ee7d-4d74-b279-e719c144fd21")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.1)
+				)
+			)
+		)
+		(property "Value" "Screw_Terminal_01x04"
+			(at -0.1 16.3 -90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(uuid "b3d34844-63c5-4179-b287-2d596d9d4ac1")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Footprint" "speaker_terminal_spring:speaker_terminal_spring_4"
+			(at -0.1 15.3 -90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7a8ee5b5-be68-4fdd-829d-36e9f703191d")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at -0.1 15.3 -90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "847b3f5a-6e64-4c75-a6ba-2e5d0e5a8029")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" "Generic screw terminal, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at -0.1 15.3 -90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5f03a2c9-ce04-4c62-a035-d4183a4c77e3")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property ki_fp_filters "TerminalBlock*:*")
+		(path "/58d3648f-5772-441f-af05-763d4e3ffff9")
+		(sheetname "Root")
+		(sheetfile "Circuit.kicad_sch")
+		(attr through_hole)
+		(fp_rect
+			(start -35 -12)
+			(end 35 12)
+			(stroke
+				(width 0.1)
+				(type default)
+			)
+			(fill none)
+			(layer "F.SilkS")
+			(uuid "47bce04d-353e-409b-a643-0a9d4a4e2da0")
+		)
+		(fp_text user "${REFERENCE}"
+			(at -0.1 17.8 -90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(uuid "963f744e-be7a-4168-9b6e-40bdf42172dd")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(pad "" thru_hole circle
+			(at -30 0)
+			(size 2.5 2.5)
+			(drill 2)
+			(layers "*.Cu" "*.Mask")
+			(remove_unused_layers no)
+			(uuid "0bf7bbe8-4c4d-4b44-ba76-9b8c6c894eaa")
+		)
+		(pad "" thru_hole circle
+			(at 30 0)
+			(size 2.5 2.5)
+			(drill 2)
+			(layers "*.Cu" "*.Mask")
+			(remove_unused_layers no)
+			(uuid "4066bf16-4806-406e-bcd0-bf67ebff4eb9")
+		)
+		(pad "1" thru_hole oval
+			(at -19.5 7)
+			(size 1 4.2)
+			(drill oval 0.5 3.7)
+			(layers "*.Cu" "*.Mask")
+			(remove_unused_layers no)
+			(net 1 "Button3")
+			(pinfunction "Pin_1")
+			(pintype "passive")
+			(uuid "d7c2c12b-0918-48ca-819a-adde35af1a87")
+		)
+		(pad "2" thru_hole oval
+			(at -6.5 7)
+			(size 1 4.2)
+			(drill oval 0.5 3.7)
+			(layers "*.Cu" "*.Mask")
+			(remove_unused_layers no)
+			(net 8 "GND")
+			(pinfunction "Pin_2")
+			(pintype "passive")
+			(uuid "f81755b1-4a3d-49a7-8d8a-5a28e3297b46")
+		)
+		(pad "3" thru_hole oval
+			(at 6.5 7)
+			(size 1 4.2)
+			(drill oval 0.5 3.7)
+			(layers "*.Cu" "*.Mask")
+			(remove_unused_layers no)
+			(net 16 "Button4")
+			(pinfunction "Pin_3")
+			(pintype "passive")
+			(uuid "c9f09c4d-8c1b-418e-902e-c4b292b76142")
+		)
+		(pad "4" thru_hole oval
+			(at 19.5 7)
+			(size 1 4.2)
+			(drill oval 0.5 3.7)
+			(layers "*.Cu" "*.Mask")
+			(remove_unused_layers no)
+			(net 8 "GND")
+			(pinfunction "Pin_4")
+			(pintype "passive")
+			(uuid "66fc15f3-a264-4b63-a904-251086017adb")
+		)
+		(model "/home/mr-a-717/electronics/Step files/speaker-terminal-4p-electrical-1.snapshot.1(1)/Speaker terminal_4p.stp"
+			(offset
+				(xyz 0 -1.3 0)
+			)
+			(scale
+				(xyz 1 1 1)
+			)
+			(rotate
+				(xyz 0 0 180)
+			)
 		)
 	)
 	(footprint "push_button_big_oval:push_button_oval"

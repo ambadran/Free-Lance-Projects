@@ -1123,6 +1123,16 @@
 	)
 	(wire
 		(pts
+			(xy 92.71 114.3) (xy 92.71 132.08)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "169f880e-1216-4500-b37a-2a72363422a6")
+	)
+	(wire
+		(pts
 			(xy 99.06 109.22) (xy 92.71 109.22)
 		)
 		(stroke
@@ -1150,16 +1160,6 @@
 			(type default)
 		)
 		(uuid "537b1a33-c8b6-445f-be64-1450429d0714")
-	)
-	(wire
-		(pts
-			(xy 92.71 114.3) (xy 92.71 132.08)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "55f0bb72-1740-4490-b65d-d9ed5d2aa368")
 	)
 	(wire
 		(pts
@@ -1612,23 +1612,21 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "363867bf-b6b8-4a48-a6a7-7af9a8fba1c3")
+		(uuid "2ee4fc72-ad86-46ab-b861-9b72d5fc8bad")
 		(property "Reference" "J2"
-			(at 85.09 109.2199 0)
+			(at 73.914 112.522 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
 			)
 		)
 		(property "Value" "Screw_Terminal_01x04"
-			(at 85.09 111.7599 0)
+			(at 73.914 109.982 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
 			)
 		)
 		(property "Footprint" "speaker_terminal_spring:speaker_terminal_spring_4"
@@ -1659,16 +1657,16 @@
 			)
 		)
 		(pin "2"
-			(uuid "68679995-953a-4d53-a9b7-99db1ee9f80f")
+			(uuid "dcf88ca9-607f-4940-afad-a7e8d19aa93b")
 		)
 		(pin "4"
-			(uuid "57e8d8e0-aa90-488e-bf46-a217a9d44c9f")
+			(uuid "5fa5d633-1926-4982-91aa-45d6741ad32b")
 		)
 		(pin "3"
-			(uuid "f743550d-122a-4aa1-9a73-1cfb79f6cc6e")
+			(uuid "fe0de1ea-6947-4b93-bfc5-6e4443860e61")
 		)
 		(pin "1"
-			(uuid "f2e3ee07-6bf1-44d4-a81e-c695bd07a0e9")
+			(uuid "c550ec0e-25e4-4174-bc44-e6b778ab004c")
 		)
 		(instances
 			(project "Circuit"
