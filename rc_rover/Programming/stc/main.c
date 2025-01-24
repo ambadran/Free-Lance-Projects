@@ -21,6 +21,8 @@ void main(void) {
   neo_m8n_init();
   nrf24_device(RECEIVER, RESET);
 
+  delay1ms(500);
+
   // Main Routine
   protocol_main_loop();
 

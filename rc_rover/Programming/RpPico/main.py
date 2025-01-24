@@ -4,7 +4,7 @@ Main Routine
 from micropython import const
 from machine import Pin, SPI
 from nrf24l01 import NRF24L01
-from time import sleep_ms
+from time import sleep_ms, sleep_us
 
 class Station:
     '''
@@ -38,6 +38,7 @@ class Station:
         listens, prints if received and saves values in internal attributes
         '''
         if self.nrf.any():
+            print("caught sth :D")
             while self.nrf.any():
                 buf = self.nrf.recv()
                 print(buf, "received")
@@ -48,7 +49,7 @@ class Station:
         '''
         while True:
             self.receive()
-            sleep_ms(self.RX_POLL_DELAY)
+            sleep_us(self.RX_POLL_DELAY)
 
     def test(self):
         '''
@@ -63,24 +64,24 @@ class Station:
         '''
         send forward command in cm
         '''
-        self.nrf.send_ascii_m(f"f{distance_cm}")
+        self.nrf.send_ascii_m(f"Fi{distance_cm}")
 
     def backward(self, distance_cm: int):
         '''
         send backward command in cm
         '''
-        self.nrf.send_ascii_m(f"b{distance_cm}")
+        self.nrf.send_ascii_m(f"Bi{distance_cm}")
 
     def right(self, angle_deg: int):
         '''
         send right command in degree
         '''
-        self.nrf.send_ascii_m(f"r{angle_deg}")
+        self.nrf.send_ascii_m(f"Ri{angle_deg}")
 
     def left(self, angle_deg: int):
         '''
         send left command in degree
         '''
-        self.nrf.send_ascii_m(f"l{angle_deg}")
+        self.nrf.send_ascii_m(f"Li{angle_deg}")
 
-
+s = Station()

@@ -6,6 +6,7 @@
 #define STARTUP_DELAY                 150             /*in milliseconds*/
 #define POWER_DOWN_DELAY              2
 #define STANDBYI_DELAY                2
+#define PTX_MODE_DELAY                150
 #define PRX_MODE_DELAY                100
 #define ADDRESS_WIDTH_DEFAULT         5               /*address width in bytes, for default value*/
 #define RF_DATARATE_DEFAULT           1000            /*250, 1000, 2000*/

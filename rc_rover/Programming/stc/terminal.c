@@ -1,6 +1,7 @@
 #include "project-defs.h"
 
 static command_t command;
+gps_data_t gps_data;
 
 // reads int only not floats and increments the char_count to the index of after the number
 bool read_int(char *line, uint8_t* char_count, int16_t* int_value_ptr) {
@@ -75,7 +76,7 @@ LINE_STATUS terminal_execute_line(char* line) {
 
   uint8_t char_count = 0;
   char letter;
-  uint16_t int_value;  // temporary int value that gets read from the terminal then assigned to another variable of any other c component
+  uint16_t int_value = 0;  // temporary int value that gets read from the terminal then assigned to another variable of any other c component
 
   // Resetting the command
   memset(&command, 0, sizeof(command_t));
@@ -116,10 +117,6 @@ LINE_STATUS terminal_execute_line(char* line) {
         command.command_type = COMMAND_TEST_INT_READING;
         break;
 
-      case 'B':
-        command.command_type = COMMAND_TOGGLE_LED;
-        break;
-
       case 'N':
         command.command_type = COMMAND_GET_NRF24_REGISTERS;
         break;
@@ -135,7 +132,39 @@ LINE_STATUS terminal_execute_line(char* line) {
         }
         command.command_type = COMMAND_MOVE_FORWARD;
         break;
+
+       case 'B':
+        if (command.command_type != COMMAND_NOT_SET) {
+          printf("Can't have >1 command letter in one command!\n");
+          return LINE_FAILED;
+        }
+        command.command_type = COMMAND_MOVE_BACKWARD;
+        break;
   
+       case 'R':
+        if (command.command_type != COMMAND_NOT_SET) {
+          printf("Can't have >1 command letter in one command!\n");
+          return LINE_FAILED;
+        }
+        command.command_type = COMMAND_MOVE_RIGHT;
+        break;
+
+       case 'L':
+        if (command.command_type != COMMAND_NOT_SET) {
+          printf("Can't have >1 command letter in one command!\n");
+          return LINE_FAILED;
+        }
+        command.command_type = COMMAND_MOVE_LEFT;
+        break;
+
+      case 'G':
+        if (command.command_type != COMMAND_NOT_SET) {
+          printf("Can't have >1 command letter in one command!\n");
+          return LINE_FAILED;
+        }
+        command.command_type = COMMAND_GPS;
+        break;
+
       case 'i':
         // reading int argument for a multi-argument command
         if (!read_int(line, &char_count, &int_value)) {
@@ -166,10 +195,12 @@ LINE_STATUS terminal_execute_line(char* line) {
     case COMMAND_TEST_INT_READING:
     case COMMAND_GET_CURRENT_TIME:
     case COMMAND_GET_NRF24_REGISTERS:
-    case COMMAND_TOGGLE_LED:
       break;
 
     case COMMAND_MOVE_FORWARD:
+    case COMMAND_MOVE_BACKWARD:
+    case COMMAND_MOVE_RIGHT: //TODO: should test for different i values
+    case COMMAND_MOVE_LEFT: //TODO: should test for different i values
       if (command.i <= 0 || command.i > 100) {
 
         printf("Distance Parameter 'i' out of range!\n");
@@ -193,12 +224,20 @@ LINE_STATUS terminal_execute_line(char* line) {
       // Passed
       break;
 
+    case COMMAND_GPS:
+      if(command.i >= GPS_NUM_DATA) {
+        printf("Error: only %d data supported\n", GPS_NUM_DATA);
+        return LINE_FAILED;
+      }
+
+      break;
+
     default:
       // if the command_type is not set (COMMAND_NOT_SET).
       // then a correct command wasn't passed in Step2.
       // which means that the default: of Step2 should run
       // so WTF?!??!
-      printf("SHOULD NEVER REACH HERE.\n");
+      printf("SHOULD NEVER REACH HERE IN ERROR CHECKING.\n");
       return LINE_FAILED;
   }
 
@@ -207,11 +246,6 @@ LINE_STATUS terminal_execute_line(char* line) {
 
     case COMMAND_TEST_INT_READING:
       printf("Read INT value: %d\n", int_value);
-      break;
-
-    case COMMAND_TOGGLE_LED:
-      /* printf("toggling\n"); */
-      report_toggle_led();
       break;
 
     case COMMAND_GET_NRF24_REGISTERS:
@@ -227,6 +261,48 @@ LINE_STATUS terminal_execute_line(char* line) {
       command.j = 10000; //TODO: fix getting the j
       differential_control_forward(command.i, command.j);
       printf("Forward: %d @ freq: %d\n", command.i, command.j);
+      break;
+
+    case COMMAND_MOVE_BACKWARD:
+      command.j = 10000; //TODO: fix getting the j
+      differential_control_backward(command.i, command.j);
+      printf("Backward: %d @ freq: %d\n", command.i, command.j);
+      break;
+
+    case COMMAND_MOVE_RIGHT:
+      command.j = 10000; //TODO: fix getting the j
+      differential_control_right(command.i, command.j);
+      printf("Right: %d @ freq: %d\n", command.i, command.j);
+      break;
+
+    case COMMAND_MOVE_LEFT:
+      command.j = 10000; //TODO: fix getting the j
+      differential_control_left(command.i, command.j);
+      printf("Left: %d @ freq: %d\n", command.i, command.j);
+      break;
+
+    case COMMAND_GPS:
+      neo_m8n_read_statement(&gps_data);
+      switch(command.i) {
+        case 1:
+          report("latitude: %s\n", gps_data.latitude);
+          break;
+
+        case 2:
+          report("longitude: %s\n", gps_data.longitude);
+          break;
+
+        case 3:
+          report("heading: %s\n", gps_data.heading);
+          break;
+
+        case 4:
+          report("time: %s\n", gps_data.time);
+          break;
+
+        default: // case 0
+          report("latitude: %s\nlongitude: %s\nheading: %s\ntime: %s\n", gps_data.latitude, gps_data.longitude, gps_data.heading, gps_data.time);
+      }
       break;
 
     default:

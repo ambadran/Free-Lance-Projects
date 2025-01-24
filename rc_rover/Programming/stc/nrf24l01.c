@@ -100,16 +100,12 @@ void nrf24_CE(uint8_t input)
 /*function to enable or disable dynamic acknowledge. if enabled, you can disable acknowledge
    on a specific payload with W_TX_PAYLOAD_NOACK or enable acknowledge using W_TX_PAYLOAD commands.
    if disabled, you cannot disable acknowledging a payload. manipulates EN_DYN_ACK inside FEATURE*/
-void nrf24_dynamic_ack(uint8_t state)
-{
-  if (state == ENABLE)
-  {
+void nrf24_dynamic_ack(uint8_t state) {
+  if (state == ENABLE) {
     nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
     register_new_value = register_current_value | (1 << EN_DYN_ACK);
     nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
-  }
-  else
-  {
+  } else {
     nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
     register_new_value = register_current_value & (~(1 << EN_DYN_ACK));
     nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
@@ -118,38 +114,36 @@ void nrf24_dynamic_ack(uint8_t state)
 
 /*function for PTX device to transmit 1 to 32 bytes of data, used for both dynamic payload length
    and static payload length methods. acknowledgemet state could be NO_ACK_MODE or ACK_MODE*/
-uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state)
-{
+uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state) {
   nrf24_read(STATUS_ADDRESS, &register_current_value, 1, CLOSE);         /*in order to check TX_FIFO status*/
-  if ((!(register_current_value & (1 << TX_FULL))) && (current_mode == PTX))
-  {
+  if ((!(register_current_value & (1 << TX_FULL))) && (current_mode == PTX)) {
     current_acknowledgement_state = acknowledgement_state;      /*setting the acknowledgement state to either NO_ACK or ACK, based on input*/
-    if (dynamic_payload == ENABLE)
-      payload_width = current_payload_width;
+
+    /* if (dynamic_payload == ENABLE) { payload_width = current_payload_width; } */
+
     nrf24_send_payload(payload, payload_width);                 /*the actual function to send data*/
-    printf("hapnd\n");
     return (TRANSMIT_BEGIN);                                     /*TX FIFO is not full and nrf24l01+ mode is standby ii or ptx*/
-  }
-  else
-  {
+
+  } else {
     return (TRANSMIT_FAIL);            /*TX FIFO full or wrong mode*/
+
   }
 }
 
 /*used by nrf24_transmit function to send the actual data*/
-void nrf24_send_payload(uint8_t *payload, uint8_t payload_width)
-{
+void nrf24_send_payload(uint8_t *payload, uint8_t payload_width) {
+
   nrf24_SPI(SPI_ON);
-  if (current_acknowledgement_state == NO_ACK_MODE)
-    SPI_command = W_TX_PAYLOAD_NOACK;
-  else
-    SPI_command = W_TX_PAYLOAD;
+  //TODO: get this uncommented after testing
+  if (current_acknowledgement_state == NO_ACK_MODE) {SPI_command = W_TX_PAYLOAD_NOACK;}
+  else { SPI_command = W_TX_PAYLOAD; }
+
   SPI_send_command(SPI_command);
-  for (; payload_width; payload_width--)
-  {
-    SPI_command = *payload;
+  for (; payload_width; payload_width--) {
+    //TODO: replace with this after testing
+    /* SPI_command = *payload++; */
+    SPI_command = payload[payload_width-1];
     SPI_send_command(SPI_command);
-    payload++;
   }
   nrf24_SPI(SPI_OFF);
 }
@@ -163,34 +157,34 @@ uint8_t nrf24_transmit_status(void)
   {
     nrf24_write(STATUS_ADDRESS, &register_current_value, 1, CLOSE);   /*reseting the TX_DS flag. as mentioned by datasheet, writing '1' to a flag resets that flag*/
     return TRANSMIT_DONE;
-  }
-  else if (register_current_value & (1 << MAX_RT))
-  {
+
+  } else if (register_current_value & (1 << MAX_RT)) {
     nrf24_write(STATUS_ADDRESS, &register_current_value, 1, CLOSE);   /*reseting the MAX_RT flag. as mentioned by datasheet, writing '1' to a flag resets that flag*/
     return TRANSMIT_FAILED;
-  }
-  else
+
+  } else {
     return TRANSMIT_IN_PROGRESS;
+  }
 }
 
 /*the receive function output is used as a polling method to check the received data inside RX FIFOs. 
 If there is any data available, it will be loaded inside payload array*/
-uint8_t nrf24_receive(uint8_t *payload, uint8_t payload_width) __reentrant
-{
-  if (current_mode == PRX)
-  {
+uint8_t nrf24_receive(uint8_t *payload, uint8_t payload_width) __reentrant {
+
+  if (current_mode == PRX) {
     nrf24_read(STATUS_ADDRESS, &register_current_value, 1, CLOSE);
-    if (register_current_value & (1 << RX_DR))                         /*if received data is ready inside RX FIFO*/
-    {
-      if(dynamic_payload == DISABLE)                                    /*if dynamic payload width is disabled, use the static payload width and ignore the input*/
-        payload_width = current_payload_width;
+
+    /*if received data is ready inside RX FIFO*/
+    if (register_current_value & (1 << RX_DR)) {
+
+      /*if dynamic payload width is disabled, use the static payload width and ignore the input*/
+      if(dynamic_payload == DISABLE) { payload_width = current_payload_width; }
         
       nrf24_SPI(SPI_ON);                                                /*sending the read payload command to nrf24l01+*/                          
       SPI_command = R_RX_PAYLOAD;
       SPI_send_command(SPI_command);
        
-      for (; payload_width; payload_width--)
-      {
+      for (; payload_width; payload_width--) {
         SPI_command = NOP_CMD;
         *payload = SPI_send_command(SPI_command); // newly added
         payload++;
@@ -204,44 +198,41 @@ uint8_t nrf24_receive(uint8_t *payload, uint8_t payload_width) __reentrant
         nrf24_write(STATUS_ADDRESS, &register_new_value, 1, CLOSE); 
       }      
       return OPERATION_DONE;
-    }
-    else
-    {
-      return RECEIVE_FIFO_EMPTY;
-    }
-  }
-  else
-    return OPERATION_ERROR;
+
+    } else { return RECEIVE_FIFO_EMPTY; }
+
+  } else { return OPERATION_ERROR; }
+
 }
 
 /*function which uses TX_FLUSH or RX_FLUSH command to flush the fifo buffers. if successful, output is OPERATION_DONE.
    if not successful (wrong input or wrong mode of operation) output will be OPERATION_ERROR*/
 uint8_t nrf24_flush(uint8_t fifo_select)
 {
-  switch (fifo_select)
-  {
+  switch (fifo_select) {
     case TX_BUFFER:
-      if (current_mode == PTX)
-      {
+      if (current_mode == PTX) {
         nrf24_SPI(SPI_ON);
         SPI_command = FLUSH_TX;
         SPI_send_command(SPI_command);
         nrf24_SPI(SPI_OFF);
         return OPERATION_DONE;
-      }
-      else
+
+      } else {
         return OPERATION_ERROR;
+      }
     case RX_BUFFER:
-      if (current_mode == PRX)
-      {
+      if (current_mode == PRX) {
         nrf24_SPI(SPI_ON);
         SPI_command = FLUSH_RX;
         SPI_send_command(SPI_command);
         nrf24_SPI(SPI_OFF);
         return OPERATION_DONE;
-      }
-      else
+
+      } else {
         return OPERATION_ERROR;
+      }
+
     default:
       return OPERATION_ERROR;
   }
@@ -294,7 +285,7 @@ void nrf24_reset(void)
   nrf24_automatic_retransmit_setup(RETRANSMIT_DELAY_DEFAULT, RETRANSMIT_COUNT_DEFAULT);
   nrf24_auto_acknowledgment_setup(NUMBER_OF_DP_DEFAULT);
   nrf24_dynamic_payload(DISABLE, NUMBER_OF_DP_DEFAULT);
-  nrf24_dynamic_ack(ENABLE);
+  nrf24_dynamic_ack(DISABLE);
 
 }
 
@@ -343,33 +334,36 @@ void nrf24_device(uint8_t device_mode, uint8_t reset_state)
     }
 
   }
+  // nrf24 is responding!!!
 
   if ((reset_state == RESET) || (reset_flag == 0)) {
     nrf24_reset();
   }
 
-  switch (device_mode)
-  {
+  switch (device_mode) {
     case TRANSMITTER:
       nrf24_mode(POWER_DOWN);
-      nrf24_interrupt_mask(ENABLE, DISABLE, DISABLE);                /*disabling tx interrupt mask*/
+      nrf24_interrupt_mask(ENABLE, DISABLE, DISABLE);
       nrf24_mode(PTX);
       break;
+
     case RECEIVER:
       nrf24_mode(POWER_DOWN);
-      nrf24_interrupt_mask(DISABLE, ENABLE, ENABLE);                /*disabling rx interrupt mask*/
+      nrf24_interrupt_mask(DISABLE, ENABLE, ENABLE);
       nrf24_mode(PRX);
-      delay_function(PRX_MODE_DELAY);                              /*100ms for PRX mode*/
       break;
+
     case POWER_SAVING:
       nrf24_mode(POWER_DOWN);
       nrf24_interrupt_mask(ENABLE, ENABLE, ENABLE);
       nrf24_mode(STANDBYI);
       break;
+
     case TURN_OFF:
       nrf24_mode(POWER_DOWN);
       nrf24_interrupt_mask(ENABLE, ENABLE, ENABLE);
       break;
+
     default:
       nrf24_mode(POWER_DOWN);
       nrf24_interrupt_mask(ENABLE, ENABLE, ENABLE);
@@ -385,15 +379,24 @@ nrf24_print_internal_register_values();
 void nrf24_print_internal_register_values(void) {
   for (int i=0; i<24; i++) {
     nrf24_read(i, &register_current_value, 1, CLOSE);
-    printf("\rRegister %d: %d\n", i, register_current_value);
+
+    printf("\rRegister 0x%02x: %d\n", i, register_current_value);
     delay1ms(20);
   }
+
+  nrf24_read(0X1C, &register_current_value, 1, CLOSE);
+  printf("\rRegister 0x1C: %d\n", register_current_value);
+  delay1ms(20);
+
+  nrf24_read(0X1D, &register_current_value, 1, CLOSE);
+  printf("\rRegister 0x1D: %d\n", register_current_value);
+  delay1ms(20);
+
   printf("\n\n");
 }
 
 /*setting automatic retransmit delay time and maximum number of retransmits*/
-void nrf24_automatic_retransmit_setup(uint16_t delay_time, uint8_t retransmit_count)
-{
+void nrf24_automatic_retransmit_setup(uint16_t delay_time, uint8_t retransmit_count) {
   register_new_value = 0x00;
   for (; (delay_time > 250) && (register_new_value < 0X0F); delay_time -= 250)
     register_new_value++;
@@ -406,29 +409,25 @@ void nrf24_automatic_retransmit_setup(uint16_t delay_time, uint8_t retransmit_co
 }
 
 /*setting auto acknoledgement on datapipes*/
-void nrf24_auto_acknowledgment_setup(uint8_t datapipe)
-{
+void nrf24_auto_acknowledgment_setup(uint8_t datapipe) {
   if (datapipe < 7)
     register_new_value = (1 << datapipe) - 1;
   nrf24_write(EN_AA_ADDRESS, &register_new_value, 1, CLOSE);
 }
 
 /*turns on or off the dynamic payload width capability*/
-void nrf24_dynamic_payload(uint8_t state, uint8_t datapipe)
-{
+void nrf24_dynamic_payload(uint8_t state, uint8_t datapipe) {
   nrf24_auto_acknowledgment_setup(datapipe);                        /*setting auto acknowledgment before setting dynamic payload*/
   nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
-  if (state == ENABLE)
-  {
+  if (state == ENABLE) {
     register_new_value = register_current_value | (1 << EN_DPL);    /*EN_DPL bit turns dynamic payload width on or off on all datapipes*/
     nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
     if (datapipe < 7)
-      register_new_value = (1 << datapipe) - 1;                       /*turning on dynamic payload width on chosen datapipes, using DYNPD register*/
+      /*turning on dynamic payload width on chosen datapipes, using DYNPD register*/
+      register_new_value = (1 << datapipe) - 1;
     nrf24_write(DYNPD_ADDRESS, &register_new_value, 1, CLOSE);
     dynamic_payload = ENABLE;
-  }
-  else
-  {
+  } else {
     register_new_value = register_current_value & (~(1 << EN_DPL));
     nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
     dynamic_payload = DISABLE;
@@ -436,14 +435,12 @@ void nrf24_dynamic_payload(uint8_t state, uint8_t datapipe)
 }
 
 /*on nrf24l01+ there is only one address for PTX device which must be the same as PRX data pipe address 0*/
-void nrf24_datapipe_ptx(uint8_t datapipe_number)
-{
+void nrf24_datapipe_ptx(uint8_t datapipe_number) {
   nrf24_write(TX_ADDR_ADDRESS, &datapipe_address[datapipe_number - 1][0], current_address_width, CLOSE);
 }
 
 /*setting the 6 datapipe addresses using the datapipe_address[][]*/
-void nrf24_datapipe_address_configuration(void)
-{
+void nrf24_datapipe_address_configuration(void) {
   uint8_t address = RX_ADDR_P0_ADDRESS;
   /* for (uint8_t counter = 0; counter < 6; counter++) */
   for (uint8_t counter = 0; counter < 2; counter++) // only write the first two
@@ -587,11 +584,9 @@ void nrf24_crc_configuration(uint8_t crc_enable, uint8_t crc_encoding_scheme)
 }
 
 /*mode selector: power down, standby i, standby ii, ptx, prx. used by nrf24_device function*/
-void nrf24_mode(uint8_t mode)
-{
+void nrf24_mode(uint8_t mode) {
   nrf24_read(CONFIG_ADDRESS, &register_current_value, 1, CLOSE);
-  switch (mode)
-  {
+  switch (mode) {
     case POWER_DOWN:
       nrf24_CE(CE_OFF);
       register_new_value = (register_current_value) & (~(1 << PWR_UP));

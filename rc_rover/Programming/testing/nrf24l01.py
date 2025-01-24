@@ -1,15 +1,11 @@
-"""
-NRF24L01 driver for MicroPython
+"""NRF24L01 driver for MicroPython
 """
 
 from micropython import const
 import utime
-import struct
-
 
 # nRF24L01+ registers
 CONFIG = const(0x00)
-EN_AA = const(0x01)
 EN_RXADDR = const(0x02)
 SETUP_AW = const(0x03)
 SETUP_RETR = const(0x04)
@@ -53,10 +49,9 @@ FLUSH_TX = const(0xE1)  # flush TX FIFO
 FLUSH_RX = const(0xE2)  # flush RX FIFO
 NOP = const(0xFF)  # use to read STATUS register
 
-DEFAULT_CHANNEL = 40
 
 class NRF24L01:
-    def __init__(self, spi, cs, ce, channel=DEFAULT_CHANNEL, payload_size=16):
+    def __init__(self, spi, cs, ce, channel=46, payload_size=16):
         assert payload_size <= 32
 
         self.buf = bytearray(1)
@@ -94,9 +89,6 @@ class NRF24L01:
 
         # init CRC
         self.set_crc(2)
-        
-        # setting auto acknowledgement (although seems not imp)
-        self.reg_write(EN_AA, 3) # enable first two
 
         # clear status flags
         self.reg_write(STATUS, RX_DR | TX_DS | MAX_RT)
@@ -208,12 +200,7 @@ class NRF24L01:
 
     # returns True if any data available to recv
     def any(self):
-        status_reg = self.reg_read(STATUS)
-        fifo_status_reg = self.reg_read(FIFO_STATUS)
-        print(f"status_reg: {status_reg}, {status_reg&0b01000000}", end="\r")
-        
-        # return not bool(self.reg_read(FIFO_STATUS) & RX_EMPTY)
-        return status_reg & 0b01000000
+        return not bool(self.reg_read(FIFO_STATUS) & RX_EMPTY)
 
     def recv(self):
         # get the data
@@ -241,8 +228,6 @@ class NRF24L01:
         # power up
         self.reg_write(CONFIG, (self.reg_read(CONFIG) | PWR_UP) & ~PRIM_RX)
         utime.sleep_us(150)
-        self.print_registers()
-
         # send the data
         self.cs(0)
         self.spi.readinto(self.buf, W_TX_PAYLOAD)
@@ -265,39 +250,3 @@ class NRF24L01:
         status = self.reg_write(STATUS, RX_DR | TX_DS | MAX_RT)
         self.reg_write(CONFIG, self.reg_read(CONFIG) & ~PWR_UP)
         return 1 if status & TX_DS else 2
-
-    def send_ascii(self, character):
-        '''
-        sends one character in ASCII
-        '''
-        self.stop_listening()
-        print("Sending: ", character)
-        try:
-            self.send(character.encode())
-            # self.send(struct.pack("s", bytearray('c'.encode())))
-        except OSError:
-            pass
-        self.start_listening()
-
-    def send_ascii_m(self, string):
-        '''
-        sends >=1 characters in ASCII
-        '''
-        for char in string:
-            self.send_ascii(char)
-
-        self.send_ascii('\n')
-
-    def print_registers(self):
-        '''
-        prints all registers in 
-        '''
-        for i in range(24):
-            print(f"Register {hex(i)}: {self.reg_read(i)}")
-            utime.sleep_ms(20)
-
-        print(f"Register 0x1C: {self.reg_read(0x1C)}")
-        utime.sleep_ms(20)
-        print(f"Register 0x1D: {self.reg_read(0x1D)}")
-        utime.sleep_ms(20)
-

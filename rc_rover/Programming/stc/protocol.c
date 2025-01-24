@@ -61,6 +61,7 @@ static void protocol_execute_line(char* line) {
 }
 
 void protocol_main_loop(void) {
+  printf("starting\n");
 
   while(1) {
     if (uartGetCharacter_modified(&c, 1) != UART_RECEIVE_EMPTY) {
@@ -73,8 +74,8 @@ void protocol_main_loop(void) {
 
     }
 
-    /* report_toggle_led(); */
     differential_control_process();
+    report_toggle_led();
 
   }
 }

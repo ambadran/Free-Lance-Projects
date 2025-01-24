@@ -65,13 +65,13 @@
 // TIMER1 is used for CONSOLE_UART
 #define NEO_M8N_TIMER UART_USE_OWN_TIMER // TIMER2 is used for UART2
                                          
-#define GLOBAL_TIMER TIMER3
-#define GLOBAL_TIMER_ISR timer3_isr
-#define GLOBAL_TIMER_INTERRUPT TIMER3_INTERRUPT
+#define GLOBAL_TIMER TIMER0
+#define GLOBAL_TIMER_ISR timer0_isr
+#define GLOBAL_TIMER_INTERRUPT TIMER0_INTERRUPT
 
-#define ULTRASONIC_TIMER TIMER4
-#define ULTRASONIC_TIMER_ISR timer4_isr
-#define ULTRASONIC_TIMER_INTERRUPT TIMER4_INTERRUPT
+/* #define ULTRASONIC_TIMER TIMER4 */
+/* #define ULTRASONIC_TIMER_ISR timer4_isr */
+/* #define ULTRASONIC_TIMER_INTERRUPT TIMER4_INTERRUPT */
 
 /* external pin interrupts */
 #define ULTRASONIC_INT_PIN_ISR extint0_isr
@@ -105,10 +105,10 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdarg.h>
 #include <delay.h>
 #include <gpio-hal.h>
 #include <timer-hal.h>
-#include <advpwm-hal.h>
 #include <uart-hal.h>
 #include <serial-console.h>
 #include <spi-hal.h>
@@ -117,8 +117,8 @@
 #include "report.h"
 #include "differential_control.h"
 #include "mpu9250.h"
-#include "nrf24l01.h"
 #include "neo_m8n.h"
+#include "nrf24l01.h"
 #include "terminal.h"
 #include "protocol.h"
 

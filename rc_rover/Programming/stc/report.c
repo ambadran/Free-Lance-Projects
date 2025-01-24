@@ -19,26 +19,38 @@ void report_init(void) {
 }
 
 void report_toggle_led(void) {
-  /* if ((get_current_time() - led_timer_count) >= LED_BLINK_PERIOD) { */
+  if ((get_current_time() - led_timer_count) >= LED_BLINK_PERIOD) {
 
     gpioToggle(&led_pin);
-    /* led_timer_count = get_current_time(); */                          
+    led_timer_count = get_current_time();                          
 
-  /* } */
+  }
 }
 
-void report(const uint8_t* string) {
+static char _buffer[81];
+void report(const char* __fmt, ...) {
+  va_list vaList;
+	// CAUTION! SDCC doesn't provide vsnprintf(), so beware of buffer 
+	// overflows if you can print arbitrary long values.
+	va_start(vaList, __fmt);
+	vsprintf(_buffer, __fmt, vaList);
+	va_end(vaList);
+
   // report to Station through nrf24l01
   nrf24_device(TRANSMITTER, RESET);
   nrf24_CE(0);
-  while(nrf24_transmit(string, uint8_strlen(string), ACK_MODE) == TRANSMIT_FAIL) { printf("nrf24 failed to send!"); }
+  /* nrf24_print_internal_register_values(); */
+  while(nrf24_transmit("testtesttesttest", 16, ACK_MODE) == TRANSMIT_FAIL) { printf("nrf24 failed to send!"); }
+
   nrf24_CE(1);
-  while(nrf24_transmit_status() == TRANSMIT_IN_PROGRESS) {printf(".");}
+  delay10us(2); //TODO: remove this
   nrf24_CE(0);
+
+  while(nrf24_transmit_status() == TRANSMIT_IN_PROGRESS) {printf(".");}
+  printf("\n");
   nrf24_device(RECEIVER, RESET);
 
   // report to serial monitor
-  printf("%s", string);
+  printf(_buffer);
 } 
-
 
