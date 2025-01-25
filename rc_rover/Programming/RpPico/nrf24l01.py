@@ -53,7 +53,7 @@ FLUSH_TX = const(0xE1)  # flush TX FIFO
 FLUSH_RX = const(0xE2)  # flush RX FIFO
 NOP = const(0xFF)  # use to read STATUS register
 
-DEFAULT_CHANNEL = 40
+DEFAULT_CHANNEL = 46
 
 class NRF24L01:
     def __init__(self, spi, cs, ce, channel=DEFAULT_CHANNEL, payload_size=16):
@@ -116,12 +116,31 @@ class NRF24L01:
         else:
             self.spi.init(master, baudrate=baudrate, polarity=0, phase=0)
 
-    def reg_read(self, reg):
+    def reg_read(self, reg, num_bytes=1):
         self.cs(0)
         self.spi.readinto(self.buf, reg)
-        self.spi.readinto(self.buf)
-        self.cs(1)
-        return self.buf[0]
+
+        if num_bytes == 1:
+            self.spi.readinto(self.buf)
+            self.cs(1)
+            return self.buf[0]
+
+        elif num_bytes > 1:
+            buf2 = bytearray(num_bytes)
+
+            buf2[0] = int.from_bytes(self.spi.read(1), 'big')
+            buf2[1] = int.from_bytes(self.spi.read(1), 'big')
+            buf2[2] = int.from_bytes(self.spi.read(1), 'big')
+            buf2[3] = int.from_bytes(self.spi.read(1), 'big')
+            buf2[4] = int.from_bytes(self.spi.read(1), 'big')
+
+
+            self.cs(1)
+            return buf2
+
+        else:
+            raise ValueError("wrong num_bytes value")
+
 
     def reg_write_bytes(self, reg, buf):
         self.cs(0)
@@ -208,12 +227,12 @@ class NRF24L01:
 
     # returns True if any data available to recv
     def any(self):
-        status_reg = self.reg_read(STATUS)
-        fifo_status_reg = self.reg_read(FIFO_STATUS)
-        print(f"status_reg: {status_reg}, {status_reg&0b01000000}", end="\r")
+        # status_reg = self.reg_read(STATUS)
+        # fifo_status_reg = self.reg_read(FIFO_STATUS)
+        # print(f"status_reg: {status_reg}, {status_reg&0b01000000}", end="\r")
         
-        # return not bool(self.reg_read(FIFO_STATUS) & RX_EMPTY)
-        return status_reg & 0b01000000
+        return not bool(self.reg_read(FIFO_STATUS) & RX_EMPTY)
+        # return status_reg & 0b01000000
 
     def recv(self):
         # get the data
@@ -241,7 +260,7 @@ class NRF24L01:
         # power up
         self.reg_write(CONFIG, (self.reg_read(CONFIG) | PWR_UP) & ~PRIM_RX)
         utime.sleep_us(150)
-        self.print_registers()
+        # self.print_registers()
 
         # send the data
         self.cs(0)
@@ -293,7 +312,10 @@ class NRF24L01:
         prints all registers in 
         '''
         for i in range(24):
-            print(f"Register {hex(i)}: {self.reg_read(i)}")
+            if i in [0x0a, 0x0b, 0x10]:
+                print(f"Register {hex(i)}: {self.reg_read(i, 5)}")
+            else:
+                print(f"Register {hex(i)}: {self.reg_read(i)}")
             utime.sleep_ms(20)
 
         print(f"Register 0x1C: {self.reg_read(0x1C)}")

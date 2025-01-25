@@ -16,11 +16,19 @@ class Station:
     PIPES = (b"\xe1\xf0\xf0\xf0\xf0", b"\xd2\xf0\xf0\xf0\xf0")  # Addresses are in little-endian format. They correspond to big-endian
     RX_POLL_DELAY = const(15)
 
-    SCK_PIN = const(18)
-    MOSI_PIN = const(19)
-    MISO_PIN = const(16)
-    CSN_PIN = const(21)
-    CE_PIN = const(20)
+    # Pico pinout
+    # SCK_PIN = const(18)
+    # MOSI_PIN = const(19)
+    # MISO_PIN = const(16)
+    # CSN_PIN = const(21)
+    # CE_PIN = const(20)
+
+    # raspberry pi zero pinout
+    SCK_PIN = const(2)
+    MOSI_PIN = const(3)
+    MISO_PIN = const(4)
+    CSN_PIN = const(8)
+    CE_PIN = const(14)
 
     def __init__(self):
         self.spi = SPI(self.SPI_HARDWARE_INDEX, sck=Pin(self.SCK_PIN), mosi=Pin(self.MOSI_PIN), miso=Pin(self.MISO_PIN))

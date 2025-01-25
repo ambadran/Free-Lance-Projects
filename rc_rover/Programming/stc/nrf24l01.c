@@ -32,8 +32,8 @@ static bool hardwareCheckPassed = false;
 
 /* (b"\xe1\xf0\xf0\xf0\xf0", b"\xd2\xf0\xf0\xf0\xf0") */
 uint8_t datapipe_address[MAXIMUM_NUMBER_OF_DATAPIPES][ADDRESS_WIDTH_DEFAULT] = {
-  {0xD2, 0xF0, 0xF0, 0xF0, 0xF0},
   {0xE1, 0xF0, 0xF0, 0xF0, 0xF0},
+  {0xD2, 0xF0, 0xF0, 0xF0, 0xF0},
   {0xF0, 0xF0, 0xF0, 0xF0, 0xF0},
   {0xF0, 0xF0, 0xF0, 0xF0, 0xF0},
   {0xF0, 0xF0, 0xF0, 0xF0, 0xF0},
@@ -112,8 +112,7 @@ void nrf24_dynamic_ack(uint8_t state) {
   }
 }
 
-/*function for PTX device to transmit 1 to 32 bytes of data, used for both dynamic payload length
-   and static payload length methods. acknowledgemet state could be NO_ACK_MODE or ACK_MODE*/
+/*function for PTX device to transmit 1 to 32 bytes of data, used for both dynamic payload length and static payload length methods. acknowledgemet state could be NO_ACK_MODE or ACK_MODE*/
 uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state) {
   nrf24_read(STATUS_ADDRESS, &register_current_value, 1, CLOSE);         /*in order to check TX_FIFO status*/
   if ((!(register_current_value & (1 << TX_FULL))) && (current_mode == PTX)) {
@@ -138,7 +137,8 @@ void nrf24_send_payload(uint8_t *payload, uint8_t payload_width) {
   if (current_acknowledgement_state == NO_ACK_MODE) {SPI_command = W_TX_PAYLOAD_NOACK;}
   else { SPI_command = W_TX_PAYLOAD; }
 
-  SPI_send_command(SPI_command);
+  /* SPI_send_command(SPI_command); */
+  SPI_send_command(W_TX_PAYLOAD);
   for (; payload_width; payload_width--) {
     //TODO: replace with this after testing
     /* SPI_command = *payload++; */
@@ -239,8 +239,7 @@ uint8_t nrf24_flush(uint8_t fifo_select)
 }
 
 /*must be called atleast once, which happens with calling nrf24_device function*/
-void nrf24_reset(void)
-{
+void nrf24_reset(void) {
   reset_flag = 1;
   nrf24_CE(CE_OFF);
   register_new_value = CONFIG_REGISTER_DEFAULT;
@@ -272,7 +271,7 @@ void nrf24_reset(void)
   register_new_value = register_current_value | (1 << RX_DR) | (1 << TX_DS) | (1 << MAX_RT);
   nrf24_write(STATUS_ADDRESS, &register_new_value, 1, CLOSE);
   
-  nrf24_interrupt_mask(ENABLE, ENABLE, ENABLE);
+  /* nrf24_interrupt_mask(ENABLE, ENABLE, ENABLE); */
   nrf24_crc_configuration(ENABLE, 2);
   nrf24_address_width(ADDRESS_WIDTH_DEFAULT);
   /* nrf24_rf_datarate(RF_DATARATE_DEFAULT); */ // temporary
@@ -343,30 +342,30 @@ void nrf24_device(uint8_t device_mode, uint8_t reset_state)
   switch (device_mode) {
     case TRANSMITTER:
       nrf24_mode(POWER_DOWN);
-      nrf24_interrupt_mask(ENABLE, DISABLE, DISABLE);
+      /* nrf24_interrupt_mask(ENABLE, DISABLE, DISABLE); */
       nrf24_mode(PTX);
       break;
 
     case RECEIVER:
       nrf24_mode(POWER_DOWN);
-      nrf24_interrupt_mask(DISABLE, ENABLE, ENABLE);
+      /* nrf24_interrupt_mask(DISABLE, ENABLE, ENABLE); */
       nrf24_mode(PRX);
       break;
 
     case POWER_SAVING:
       nrf24_mode(POWER_DOWN);
-      nrf24_interrupt_mask(ENABLE, ENABLE, ENABLE);
+      /* nrf24_interrupt_mask(ENABLE, ENABLE, ENABLE); */
       nrf24_mode(STANDBYI);
       break;
 
     case TURN_OFF:
       nrf24_mode(POWER_DOWN);
-      nrf24_interrupt_mask(ENABLE, ENABLE, ENABLE);
+      /* nrf24_interrupt_mask(ENABLE, ENABLE, ENABLE); */
       break;
 
     default:
       nrf24_mode(POWER_DOWN);
-      nrf24_interrupt_mask(ENABLE, ENABLE, ENABLE);
+      /* nrf24_interrupt_mask(ENABLE, ENABLE, ENABLE); */
       break;
   }
 
@@ -377,10 +376,24 @@ nrf24_print_internal_register_values();
 }
 
 void nrf24_print_internal_register_values(void) {
-  for (int i=0; i<24; i++) {
-    nrf24_read(i, &register_current_value, 1, CLOSE);
+  uint8_t pipe_address[ADDRESS_WIDTH_DEFAULT];
 
-    printf("\rRegister 0x%02x: %d\n", i, register_current_value);
+  for (int i=0; i<24; i++) {
+    if (i == 0x0a || i == 0x0b || i == 0x10) {
+      nrf24_read(i, pipe_address, current_address_width, CLOSE);
+      printf("\rRegister 0x%02x: 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n",   i, \
+                                                          pipe_address[0], \
+                                                          pipe_address[1], \
+                                                          pipe_address[2], \
+                                                          pipe_address[3], \
+                                                          pipe_address[4]  \
+                                                          );
+
+    } else {
+      nrf24_read(i, &register_current_value, 1, CLOSE);
+      printf("\rRegister 0x%02x: %d\n", i, register_current_value);
+
+    }
     delay1ms(20);
   }
 
@@ -469,15 +482,13 @@ void nrf24_datapipe_enable(uint8_t number_of_datapipes)
 }
 
 /*function to set the nrf24l01+ address width, from 3 to 5 bytes*/
-void nrf24_address_width(uint8_t address_width)
-{
-  if ((address_width <= 5) && (address_width >= 3))
-  {
+void nrf24_address_width(uint8_t address_width) {
+  if ((address_width <= 5) && (address_width >= 3)) {
     write_pointer = address_width - 2;
-  }
-  else
-  {
+
+  } else {
     write_pointer = 3;
+
   }
   nrf24_write(SETUP_AW_ADDRESS, &write_pointer, 1, CLOSE);                    /*5 bytes is the maximum address width available*/
   current_address_width = address_width;

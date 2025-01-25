@@ -86,7 +86,7 @@
 
 /* nRF24L01 settings */
 //#define NRF_DEBUGGING  //uncomment to print all the nrf24l01 registers after setting them with nrf24_device()
-#define RF_CHANNEL_DEFAULT 40
+#define RF_CHANNEL_DEFAULT 46
 
 /* Ultrasonic Sensor Settings*/
 /* #define ULTRASONIC_STATE_MACHINE */
