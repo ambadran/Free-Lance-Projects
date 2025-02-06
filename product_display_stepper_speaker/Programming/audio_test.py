@@ -16,12 +16,12 @@ tones = {
     ' ': 0,
 }
 
-speaker_l = Pin(19, Pin.OUT)
-speaker_r = Pin(18, Pin.OUT)
+speaker_l = Pin(5, Pin.OUT)
+speaker_r = Pin(4, Pin.OUT)
 
 # Init Beeper without frequency.
-beeper_l = PWM(speaker_l, duty_u16=32768)
-beeper_r = PWM(speaker_r, duty_u16=32768)
+beeper_l = PWM(speaker_l, duty=512)
+beeper_r = PWM(speaker_r, duty=512)
 melody = 'cdefggaaaagaaaagffffeeddddc'
 rhythm = [8, 8, 8, 8, 4, 4, 8, 8, 8, 8, 4, 8, 8, 8, 8, 4, 8, 8, 8, 8, 4, 4, 8, 8, 8, 8, 4]
 
