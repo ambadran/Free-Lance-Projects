@@ -128,7 +128,7 @@
         "min_text_height": 0.8,
         "min_text_thickness": 0.08,
         "min_through_hole_diameter": 0.3,
-        "min_track_width": 0.8,
+        "min_track_width": 0.0,
         "min_via_annular_width": 0.1,
         "min_via_diameter": 0.5,
         "solder_mask_to_copper_clearance": 0.0,
@@ -447,7 +447,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "Circuit.kicad_pro",
+    "filename": "Circuit_final_design.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -592,7 +592,7 @@
   },
   "sheets": [
     [
-      "95e3e718-d8f7-41ba-bf72-773491c0c0fd",
+      "3925f8f8-4f4c-4ea7-8976-d25d21cc1845",
       "Root"
     ]
   ],
