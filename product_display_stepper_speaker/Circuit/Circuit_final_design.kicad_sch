@@ -6200,7 +6200,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "Pololu_Breakout_DRV8825"
+		(property "Value" "DRV8825"
 			(at 94.742 80.518 0)
 			(effects
 				(font
@@ -7049,7 +7049,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "Pololu_Breakout_DRV8825"
+		(property "Value" "DRV8825"
 			(at 134.62 80.264 0)
 			(effects
 				(font
@@ -7428,7 +7428,7 @@
 				)
 			)
 		)
-		(property "Value" "LM2931-3.3_TO220"
+		(property "Value" "LD33v"
 			(at 139.7 54.61 0)
 			(effects
 				(font

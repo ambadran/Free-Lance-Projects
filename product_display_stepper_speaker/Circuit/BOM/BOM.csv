@@ -1,0 +1,17 @@
+"Id";"Designator";"Footprint";"Quantity";"Designation";"Supplier and ref";
+1;"A2,A1";"Pololu_Breakout-16_15.2x20.3mm";2;"DRV8825";;;
+2;"C1";"C_Radial_D8.0mm_H11.5mm_P3.50mm";1;"330uf";;;
+3;"J1";"BarrelJack_GCT_DCJ200-10-A_Horizontal";1;"Barrel_Jack_MountingPin";;;
+4;"Stepper2,Stepper1";"JST_EH_B4B-EH-A_1x04_P2.50mm_Vertical";2;"JST-4p";;;
+5;"PAM8403_POT_breakout_board1";"PinHeader_1x11_P2.54mm_Vertical";1;"Conn_01x11";;;
+6;"Speaker1,Speaker2";"JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical";2;"JST-2p";;;
+7;"R1";"R_Axial_DIN0207_L6.3mm_D2.5mm_P5.08mm_Vertical";1;"10k";;;
+8;"Debug1";"PinHeader_1x03_P2.54mm_Vertical";1;"Conn_1x3";;;
+9;"Reset1";"R_Axial_DIN0207_L6.3mm_D2.5mm_P5.08mm_Vertical";1;"Button";;;
+10;"Flashing1";"R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical";1;"Headers";;;
+11;"U2";"TO-220-3_Vertical";1;"LD33v";;;
+12;"R2";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";1;"10k";;;
+13;"C2";"C_Radial_D8.0mm_H11.5mm_P3.50mm";1;"470uf";;;
+14;"U3";"ESP-12E-DIP";1;"ESP-12E";;;
+15;"U1";"TO-220-3_Vertical";1;"L7805";;;
+16;"Bridge1";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";1;"0";;;
