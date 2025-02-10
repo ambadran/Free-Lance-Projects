@@ -2464,42 +2464,28 @@
 				)
 			)
 		)
-		(symbol "Regulator_Linear:LM2931-3.3_TO220"
-			(pin_names
-				(offset 0.254)
-			)
+		(symbol "ld33v:LD33v"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "U"
-				(at -3.81 3.175 0)
+				(at 0 6.096 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
 				)
 			)
-			(property "Value" "LM2931-3.3_TO220"
-				(at 0 3.175 0)
+			(property "Value" "LD33v"
+				(at 0 3.81 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left)
 				)
 			)
 			(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
-				(at 0 5.715 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-						(italic yes)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2931-n.pdf"
-				(at 0 -1.27 0)
+				(at 0.254 6.096 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2507,7 +2493,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Positive 100 mA 60V Linear Low Dropout Regulator, Fixed Output 3.3V, TO-220"
+			(property "Datasheet" ""
 				(at 0 0 0)
 				(effects
 					(font
@@ -2516,7 +2502,7 @@
 					(hide yes)
 				)
 			)
-			(property "ki_keywords" "Low Dropout Voltage Regulator 100mA Positive"
+			(property "Description" ""
 				(at 0 0 0)
 				(effects
 					(font
@@ -2525,33 +2511,22 @@
 					(hide yes)
 				)
 			)
-			(property "ki_fp_filters" "TO?220*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "LM2931-3.3_TO220_0_1"
+			(symbol "LD33v_1_1"
 				(rectangle
-					(start -5.08 1.905)
-					(end 5.08 -5.08)
+					(start -5.08 2.54)
+					(end 5.08 -3.81)
 					(stroke
-						(width 0.254)
+						(width 0)
 						(type default)
 					)
 					(fill
 						(type background)
 					)
 				)
-			)
-			(symbol "LM2931-3.3_TO220_1_1"
 				(pin power_in line
-					(at -7.62 0 0)
+					(at 0 -6.35 90)
 					(length 2.54)
-					(name "VI"
+					(name "GND"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2566,10 +2541,10 @@
 						)
 					)
 				)
-				(pin power_in line
-					(at 0 -7.62 90)
+				(pin power_out line
+					(at 7.62 1.27 180)
 					(length 2.54)
-					(name "GND"
+					(name "Vout"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2584,10 +2559,10 @@
 						)
 					)
 				)
-				(pin power_out line
-					(at 7.62 0 180)
+				(pin power_in line
+					(at -7.62 1.27 0)
 					(length 2.54)
-					(name "VO"
+					(name "Vin"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3115,6 +3090,16 @@
 	)
 	(wire
 		(pts
+			(xy 200.66 95.25) (xy 200.66 96.52)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4973f537-764b-4278-b88a-64f2a35e644a")
+	)
+	(wire
+		(pts
 			(xy 72.39 101.6) (xy 72.39 102.87)
 		)
 		(stroke
@@ -3125,7 +3110,7 @@
 	)
 	(wire
 		(pts
-			(xy 184.15 93.98) (xy 194.31 93.98)
+			(xy 184.15 93.98) (xy 195.58 93.98)
 		)
 		(stroke
 			(width 0)
@@ -3195,7 +3180,7 @@
 	)
 	(wire
 		(pts
-			(xy 194.31 93.98) (xy 194.31 96.52)
+			(xy 195.58 93.98) (xy 195.58 95.25)
 		)
 		(stroke
 			(width 0)
@@ -3205,7 +3190,7 @@
 	)
 	(wire
 		(pts
-			(xy 194.31 96.52) (xy 199.39 96.52)
+			(xy 195.58 95.25) (xy 200.66 95.25)
 		)
 		(stroke
 			(width 0)
@@ -3255,7 +3240,17 @@
 	)
 	(wire
 		(pts
-			(xy 184.15 99.06) (xy 199.39 99.06)
+			(xy 200.66 93.98) (xy 199.39 93.98)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "db9310ee-d27f-44cb-a2d0-47eee54bf310")
+	)
+	(wire
+		(pts
+			(xy 184.15 99.06) (xy 200.66 99.06)
 		)
 		(stroke
 			(width 0)
@@ -3868,6 +3863,75 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R")
+		(at 187.96 96.52 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "047183cf-bfc6-47fd-a71f-ae46364dab06")
+		(property "Reference" "R3"
+			(at 184.658 96.52 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10k"
+			(at 187.706 96.266 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal"
+			(at 187.96 94.742 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 187.96 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 187.96 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "976e820d-5d3e-4126-8219-6db753a6ead2")
+		)
+		(pin "1"
+			(uuid "1a1725f6-4dff-4aaa-a6d4-106e81e5afc2")
+		)
+		(instances
+			(project "Circuit_final_design"
+				(path "/3925f8f8-4f4c-4ea7-8976-d25d21cc1845"
+					(reference "R3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+3.3V")
 		(at 92.71 118.11 270)
 		(unit 1)
@@ -4381,7 +4445,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Conn_01x03_Socket")
-		(at 204.47 96.52 0)
+		(at 205.74 96.52 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4390,7 +4454,7 @@
 		(fields_autoplaced yes)
 		(uuid "1e4897d9-2696-4bd4-8c9b-6ca83302aa60")
 		(property "Reference" "Debug1"
-			(at 205.74 95.2499 0)
+			(at 207.01 95.2499 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4399,7 +4463,7 @@
 			)
 		)
 		(property "Value" "Conn_1x3"
-			(at 205.74 97.7899 0)
+			(at 207.01 97.7899 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4408,7 +4472,7 @@
 			)
 		)
 		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
-			(at 204.47 96.52 0)
+			(at 205.74 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4417,7 +4481,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 204.47 96.52 0)
+			(at 205.74 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4426,7 +4490,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x03, script generated"
-			(at 204.47 96.52 0)
+			(at 205.74 96.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4579,6 +4643,77 @@
 			(project "Circuit_final_design"
 				(path "/3925f8f8-4f4c-4ea7-8976-d25d21cc1845"
 					(reference "#PWR033")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "ld33v:LD33v")
+		(at 139.7 59.69 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "2c29bba4-4111-4627-9a1c-ef6232d5125c")
+		(property "Reference" "U2"
+			(at 139.7 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "LD33v"
+			(at 139.7 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
+			(at 139.954 53.594 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 139.7 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 139.7 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "3"
+			(uuid "e24f2bdd-debe-4588-a46d-e4275a9165b0")
+		)
+		(pin "1"
+			(uuid "7b4e8a9d-7bb1-4285-90b9-d5fa66c5db4c")
+		)
+		(pin "2"
+			(uuid "c7f00f96-de10-4f9e-9d83-650cbf98a808")
+		)
+		(instances
+			(project ""
+				(path "/3925f8f8-4f4c-4ea7-8976-d25d21cc1845"
+					(reference "U2")
 					(unit 1)
 				)
 			)
@@ -5115,72 +5250,6 @@
 			(project "Circuit_final_design"
 				(path "/3925f8f8-4f4c-4ea7-8976-d25d21cc1845"
 					(reference "#PWR037")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 184.15 96.52 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "5cb47416-2785-476b-8075-8e18e8cdf53b")
-		(property "Reference" "#PWR027"
-			(at 190.5 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 186.944 96.52 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 184.15 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 184.15 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 184.15 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "75f5de30-d787-471f-a9ef-5130fab2bb1b")
-		)
-		(instances
-			(project "Circuit_final_design"
-				(path "/3925f8f8-4f4c-4ea7-8976-d25d21cc1845"
-					(reference "#PWR027")
 					(unit 1)
 				)
 			)
@@ -7211,6 +7280,72 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+3.3V")
+		(at 191.77 96.52 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "dab4ce9a-fc4a-4a3a-a9d6-bf92fdc35d1d")
+		(property "Reference" "#PWR027"
+			(at 187.96 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.3V"
+			(at 194.31 96.52 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 191.77 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 191.77 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at 191.77 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2c665fc2-8899-4069-afce-d4abb7721cd9")
+		)
+		(instances
+			(project "Circuit_final_design"
+				(path "/3925f8f8-4f4c-4ea7-8976-d25d21cc1845"
+					(reference "#PWR027")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 207.01 125.73 90)
 		(unit 1)
@@ -7411,78 +7546,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Regulator_Linear:LM2931-3.3_TO220")
-		(at 139.7 58.42 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "ef9f57c1-182f-46c7-8b01-831725a3548a")
-		(property "Reference" "U2"
-			(at 139.7 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "LD33v"
-			(at 139.7 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
-			(at 139.7 52.705 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2931-n.pdf"
-			(at 139.7 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Positive 100 mA 60V Linear Low Dropout Regulator, Fixed Output 3.3V, TO-220"
-			(at 139.7 58.42 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "f4daa1bb-66a9-4133-8577-9a40ed3025a9")
-		)
-		(pin "1"
-			(uuid "62677572-c7d9-46a2-a686-d56fb7dcbcba")
-		)
-		(pin "3"
-			(uuid "583b5ad2-95a7-4a9c-a9b1-d5266a276720")
-		)
-		(instances
-			(project "Circuit_final_design"
-				(path "/3925f8f8-4f4c-4ea7-8976-d25d21cc1845"
-					(reference "U2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 199.39 93.98 270)
 		(unit 1)
@@ -7501,7 +7564,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 196.088 96.012 0)
+			(at 199.898 91.694 90)
 			(effects
 				(font
 					(size 1.27 1.27)

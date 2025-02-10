@@ -3717,28 +3717,36 @@
 				)
 			)
 		)
-		(symbol "Regulator_Linear:LM1117T-3.3"
+		(symbol "ld33v:LD33v"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "U"
-				(at -3.81 3.175 0)
+				(at 0 6.096 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
 				)
 			)
-			(property "Value" "LM1117T-3.3"
-				(at 0 3.175 0)
+			(property "Value" "LD33v"
+				(at 0 3.81 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left)
 				)
 			)
-			(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Horizontal_TabDown"
+			(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
+				(at 0.254 6.096 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
 				(at 0 0 0)
 				(effects
 					(font
@@ -3747,7 +3755,7 @@
 					(hide yes)
 				)
 			)
-			(property "Datasheet" "http://www.ti.com/lit/ds/symlink/lm1117.pdf"
+			(property "Description" ""
 				(at 0 0 0)
 				(effects
 					(font
@@ -3756,49 +3764,20 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "800mA Low-Dropout Linear Regulator, 3.3V fixed output, TO-220"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "linear regulator ldo fixed positive"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "TO?220*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "LM1117T-3.3_0_1"
+			(symbol "LD33v_1_1"
 				(rectangle
-					(start -5.08 -5.08)
-					(end 5.08 1.905)
+					(start -5.08 2.54)
+					(end 5.08 -3.81)
 					(stroke
-						(width 0.254)
+						(width 0)
 						(type default)
 					)
 					(fill
 						(type background)
 					)
 				)
-			)
-			(symbol "LM1117T-3.3_1_1"
 				(pin power_in line
-					(at 0 -7.62 90)
+					(at 0 -6.35 90)
 					(length 2.54)
 					(name "GND"
 						(effects
@@ -3816,9 +3795,9 @@
 					)
 				)
 				(pin power_out line
-					(at 7.62 0 180)
+					(at 7.62 1.27 180)
 					(length 2.54)
-					(name "VO"
+					(name "Vout"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3834,9 +3813,9 @@
 					)
 				)
 				(pin power_in line
-					(at -7.62 0 0)
+					(at -7.62 1.27 0)
 					(length 2.54)
-					(name "VI"
+					(name "Vin"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -6442,77 +6421,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Regulator_Linear:LM1117T-3.3")
-		(at 137.16 41.91 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "37f4c081-bd06-46f7-8d9c-e10534c0407f")
-		(property "Reference" "U5"
-			(at 137.16 35.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "LM1117T-3.3"
-			(at 137.16 38.1 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
-			(at 137.16 41.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/lm1117.pdf"
-			(at 137.16 41.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "800mA Low-Dropout Linear Regulator, 3.3V fixed output, TO-220"
-			(at 137.16 41.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "e7f8fc48-b30c-4e88-be39-4429ae5ba4b6")
-		)
-		(pin "2"
-			(uuid "5f7747d6-e92f-4bf0-8e1a-1cd4b8c724f6")
-		)
-		(pin "3"
-			(uuid "9b59922b-34be-4e60-9362-e5fe6b6f168b")
-		)
-		(instances
-			(project ""
-				(path "/66126b8a-fb97-47ca-acd1-98b3abb590aa"
-					(reference "U5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 62.23 71.12 0)
 		(unit 1)
@@ -7942,6 +7850,77 @@
 			(project "Circuit"
 				(path "/66126b8a-fb97-47ca-acd1-98b3abb590aa"
 					(reference "#PWR024")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "ld33v:LD33v")
+		(at 137.16 43.18 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "96d834cf-0b37-4bd8-97e1-8f646b878e97")
+		(property "Reference" "U3"
+			(at 137.16 35.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "LD33v"
+			(at 137.16 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
+			(at 137.414 37.084 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 137.16 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 137.16 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "dfc126f5-156e-4888-bbcc-3ad2c771d51f")
+		)
+		(pin "3"
+			(uuid "c0d03ffb-5e72-443d-9a91-22c7079ae6ee")
+		)
+		(pin "1"
+			(uuid "5967e1e2-1206-4840-be87-b7afbe7147f1")
+		)
+		(instances
+			(project ""
+				(path "/66126b8a-fb97-47ca-acd1-98b3abb590aa"
+					(reference "U3")
 					(unit 1)
 				)
 			)
