@@ -268,7 +268,7 @@
 		(uuid "0bc9d6de-6132-464f-8966-92de727cf5ba")
 		(at 107.3 119.765)
 		(property "Reference" "A2"
-			(at 0 -14.2 0)
+			(at 0 -8.965 0)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "5d56dfce-8c7c-4cc3-9524-20046f502f76")
@@ -280,7 +280,7 @@
 			)
 		)
 		(property "Value" "DRV8825"
-			(at -0.3 -13 0)
+			(at 0 -7.365 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "486f88d3-2757-4b77-b2bd-cd43d0b753b0")
@@ -526,7 +526,7 @@
 			(uuid "bb6d0a1e-f930-47aa-a065-0c03184496e6")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -11.3 0)
+			(at 0 -8.965 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "dfa90902-08d8-4e16-bf19-ca443382afbd")
@@ -2116,7 +2116,7 @@
 		(uuid "671c93ec-cb8c-465f-a489-3d5dfaab48a0")
 		(at 107.3 97.705)
 		(property "Reference" "A1"
-			(at 0 -14.2 0)
+			(at 0.1 -9.005 0)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "29918201-2ef8-4315-92e9-89a7c71def8a")
@@ -2128,7 +2128,7 @@
 			)
 		)
 		(property "Value" "DRV8825"
-			(at -0.3 -13 0)
+			(at -0.2 -7.805 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "81e0bcc0-69ff-4123-ab57-42c7cd88885c")
@@ -2374,7 +2374,7 @@
 			(uuid "8a65d198-befe-401a-92d9-73724f763a42")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -11.3 0)
+			(at 0.1 -9.005 0)
 			(unlocked yes)
 			(layer "F.Fab")
 			(uuid "621a9662-8162-422b-9343-f2bb1a4d58db")
