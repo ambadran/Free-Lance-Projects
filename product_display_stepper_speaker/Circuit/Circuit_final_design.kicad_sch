@@ -6397,7 +6397,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Module:Pololu_Breakout-16_15.2x20.3mm"
+		(property "Footprint" "DRV8825:DRV8825_module"
 			(at 77.47 123.19 0)
 			(effects
 				(font
@@ -7380,7 +7380,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Module:Pololu_Breakout-16_15.2x20.3mm"
+		(property "Footprint" "DRV8825:DRV8825_module"
 			(at 118.11 123.19 0)
 			(effects
 				(font

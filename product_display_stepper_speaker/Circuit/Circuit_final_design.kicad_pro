@@ -485,7 +485,7 @@
       "plot": "",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "step/Circuit_final_design.step",
       "svg": "",
       "vrml": ""
     },
