@@ -22,4 +22,6 @@ st2 = Stepper(EN_PIN, DIR_PIN2, STEP_PIN2)
 speaker_l = Speaker(5)
 speaker_r = Speaker(4)
 
-
+def move_both(steps):
+    st1.step(steps)
+    st2.step(steps)

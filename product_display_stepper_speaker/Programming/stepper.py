@@ -25,7 +25,10 @@ class Stepper:
         self.dir_pin = Pin(dir_pin, Pin.OUT)
         self.step_pin = Pin(step_pin, Pin.OUT)
 
+        self.is_moving = False
+
         self.free()
+        self.dir = 0
 
     @property
     def state(self) -> State:
@@ -69,7 +72,27 @@ class Stepper:
         '''
         self.dir_pin.value(direction)
 
-    def step(self, steps: int, frequency: int=DEFAULT_FREQ, direction: Dir=None):
+    def stop_movement(self, t):
+        '''
+        stop step timer
+        '''
+        self.step_timer.deinit()
+        self.stop_timer.deinit()
+
+        self.step_timer.deinit()
+        self.stop_timer.deinit()
+
+        self.step_timer.deinit()
+        self.stop_timer.deinit()
+
+        self.step_timer.deinit()
+        self.stop_timer.deinit()
+
+
+        self.free()
+        self.is_moving = False
+
+    def step(self, steps: int, frequency: int=1000, direction: Dir=None):
         '''
         moves stepper 'steps' amount without changing dir unless parameter is given
 
@@ -79,7 +102,18 @@ class Stepper:
 
         This is just to avoid the extra cpu time of polling whether the steps are finished or not
         '''
-        self.step_timer = Timer(period=round(1/frequency), mode=Timer.PERIODIC, callback=lambda t:self.step_pin.toggle())
+        if self.is_moving:
+            print("Already Moving!")
+        else:
+            self.hold()
 
-        self.stop_timer = Timer(period=steps*round(1/frequency), mode=Timer.ONE_SHOT, callback=lambda t: self.step_timer.deinit())
+            self.step_timer = Timer(-1)
+            self.step_timer.init(freq=frequency, mode=Timer.PERIODIC, callback=lambda t:self.step_pin.value(not self.step_pin.value()))
+            self.is_moving = True
+
+            self.stop_timer = Timer(-1)
+            self.stop_timer.init(period=int((steps/frequency)*1000), mode=Timer.ONE_SHOT, callback=self.stop_movement)
+
+    def __repr__(self) -> str:
+        return f"Stepper State: {self.state}\nStepper Dir: {self.dir}\nStepper Moving: {self.is_moving}"
 
