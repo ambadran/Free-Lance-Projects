@@ -42,18 +42,18 @@
 		(pad_to_mask_clearance 0)
 		(allow_soldermask_bridges_in_footprints no)
 		(pcbplotparams
-			(layerselection 0x00010fc_ffffffff)
+			(layerselection 0x0001000_7ffffffe)
 			(plot_on_all_layers_selection 0x0000000_00000000)
 			(disableapertmacros no)
 			(usegerberextensions no)
 			(usegerberattributes yes)
-			(usegerberadvancedattributes yes)
-			(creategerberjobfile yes)
+			(usegerberadvancedattributes no)
+			(creategerberjobfile no)
 			(dashed_line_dash_ratio 12.000000)
 			(dashed_line_gap_ratio 3.000000)
 			(svgprecision 4)
 			(plotframeref no)
-			(viasonmask no)
+			(viasonmask yes)
 			(mode 1)
 			(useauxorigin no)
 			(hpglpennumber 1)
@@ -66,17 +66,17 @@
 			(dxfusepcbnewfont yes)
 			(psnegative no)
 			(psa4output no)
-			(plotreference yes)
-			(plotvalue yes)
-			(plotfptext yes)
+			(plotreference no)
+			(plotvalue no)
+			(plotfptext no)
 			(plotinvisibletext no)
 			(sketchpadsonfab no)
 			(subtractmaskfromsilk no)
 			(outputformat 1)
 			(mirror no)
-			(drillshape 1)
+			(drillshape 0)
 			(scaleselection 1)
-			(outputdirectory "")
+			(outputdirectory "Gerber/")
 		)
 	)
 	(net 0 "")
@@ -859,7 +859,7 @@
 		(descr "Barrel jack connector (5.5 mm outer diameter, 2.05 inner diameter ), https://gct.co/files/drawings/dcj200-10.pdf")
 		(tags "connector barrel jack")
 		(property "Reference" "J1"
-			(at 0 -2.5 360)
+			(at 0 -2.5 0)
 			(layer "F.SilkS")
 			(uuid "0196d56f-431c-42ef-b60a-b00e0f128bc9")
 			(effects
@@ -1135,7 +1135,7 @@
 			(uuid "52a36ac6-44da-44c5-b60b-672ac27c8ecb")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 3 360)
+			(at 0 3 0)
 			(layer "F.Fab")
 			(uuid "aa253fae-5f0b-4a72-be33-3f8f556510c1")
 			(effects
@@ -7536,7 +7536,7 @@
 			(uuid "9cefd442-e2f8-4cbc-965e-3e8f6f8eea36")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 2.4 2.425 360)
+			(at 2.4 2.425 0)
 			(layer "F.Fab")
 			(uuid "75f155ba-c1a2-4840-a496-617c81f3adf8")
 			(effects
@@ -7598,7 +7598,7 @@
 		(descr "nRF24L01 breakout board")
 		(tags "nRF24L01 adapter breakout")
 		(property "Reference" "U2"
-			(at 12.54 2.52 360)
+			(at 12.54 2.52 0)
 			(layer "F.SilkS")
 			(uuid "99ee0a98-1424-459a-a1e8-1851ead426c8")
 			(effects
@@ -7609,7 +7609,7 @@
 			)
 		)
 		(property "Value" "NRF24L01_Breakout"
-			(at 13 5 360)
+			(at 13 5 0)
 			(layer "F.Fab")
 			(uuid "6151362c-4909-481b-80a9-f71fbb7808ed")
 			(effects
@@ -7936,7 +7936,7 @@
 			(uuid "e7851e01-d53f-4c3d-9517-c1814469e1fc")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 12.54 2.52 360)
+			(at 12.54 2.52 0)
 			(layer "F.Fab")
 			(uuid "39f81ce7-be5d-4a3f-8fd4-a389f5946c02")
 			(effects
