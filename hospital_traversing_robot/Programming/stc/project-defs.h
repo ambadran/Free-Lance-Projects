@@ -116,7 +116,7 @@
 #include "global_timer.h"
 #include "report.h"
 #include "differential_control.h"
-#include "mpu9250.h"
+#include "mpu6050.h"
 #include "neo_m8n.h"
 #include "nrf24l01.h"
 #include "terminal.h"

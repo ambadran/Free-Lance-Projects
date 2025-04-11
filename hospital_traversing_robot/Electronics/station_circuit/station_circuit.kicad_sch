@@ -846,8 +846,8 @@
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
-			(property "Reference" "U"
-				(at -13.97 27.94 0)
+			(property "Reference" "U1"
+				(at 0 31.75 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -855,7 +855,7 @@
 				)
 			)
 			(property "Value" "Pico"
-				(at 0 19.05 0)
+				(at 0 29.21 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -1266,60 +1266,6 @@
 						)
 					)
 					(number "20"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
-					(at -2.54 -29.21 90)
-					(length 2.54)
-					(name "SWCLK"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "41"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_in line
-					(at 0 -29.21 90)
-					(length 2.54)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "42"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin bidirectional line
-					(at 2.54 -29.21 90)
-					(length 2.54)
-					(name "SWDIO"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "43"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4048,9 +3994,6 @@
 		(pin "37"
 			(uuid "29f41801-127b-424c-adae-b23661d91f22")
 		)
-		(pin "41"
-			(uuid "6f424c5e-2845-483f-8ebe-6b0ba10a26b4")
-		)
 		(pin "35"
 			(uuid "9e720dbc-45bd-4574-bd46-91e5ded40131")
 		)
@@ -4075,9 +4018,6 @@
 		(pin "10"
 			(uuid "e59b0271-7329-43cf-9aee-007b5f311edc")
 		)
-		(pin "43"
-			(uuid "63e0b7c4-8b1a-4ff1-8d40-c9758e6ee868")
-		)
 		(pin "33"
 			(uuid "e6e0720d-4138-4bed-8b5a-9eec2c05ab8a")
 		)
@@ -4086,9 +4026,6 @@
 		)
 		(pin "32"
 			(uuid "1a80186a-f99a-420b-92e8-a9a39ba2d041")
-		)
-		(pin "42"
-			(uuid "0d154036-ce07-455d-a1bf-3740ff7142ac")
 		)
 		(pin "17"
 			(uuid "8b620397-647c-43c9-b38c-6a74d78f6819")
