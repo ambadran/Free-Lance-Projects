@@ -16,13 +16,13 @@ void main(void) {
 
   global_timer_init();
   report_init();
-  mpu6050_init();
   differential_control_init();
   neo_m8n_init();
   nrf24_device(RECEIVER, RESET);
 
   delay1ms(500);
 
+  mpu6050_init();
   // Main Routine
   protocol_main_loop();
 
