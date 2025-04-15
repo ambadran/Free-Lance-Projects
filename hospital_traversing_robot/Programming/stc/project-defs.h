@@ -83,6 +83,7 @@
 #define SPI_SPEED 4000000UL
 
 /* I2C settings */
+#define CHOOSEN_I2C_PIN_SWITCH 0
 
 /* nRF24L01 settings */
 //#define NRF_DEBUGGING  //uncomment to print all the nrf24l01 registers after setting them with nrf24_device()
@@ -91,7 +92,7 @@
 /* Ultrasonic Sensor Settings*/
 /* #define ULTRASONIC_STATE_MACHINE */
 
-/* MPU9250 Settings */
+/* MPU6050 Settings */
 
 /* NEO M8N Settings */
 

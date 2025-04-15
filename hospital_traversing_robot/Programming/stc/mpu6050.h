@@ -1,7 +1,7 @@
 #ifndef MPU6050_H
 #define MPU6050_H
 
-#define DEVICE_ADDRESS 104
+#define MPU6050_ADDRESS 104
 
 #define XG_OFFS_TC    0x00
 #define YG_OFFS_TC    0x01
@@ -113,8 +113,11 @@
 #define FIFO_COUNTL 0x73
 #define FIFO_R_W  0x74
 #define WHO_AM_I  0x75
+#define WHO_AM_I_RESPONSE 0x68
 
 void mpu6050_init(void);
+I2C_AckNak mpu6050_read_byte(uint8_t register_to_read, uint8_t* reg_value);
+I2C_AckNak mpu6050_write_byte(uint8_t register_to_read, uint8_t value);
 void mpu6050_test_responsiveness(void);
 
 #endif
