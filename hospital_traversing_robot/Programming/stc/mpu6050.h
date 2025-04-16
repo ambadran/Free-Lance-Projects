@@ -102,8 +102,8 @@
 #define I2C_SLV1_DO 0x64
 #define I2C_SLV2_DO 0x65
 #define I2C_SLV3_DO 0x66
-#define I2C_MST_DELAY_CTR L
-#define SIGNAL_PATH_RESE  T
+#define I2C_MST_DELAY_CTRL 0x67
+#define SIGNAL_PATH_RESET 0x68
 #define MOT_DETECT_CTRL 0x69
 #define USER_CTRL 0x6A
 #define PWR_MGMT_1  0x6B
@@ -132,17 +132,23 @@
 #define GYRO_SENSITIVITY_1 1
 #define GYRO_SENSITIVITY_2 2
 #define GYRO_SENSITIVITY_3 3
-const uint16_t ACCEL_SENSITIVITY_VALUES = {16384, 8192, 4096, 2048};
+const float ACCEL_SENSITIVITY_VALUES = {16384.0, 8192.0, 4096.0, 2048.0};
 const float GYRO_SENSITIVITY_VALUES = {131, 65.5, 32.8, 16.4};
 
 void mpu6050_init(void);
-I2C_AckNak mpu6050_write_byte(uint8_t register_to_read, uint8_t value);
+I2C_AckNak mpu6050_write_byte(uint8_t register_to_write, uint8_t value);
 I2C_AckNak mpu6050_read_byte(uint8_t register_to_read, uint8_t* reg_value);
-I2C_AckNak mpu6050_write_bytes(uint8_t register_to_read, uint8_t* values, uint8_t bytes_num);
-I2C_AckNak mpu6050_read_bytes(uint8_t register_to_read, uint8_t* reg_value, uint8_t bytes_num);
+I2C_AckNak mpu6050_write_bytes(uint8_t register_to_write, uint8_t* values, int8_t bytes_num);
+I2C_AckNak mpu6050_read_bytes(uint8_t register_to_read, uint8_t* reg_values, int8_t bytes_num);
 void mpu6050_test_responsiveness(void);
-I2C_AckNak raw_gyro(int16_t* gyro_values);
-I2C_AckNak raw_accel(int16_t* accel_values);
 void calibrate_gyro(void);
+I2C_AckNak read_raw_accel(void);
+I2C_AckNak read_raw_gyro(void);
+I2C_AckNak read_accel(void);
+I2C_AckNak read_gyro(void);
+int16_t get_raw_accel(uint8_t ind);
+int16_t get_raw_gyro(uint8_t ind);
+float get_accel(uint8_t ind);
+float get_gyro(uint8_t ind);
 
 #endif

@@ -129,44 +129,27 @@ LINE_STATUS terminal_execute_line(char* line) {
         break;
 
       case 'F':
-        if (command.command_type != COMMAND_NOT_SET) {
-          printf("Can't have >1 command letter in one command!\n");
-          return LINE_FAILED;
-        }
         command.command_type = COMMAND_MOVE_FORWARD;
         break;
 
        case 'B':
-        if (command.command_type != COMMAND_NOT_SET) {
-          printf("Can't have >1 command letter in one command!\n");
-          return LINE_FAILED;
-        }
         command.command_type = COMMAND_MOVE_BACKWARD;
         break;
   
        case 'R':
-        if (command.command_type != COMMAND_NOT_SET) {
-          printf("Can't have >1 command letter in one command!\n");
-          return LINE_FAILED;
-        }
         command.command_type = COMMAND_MOVE_RIGHT;
         break;
 
        case 'L':
-        if (command.command_type != COMMAND_NOT_SET) {
-          printf("Can't have >1 command letter in one command!\n");
-          return LINE_FAILED;
-        }
         command.command_type = COMMAND_MOVE_LEFT;
         break;
 
       case 'G':
-        if (command.command_type != COMMAND_NOT_SET) {
-          printf("Can't have >1 command letter in one command!\n");
-          return LINE_FAILED;
-        }
         command.command_type = COMMAND_GPS;
         break;
+
+      case 'M':
+        command.command_type = COMMAND_IMU;
 
       case 'i':
         // reading int argument for a multi-argument command
@@ -233,6 +216,9 @@ LINE_STATUS terminal_execute_line(char* line) {
         return LINE_FAILED;
       }
 
+      break;
+
+    case COMMAND_IMU:
       break;
 
     default:
@@ -306,6 +292,35 @@ LINE_STATUS terminal_execute_line(char* line) {
         default: // case 0
           report("latitude: %s\nlongitude: %s\nheading: %s\ntime: %s\n", gps_data.latitude, gps_data.longitude, gps_data.heading, gps_data.time);
       }
+      break;
+
+    case COMMAND_IMU:
+      read_accel();
+      read_gyro();
+      switch(command.i) {
+        case 1:
+          report("ACCEL X: %.2fg", get_accel(0));
+          break;
+        case 2:
+          report("ACCEL Y: %.2fg", get_accel(1));
+          break;
+        case 3:
+          report("ACCEL Z: %.2fg", get_accel(2));
+          break;
+        case 4:
+          report("GYRO X: %.2fdeg/sec", get_gyro(0));
+          break;
+        case 5:
+          report("GYRO Y: %.2fdeg/sec", get_gyro(1));
+          break;
+        case 6:
+          report("GYRO Z: %.2fdeg/sec", get_gyro(2));
+          break;
+
+        default:
+          report("ACCEL X: %.2fg\nACCEL Y: %.2fg\nACCEL Z: %.2fg\nGYRO X: %.2fdeg/secGYRO Y: %.2fdeg/secGYRO Z: %.2fdeg/sec", get_accel[0], get_accel[1], get_accel[2], get_gyro[0], get_gyro[1], get_gyro[2]);
+      }
+
       break;
 
     default:
