@@ -3,6 +3,16 @@
 // a global variable to store read register value instaed of creating one repeatedly
 uint8_t reg_value = 0;
 
+// Offset values
+int16_t ACCEL_OFFSET = {DEFAULT_ACCEL_OFFSET_X, DEFAULT_ACCEL_OFFSET_Y, DEFAULT_ACCEL_OFFSET_Z};
+int16_t GYRO_OFFSET = {DEFAULT_GYRO_OFFSET_X, DEFAULT_GYRO_OFFSET_Y, DEFAULT_GYRO_OFFSET_Z};
+
+// Actual Values
+uint8_t raw_values = {0, 0, 0, 0, 0, 0};
+int16_t accel_values = {0, 0, 0};
+int16_t gyro_values = {0, 0, 0};
+
+
 void mpu6050_init(void) {
   i2cInitialiseMaster(CHOOSEN_I2C_PIN_SWITCH, I2C_CLOCK_400kHz);
 
@@ -15,14 +25,17 @@ void mpu6050_init(void) {
   mpu6050_write_byte(CONFIG, 0x00);
   mpu6050_write_byte(CONFIG, 0b00000011)
   mpu6050_write_byte(SMPLRT_DIV, 0x04)
-  mpu6050_write_byte(GYRO_CONFIG, gyro_range_ind << 3)
-  mpu6050_write_byte(ACCEL_CONFIG, accel_sensitivity_ind << 3)
+  mpu6050_write_byte(ACCEL_CONFIG, ACCEL_SENSITIVITY << 3)
+  mpu6050_write_byte(GYRO_CONFIG, GYRO_SENSITIVITY << 3)
   mpu6050_write_byte(INT_PIN_CFG, 0x02)  // i don't know if this will make problems
   mpu6050_write_byte(FIFO_EN, 0b00000000)
   mpu6050_write_byte(I2C_MST_CTRL, 0b00000000)
   mpu6050_write_byte(INT_ENABLE, 0b00000000)
   mpu6050_write_byte(I2C_MST_DELAY_CTRL, 0b00000000)
   mpu6050_write_byte(PWR_MGMT_2, 0b00000000)
+
+  // Calibration
+  calibrate_gyro();
 
 
 }
@@ -50,6 +63,22 @@ I2C_AckNak mpu6050_read_byte(uint8_t register_to_read, uint8_t* reg_value) {
   return ack_state;
 }
 
+I2C_AckNak mpu6050_write_bytes(uint8_t register_to_read, uint8_t* values, uint8_t bytes_num) {
+//TODO: CHECK THIS IS THE SAME ROUTINE AS THE DATASHEET
+  I2C_AckNak ack_state = i2cStartCommand(MPU6050_ADDRESS, I2C_WRITE);  // should return I2C_ACK 
+  i2cSendByte(register_to_write);  // should return I2C_ACK 
+  for(:bytes_num<0;bytes_num--) {
+    i2cSendByte(*values++);  // should return I2C_ACK 
+  }
+  i2cStop();
+
+  return ack_state;
+}
+
+I2C_AckNak mpu6050_read_bytes(uint8_t register_to_read, uint8_t* reg_values, uint8_t bytes_num) {
+
+}
+
 void mpu6050_test_responsiveness(void) {
 
    I2C_AckNak ack_state = mpu6050_read_byte(WHO_AM_I, &reg_value);
@@ -68,4 +97,6 @@ void mpu6050_test_responsiveness(void) {
 
 }
 
-
+void calibrate_gyro(void) {
+  
+}

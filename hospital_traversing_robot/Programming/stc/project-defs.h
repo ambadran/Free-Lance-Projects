@@ -61,14 +61,13 @@
 
 /* timer-hal configs */
 #define HAL_TIMER_API_STOP_TIMER
-
-// TIMER1 is used for CONSOLE_UART
-#define NEO_M8N_TIMER UART_USE_OWN_TIMER // TIMER2 is used for UART2
-                                         
+// Timer assignments
 #define GLOBAL_TIMER TIMER0
 #define GLOBAL_TIMER_ISR timer0_isr
 #define GLOBAL_TIMER_INTERRUPT TIMER0_INTERRUPT
-
+// TIMER1 is used for CONSOLE_UART
+#define NEO_M8N_TIMER UART_USE_OWN_TIMER // TIMER2 is used for UART2
+                                         
 /* #define ULTRASONIC_TIMER TIMER4 */
 /* #define ULTRASONIC_TIMER_ISR timer4_isr */
 /* #define ULTRASONIC_TIMER_INTERRUPT TIMER4_INTERRUPT */
@@ -93,6 +92,16 @@
 /* #define ULTRASONIC_STATE_MACHINE */
 
 /* MPU6050 Settings */
+#define ACCEL_SENSITIVITY ACCEL_SENSITIVITY_0
+#define GYRO_SENSITIVITY GYRO_SENSITIVITY_1
+//TODO: These values are set in place and no calibration routine yet
+#define DEFAULT_ACCEL_OFFSET_X -940
+#define DEFAULT_ACCEL_OFFSET_Y -200
+#define DEFAULT_ACCEL_OFFSET_Z 800
+//NOTE: gyro offset is calculated with every power up using a calibration routine
+#define DEFAULT_GYRO_OFFSET_X 0
+#define DEFAULT_GYRO_OFFSET_Y 0
+#define DEFAULT_GYRO_OFFSET_Z 0
 
 /* NEO M8N Settings */
 

@@ -1,8 +1,12 @@
 #ifndef MPU6050_H
 #define MPU6050_H
 
+/* I2C Device Address
+ */
 #define MPU6050_ADDRESS 104
 
+/* MPU6050 Internal Register Addresses
+ */
 #define XG_OFFS_TC    0x00
 #define YG_OFFS_TC    0x01
 #define ZG_OFFS_TC    0x02
@@ -113,11 +117,32 @@
 #define FIFO_COUNTL 0x73
 #define FIFO_R_W  0x74
 #define WHO_AM_I  0x75
+
+/* Expected Responses
+ */
 #define WHO_AM_I_RESPONSE 0x68
 
+/* Settings to choose from
+ */
+#define ACCEL_SENSITIVITY_0 0
+#define ACCEL_SENSITIVITY_1 1
+#define ACCEL_SENSITIVITY_2 2
+#define ACCEL_SENSITIVITY_3 3
+#define GYRO_SENSITIVITY_0 0
+#define GYRO_SENSITIVITY_1 1
+#define GYRO_SENSITIVITY_2 2
+#define GYRO_SENSITIVITY_3 3
+const uint16_t ACCEL_SENSITIVITY_VALUES = {16384, 8192, 4096, 2048};
+const float GYRO_SENSITIVITY_VALUES = {131, 65.5, 32.8, 16.4};
+
 void mpu6050_init(void);
-I2C_AckNak mpu6050_read_byte(uint8_t register_to_read, uint8_t* reg_value);
 I2C_AckNak mpu6050_write_byte(uint8_t register_to_read, uint8_t value);
+I2C_AckNak mpu6050_read_byte(uint8_t register_to_read, uint8_t* reg_value);
+I2C_AckNak mpu6050_write_bytes(uint8_t register_to_read, uint8_t* values, uint8_t bytes_num);
+I2C_AckNak mpu6050_read_bytes(uint8_t register_to_read, uint8_t* reg_value, uint8_t bytes_num);
 void mpu6050_test_responsiveness(void);
+I2C_AckNak raw_gyro(int16_t* gyro_values);
+I2C_AckNak raw_accel(int16_t* accel_values);
+void calibrate_gyro(void);
 
 #endif
