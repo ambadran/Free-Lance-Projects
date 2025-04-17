@@ -1,20 +1,25 @@
 #include "project-defs.h"
 
+static const float ACCEL_SENSITIVITY_VALUES[] = {16384.0, 8192.0, 4096.0, 2048.0};
+static const float GYRO_SENSITIVITY_VALUES[] = {131.0, 65.5, 32.8, 16.4};
+
 // a global variable to store read register value instaed of creating one repeatedly
-uint8_t reg_value = 0;
+static uint8_t reg_value = 0;
 
 // Offset values
-int16_t ACCEL_OFFSET = {DEFAULT_ACCEL_OFFSET_X, DEFAULT_ACCEL_OFFSET_Y, DEFAULT_ACCEL_OFFSET_Z};
-int16_t GYRO_OFFSET = {DEFAULT_GYRO_OFFSET_X, DEFAULT_GYRO_OFFSET_Y, DEFAULT_GYRO_OFFSET_Z};
+static int16_t ACCEL_OFFSET[] = {DEFAULT_ACCEL_OFFSET_X, DEFAULT_ACCEL_OFFSET_Y, DEFAULT_ACCEL_OFFSET_Z};
+static int16_t GYRO_OFFSET[] = {DEFAULT_GYRO_OFFSET_X, DEFAULT_GYRO_OFFSET_Y, DEFAULT_GYRO_OFFSET_Z};
 
 // Actual Values
-uint8_t raw_values = {0, 0, 0, 0, 0, 0};  // the temporary buffer to read the values fresh out of the mpu6050
-int16_t raw_accel_values = {0, 0, 0};
-int16_t raw_gyro_values = {0, 0, 0};
-float accel_values = {0.0, 0.0, 0.0};
-float gyro_values = {0.0, 0.0, 0.0};
+static uint8_t raw_values[] = {0, 0, 0, 0, 0, 0};  // the temporary buffer to read the values fresh out of the mpu6050
+static int16_t raw_accel_values[] = {0, 0, 0};
+static int16_t raw_gyro_values[] = {0, 0, 0};
+static int16_t accel_values[] = {0, 0, 0};
+static int16_t gyro_values[] = {0, 0, 0};
 
 void mpu6050_init(void) {
+
+  // initializing the i2c hardware
   i2cInitialiseMaster(CHOOSEN_I2C_PIN_SWITCH, I2C_CLOCK_400kHz);
 
   // testing responsiveness
@@ -146,10 +151,13 @@ I2C_AckNak read_accel(void) {
   // reading the raw values
   I2C_AckNak ack_state = mpu6050_read_bytes(ACCEL_XOUT_H, raw_values, 6);
 
-  // assigning
-  accel_values[0] = (float)((int16_t)((raw_values[0] << 8) | (raw_values[1])) - ACCEL_OFFSET[0]) / ACCEL_SENSITIVITY_VALUES[ACCEL_SENSITIVITY];
-  accel_values[1] = (float)((int16_t)((raw_values[2] << 8) | (raw_values[3])) - ACCEL_OFFSET[1]) / ACCEL_SENSITIVITY_VALUES[ACCEL_SENSITIVITY];
-  accel_values[2] = (float)((int16_t)((raw_values[4] << 8) | (raw_values[5])) - ACCEL_OFFSET[2]) / ACCEL_SENSITIVITY_VALUES[ACCEL_SENSITIVITY];
+  // Assigning
+  /* accel_values[0] = (float)((int16_t)((raw_values[0] << 8) | (raw_values[1])) - ACCEL_OFFSET[0]) / ACCEL_SENSITIVITY_VALUES[ACCEL_SENSITIVITY]; */
+  /* accel_values[1] = (float)((int16_t)((raw_values[2] << 8) | (raw_values[3])) - ACCEL_OFFSET[1]) / ACCEL_SENSITIVITY_VALUES[ACCEL_SENSITIVITY]; */
+  /* accel_values[2] = (float)((int16_t)((raw_values[4] << 8) | (raw_values[5])) - ACCEL_OFFSET[2]) / ACCEL_SENSITIVITY_VALUES[ACCEL_SENSITIVITY]; */
+  accel_values[0] = (int16_t)((raw_values[0] << 8) | (raw_values[1])) - ACCEL_OFFSET[0];
+  accel_values[1] = (int16_t)((raw_values[2] << 8) | (raw_values[3])) - ACCEL_OFFSET[1];
+  accel_values[2] = (int16_t)((raw_values[4] << 8) | (raw_values[5])) - ACCEL_OFFSET[2];
 
 
   return ack_state;
@@ -160,16 +168,21 @@ I2C_AckNak read_gyro(void) {
   // reading the raw values
   I2C_AckNak ack_state = mpu6050_read_bytes(GYRO_XOUT_H, raw_values, 6);
 
-  // assigning
-  gyro_values[0] = (float)((int16_t)((raw_values[0] << 8) | (raw_values[1])) - GYRO_OFFSET[0]) / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY];
-  gyro_values[1] = (float)((int16_t)((raw_values[2] << 8) | (raw_values[3])) - GYRO_OFFSET[1]) / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY];;
-  gyro_values[2] = (float)((int16_t)((raw_values[4] << 8) | (raw_values[5])) - GYRO_OFFSET[2]) / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY];;
+  // Assigning
+  /* gyro_values[0] = (float)((int16_t)((raw_values[0] << 8) | (raw_values[1])) - GYRO_OFFSET[0]) / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY]; */
+  /* gyro_values[1] = (float)((int16_t)((raw_values[2] << 8) | (raw_values[3])) - GYRO_OFFSET[1]) / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY]; */
+  /* gyro_values[2] = (float)((int16_t)((raw_values[4] << 8) | (raw_values[5])) - GYRO_OFFSET[2]) / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY]; */
+  gyro_values[0] = (int16_t)((raw_values[0] << 8) | (raw_values[1])) - GYRO_OFFSET[0];
+  gyro_values[1] = (int16_t)((raw_values[2] << 8) | (raw_values[3])) - GYRO_OFFSET[1];
+  gyro_values[2] = (int16_t)((raw_values[4] << 8) | (raw_values[5])) - GYRO_OFFSET[2];
 
   return ack_state;
 }
 
 int16_t get_raw_accel(uint8_t ind) { return raw_accel_values[ind]; }
 int16_t get_raw_gyro(uint8_t ind) { return raw_gyro_values[ind]; }
-float get_accel(uint8_t ind) { return accel_values[ind]; }
-float get_gyro(uint8_t ind) { return gyro_values[ind] }
+int16_t get_accel(uint8_t ind) { return accel_values[ind]; }
+int16_t get_gyro(uint8_t ind) { return gyro_values[ind]; }
+
+
 

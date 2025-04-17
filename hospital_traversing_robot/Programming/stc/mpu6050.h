@@ -118,10 +118,6 @@
 #define FIFO_R_W  0x74
 #define WHO_AM_I  0x75
 
-/* Expected Responses
- */
-#define WHO_AM_I_RESPONSE 0x68
-
 /* Settings to choose from
  */
 #define ACCEL_SENSITIVITY_0 0
@@ -132,8 +128,11 @@
 #define GYRO_SENSITIVITY_1 1
 #define GYRO_SENSITIVITY_2 2
 #define GYRO_SENSITIVITY_3 3
-const float ACCEL_SENSITIVITY_VALUES = {16384.0, 8192.0, 4096.0, 2048.0};
-const float GYRO_SENSITIVITY_VALUES = {131, 65.5, 32.8, 16.4};
+
+
+/* Expected Responses
+ */
+#define WHO_AM_I_RESPONSE 0x68
 
 void mpu6050_init(void);
 I2C_AckNak mpu6050_write_byte(uint8_t register_to_write, uint8_t value);
@@ -148,7 +147,7 @@ I2C_AckNak read_accel(void);
 I2C_AckNak read_gyro(void);
 int16_t get_raw_accel(uint8_t ind);
 int16_t get_raw_gyro(uint8_t ind);
-float get_accel(uint8_t ind);
-float get_gyro(uint8_t ind);
+int16_t get_accel(uint8_t ind);
+int16_t get_gyro(uint8_t ind);
 
 #endif

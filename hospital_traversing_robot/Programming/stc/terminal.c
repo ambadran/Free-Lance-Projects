@@ -150,6 +150,7 @@ LINE_STATUS terminal_execute_line(char* line) {
 
       case 'M':
         command.command_type = COMMAND_IMU;
+        break;
 
       case 'i':
         // reading int argument for a multi-argument command
@@ -299,26 +300,26 @@ LINE_STATUS terminal_execute_line(char* line) {
       read_gyro();
       switch(command.i) {
         case 1:
-          report("ACCEL X: %.2fg", get_accel(0));
+          report("ACCEL X: %dg\n", get_accel(0));
           break;
         case 2:
-          report("ACCEL Y: %.2fg", get_accel(1));
+          report("ACCEL Y: %dg\n", get_accel(1));
           break;
         case 3:
-          report("ACCEL Z: %.2fg", get_accel(2));
+          report("ACCEL Z: %dg\n", get_accel(2));
           break;
         case 4:
-          report("GYRO X: %.2fdeg/sec", get_gyro(0));
+          report("GYRO X: %ddeg/sec\n", get_gyro(0));
           break;
         case 5:
-          report("GYRO Y: %.2fdeg/sec", get_gyro(1));
+          report("GYRO Y: %ddeg/sec\n", get_gyro(1));
           break;
         case 6:
-          report("GYRO Z: %.2fdeg/sec", get_gyro(2));
+          report("GYRO Z: %ddeg/sec\n", get_gyro(2));
           break;
 
         default:
-          report("ACCEL X: %.2fg\nACCEL Y: %.2fg\nACCEL Z: %.2fg\nGYRO X: %.2fdeg/secGYRO Y: %.2fdeg/secGYRO Z: %.2fdeg/sec", get_accel[0], get_accel[1], get_accel[2], get_gyro[0], get_gyro[1], get_gyro[2]);
+          report("ACCEL X: %dg\nACCEL Y: %dg\nACCEL Z: %dg\nGYRO X: %ddeg/sec\nGYRO Y: %ddeg/sec\nGYRO Z: %ddeg/sec\n", get_accel(0), get_accel(1), get_accel(2), get_gyro(0), get_gyro(1), get_gyro(2));
       }
 
       break;
