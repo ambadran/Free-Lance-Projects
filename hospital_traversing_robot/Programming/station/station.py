@@ -83,8 +83,20 @@ class Station:
         sends enter
         '''
         self.state = state.TRANSMITTER
-        self.nrf.send_ascii(string)
+        self.nrf.send_ascii(string+'\n')
         self.state = state.RECEIVER
+
+    def forward(self, value: int):
+        self.send(f"Fi{value}")
+
+    def backward(self, value: int):
+        self.send(f"Bi{value}")
+
+    def right(self, value: int):
+        self.send(f"Ri{value}")
+        
+    def left(self, value: int):
+        self.send(f"Li{value}")
 
     def print_nrf_registers(self):
         '''
