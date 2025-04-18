@@ -102,10 +102,14 @@
 #define DEFAULT_GYRO_OFFSET_X 0
 #define DEFAULT_GYRO_OFFSET_Y 0
 #define DEFAULT_GYRO_OFFSET_Z 0
+#define GYRO_CALIBRATION_SAMPLES 1000
 
 /* NEO M8N Settings */
 
 /* Differential Control Settings */
+#define CM_TO_MOVEMENT_MS 500  // 1cm is moved in CM_TO_MOVEMENT_MS
+#define DEGREE_TO_MOVEMENT_MS 15 // 1 degree is moved in DEGREE_TO_MOVEMENT_MS
+#define DEFAULT_PWM_DUTY_CYCLE 50000  // The range is (0-2^16)
 
 // Others 
 /* #define GPIO_HAS_INT_WK */
@@ -123,6 +127,7 @@
 #include <serial-console.h>
 #include <spi-hal.h>
 #include <i2c-hal.h>
+#include <advpwm-hal.h>
 #include "global_timer.h"
 #include "report.h"
 #include "differential_control.h"

@@ -223,7 +223,7 @@ void nrf24_send_payload(uint8_t *payload, uint8_t payload_width)
 
 /*reports back transmit status: TRANSMIT_DONE, TRANSMIT_FAILED (in case of reaching maximum number of retransmits in auto acknowledgement mode)
   and TRANSMIT_IN_PROGRESS, if neither flags are set. automatically resets the '1' flags.*/
-uint8_t nrf24_transmit_status()
+uint8_t nrf24_transmit_status(void)
 {
   nrf24_read(STATUS_ADDRESS, &register_current_value, 1, CLOSE);      /*status register is read to check TX_DS flag*/
   if (register_current_value & (1 << TX_DS))                          /*if the TX_DS == 1, */
@@ -315,7 +315,7 @@ uint8_t nrf24_flush(uint8_t fifo_select)
 }
 
 /*must be called atleast once, which happens with calling nrf24_device function*/
-void nrf24_reset() {
+void nrf24_reset(void) {
   reset_flag = 1;
   nrf24_CE(CE_OFF);
   register_new_value = CONFIG_REGISTER_DEFAULT;
@@ -452,7 +452,7 @@ void nrf24_datapipe_ptx(uint8_t datapipe_number)
 }
 
 /*setting the 6 datapipe addresses using the datapipe_address[][]*/
-void nrf24_datapipe_address_configuration()
+void nrf24_datapipe_address_configuration(void)
 {
   uint8_t address = RX_ADDR_P0_ADDRESS;
   for (uint8_t counter = 0; counter < 6; counter++)
@@ -496,7 +496,7 @@ void nrf24_address_width(uint8_t address_width)
 }
 
 /*datarate settings, you can choose between 2mbps, 1mbps, 250kbps*/
-void nrf24_rf_datarate(uint8_t rf_datarate)
+void nrf24_rf_datarate(uint16_t rf_datarate)
 {
   nrf24_read(RF_SETUP_ADDRESS, &register_current_value, 1, CLOSE);
   register_current_value &= ~((1 << RF_DR_LOW) | (1 << RF_DR_HIGH));

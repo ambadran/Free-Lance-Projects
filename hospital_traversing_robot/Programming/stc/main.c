@@ -19,10 +19,10 @@ void main(void) {
   differential_control_init();
   neo_m8n_init();
   nrf24_device(RECEIVER, RESET);
+  mpu6050_init();
 
   delay1ms(500);
 
-  mpu6050_init();
   // Main Routine
   protocol_main_loop();
 

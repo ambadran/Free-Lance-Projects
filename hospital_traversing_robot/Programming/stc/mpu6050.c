@@ -117,6 +117,23 @@ void mpu6050_test_responsiveness(void) {
 }
 
 void calibrate_gyro(void) {
+
+  int32_t sum[] = {0, 0, 0};
+
+  for (int i = 0 ; i < GYRO_CALIBRATION_SAMPLES ; i++) {
+    read_raw_gyro();
+    sum[0] += raw_gyro_values[0];
+    sum[1] += raw_gyro_values[1];
+    sum[2] += raw_gyro_values[2];
+
+    delay1ms(2);
+  }
+
+  GYRO_OFFSET[0] += (int16_t)(sum[0] / GYRO_CALIBRATION_SAMPLES);
+  GYRO_OFFSET[1] += (int16_t)(sum[1] / GYRO_CALIBRATION_SAMPLES);
+  GYRO_OFFSET[2] += (int16_t)(sum[2] / GYRO_CALIBRATION_SAMPLES);
+
+  printf("GX: %d, GX: %d, GX: %d\n", GYRO_OFFSET[0], GYRO_OFFSET[1], GYRO_OFFSET[2]);
   
 }
 
@@ -126,9 +143,9 @@ I2C_AckNak read_raw_accel(void) {
   I2C_AckNak ack_state = mpu6050_read_bytes(ACCEL_XOUT_H, raw_values, 6);
 
   // assigning
-  raw_accel_values[0] = (int16_t)((raw_values[0] << 8) | (raw_values[1]));
-  raw_accel_values[1] = (int16_t)((raw_values[2] << 8) | (raw_values[3]));
-  raw_accel_values[2] = (int16_t)((raw_values[4] << 8) | (raw_values[5]));
+  raw_accel_values[0] = (int16_t)((raw_values[0] << 8) | raw_values[1]);
+  raw_accel_values[1] = (int16_t)((raw_values[2] << 8) | raw_values[3]);
+  raw_accel_values[2] = (int16_t)((raw_values[4] << 8) | raw_values[5]);
 
   return ack_state;
 }
@@ -139,9 +156,9 @@ I2C_AckNak read_raw_gyro(void) {
   I2C_AckNak ack_state = mpu6050_read_bytes(GYRO_XOUT_H, raw_values, 6);
 
   // assigning
-  raw_gyro_values[0] = (int16_t)((raw_values[0] << 8) | (raw_values[1]));
-  raw_gyro_values[1] = (int16_t)((raw_values[2] << 8) | (raw_values[3]));
-  raw_gyro_values[2] = (int16_t)((raw_values[4] << 8) | (raw_values[5]));
+  raw_gyro_values[0] = (int16_t)((raw_values[0] << 8) | raw_values[1]);
+  raw_gyro_values[1] = (int16_t)((raw_values[2] << 8) | raw_values[3]);
+  raw_gyro_values[2] = (int16_t)((raw_values[4] << 8) | raw_values[5]);
 
   return ack_state;
 }
@@ -155,9 +172,9 @@ I2C_AckNak read_accel(void) {
   /* accel_values[0] = (float)((int16_t)((raw_values[0] << 8) | (raw_values[1])) - ACCEL_OFFSET[0]) / ACCEL_SENSITIVITY_VALUES[ACCEL_SENSITIVITY]; */
   /* accel_values[1] = (float)((int16_t)((raw_values[2] << 8) | (raw_values[3])) - ACCEL_OFFSET[1]) / ACCEL_SENSITIVITY_VALUES[ACCEL_SENSITIVITY]; */
   /* accel_values[2] = (float)((int16_t)((raw_values[4] << 8) | (raw_values[5])) - ACCEL_OFFSET[2]) / ACCEL_SENSITIVITY_VALUES[ACCEL_SENSITIVITY]; */
-  accel_values[0] = (int16_t)((raw_values[0] << 8) | (raw_values[1])) - ACCEL_OFFSET[0];
-  accel_values[1] = (int16_t)((raw_values[2] << 8) | (raw_values[3])) - ACCEL_OFFSET[1];
-  accel_values[2] = (int16_t)((raw_values[4] << 8) | (raw_values[5])) - ACCEL_OFFSET[2];
+  accel_values[0] = (int16_t)((raw_values[0] << 8) | (raw_values[1])) + ACCEL_OFFSET[0];
+  accel_values[1] = (int16_t)((raw_values[2] << 8) | (raw_values[3])) + ACCEL_OFFSET[1];
+  accel_values[2] = (int16_t)((raw_values[4] << 8) | (raw_values[5])) + ACCEL_OFFSET[2];
 
 
   return ack_state;

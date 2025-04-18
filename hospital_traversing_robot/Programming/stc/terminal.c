@@ -193,14 +193,11 @@ LINE_STATUS terminal_execute_line(char* line) {
         printf("Distance Parameter 'i' out of range!\n");
         return LINE_FAILED;
 
-      } else if (command.j > 4096) {
-
-        printf("PWM Duty Cycle Parameter 'j' out of range!\n");
-        return LINE_FAILED;
-
-      } else if (command.j == 0) {
-        // support for default PWM duty cycle 'j' value
-        command.j = 50000; //TODO: replace all these constant with #defs
+      }  else if (command.j == 0) {
+        //IMP: support for default PWM duty cycle 'j' value
+        // since duty cycle = 0 means no movement, so it makes no sense
+        // Also if pwm signal needs to be inverted, the advpwm lib supports that!
+        command.j = DEFAULT_PWM_DUTY_CYCLE; //TODO: replace all these constant with #defs
       }
 
       if (differential_control_is_moving()) {
@@ -248,27 +245,23 @@ LINE_STATUS terminal_execute_line(char* line) {
       break;
 
     case COMMAND_MOVE_FORWARD:
-      command.j = 10000; //TODO: fix getting the j
-      differential_control_forward(command.i, command.j);
-      printf("Forward: %d @ freq: %d\n", command.i, command.j);
+      differential_control_forward((uint8_t)command.i, command.j);
+      printf("Forward: %d @ freq: %u\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_BACKWARD:
-      command.j = 10000; //TODO: fix getting the j
-      differential_control_backward(command.i, command.j);
-      printf("Backward: %d @ freq: %d\n", command.i, command.j);
+      differential_control_backward((uint8_t)command.i, command.j);
+      printf("Backward: %d @ freq: %u\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_RIGHT:
-      command.j = 10000; //TODO: fix getting the j
-      differential_control_right(command.i, command.j);
-      printf("Right: %d @ freq: %d\n", command.i, command.j);
+      differential_control_right((uint8_t)command.i, command.j);
+      printf("Right: %d @ freq: %u\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_LEFT:
-      command.j = 10000; //TODO: fix getting the j
-      differential_control_left(command.i, command.j);
-      printf("Left: %d @ freq: %d\n", command.i, command.j);
+      differential_control_left((uint8_t)command.i, command.j);
+      printf("Left: %d @ freq: %u\n", command.i, command.j);
       break;
 
     case COMMAND_GPS:
