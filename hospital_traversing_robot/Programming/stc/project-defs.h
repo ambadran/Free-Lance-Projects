@@ -2,10 +2,10 @@
 #define PROJECT_DEFS_H
 
 /* gpio-hal Settings */
-#define EnA_PORT GPIO_PORT2
-#define EnA_PIN GPIO_PIN1
-#define EnB_PORT GPIO_PORT3
-#define EnB_PIN GPIO_PIN4
+#define EnA_PORT GPIO_PORT2 // initiated by advpwm
+#define EnA_PIN GPIO_PIN1  // initiated by advpwm
+#define EnB_PORT GPIO_PORT3  // initiated by advpwm
+#define EnB_PIN GPIO_PIN4  // initiated by advpwm
 #define IN1_PORT GPIO_PORT2
 #define IN1_PIN GPIO_PIN0
 #define IN2_PORT GPIO_PORT3
@@ -15,10 +15,16 @@
 #define IN4_PORT GPIO_PORT3
 #define IN4_PIN GPIO_PIN6
 
-#define NRF24_CSN_PORT GPIO_PORT2
+#define NRF24_CSN_PORT GPIO_PORT2 
 #define NRF24_CSN_PIN GPIO_PIN2
-#define NRF24_CE_PORT GPIO_PORT2
-#define NRF24_CE_PIN GPIO_PIN6
+#define NRF24_MOSI_PORT GPIO_PORT2  // iniated by spi-hal
+#define NRF24_MOSI_PIN GPIO_PIN3  // iniated by spi-hal
+#define NRF24_MISO_PORT GPIO_PORT2  // iniated by spi-hal
+#define NRF24_MISO_PIN GPIO_PIN4  // iniated by spi-hal
+#define NRF24_SCLK_PORT GPIO_PORT2  // iniated by spi-hal
+#define NRF24_SCLK_PIN GPIO_PIN5  // iniated by spi-hal
+#define NRF24_CE_PORT GPIO_PORT2  
+#define NRF24_CE_PIN GPIO_PIN6  
 
 #define ULTRASONIC_TRIGGER_PORT GPIO_PORT3
 #define ULTRASONIC_TRIGGER_PIN GPIO_PIN2
@@ -45,19 +51,20 @@
 #define NEO_M8N_UART_PIN_CONFIG 0  // TX->P1.1, RX->P1.0
 
 /* pwm Settings */
-#define PWM_MOTOR_FREQ 100UL
-
-// EnA pin is P2.1/PWM2P_2
+#define HAL_PWM_CALCULATE_PARAMETERS
+#define HAL_PWM_NO_COUNTER_INT_HANDLER
+#define HAL_PWM_NO_CHANNEL_INT_HANDLER
+// EnA pin is P2.1/PWM1N_2
 #define PWM_MOTOR_RIGHT_COUNTER PWM_COUNTER_A
 #define PWM_MOTOR_RIGHT_CHANNEL PWM_Channel0
 #define PWM_MOTOR_RIGHT_PIN_CONFIG 1
 #define PWM_MOTOR_RIGHT_OUTPUT_MODE PWM_OUTPUT_N_ONLY 
-
-// EnB in is P3.4/PWM4P_4
-#define PWM_MOTOR_LEFT_COUNTER PWM_COUNTER_A
-#define PWM_MOTOR_LEFT_CHANNEL PWM_Channel3
-#define PWM_MOTOR_LEFT_PIN_CONFIG 3
+// EnB in is P3.4/PWM4P_4/PWM8_2
+#define PWM_MOTOR_LEFT_COUNTER PWM_COUNTER_B
+#define PWM_MOTOR_LEFT_CHANNEL PWM_Channel7
+#define PWM_MOTOR_LEFT_PIN_CONFIG 1
 #define PWM_MOTOR_LEFT_OUTPUT_MODE PWM_OUTPUT_P_ONLY
+
 
 /* timer-hal configs */
 #define HAL_TIMER_API_STOP_TIMER
@@ -109,6 +116,7 @@
 /* Differential Control Settings */
 #define CM_TO_MOVEMENT_MS 500  // 1cm is moved in CM_TO_MOVEMENT_MS
 #define DEGREE_TO_MOVEMENT_MS 15 // 1 degree is moved in DEGREE_TO_MOVEMENT_MS
+#define PWM_MOTOR_FREQ 10000
 #define DEFAULT_PWM_DUTY_CYCLE 50000  // The range is (0-2^16)
 
 // Others 

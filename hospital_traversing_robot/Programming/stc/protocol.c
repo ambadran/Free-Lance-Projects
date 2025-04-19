@@ -71,7 +71,6 @@ void protocol_main_loop(void) {
       protocol_read_line(uart_receive_func_ptr, UART_RECEIVE_EMPTY);
 
     } else if (nrf24_receive(nrf_buf, STATIC_PAYLOAD_WIDTH_DEFAULT) != RECEIVE_FIFO_EMPTY) {
-
       do {
         c = *nrf_buf_ptr;
         protocol_read_line(nrf24_receive_func_ptr, RECEIVE_FIFO_EMPTY);
@@ -80,10 +79,9 @@ void protocol_main_loop(void) {
       // resetting for future use
       nrf_buf_ptr = nrf_buf;
       nrf_buf_end = nrf_buf + STATIC_PAYLOAD_WIDTH_DEFAULT;
-
-
- 
     }
+
+    // real-time processing
     differential_control_process();
     report_toggle_led();
 

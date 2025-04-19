@@ -5,35 +5,24 @@ static GpioConfig in2_pin = GPIO_PIN_CONFIG(IN2_PORT, IN2_PIN, GPIO_BIDIRECTIONA
 static GpioConfig in3_pin = GPIO_PIN_CONFIG(IN3_PORT, IN3_PIN, GPIO_BIDIRECTIONAL_MODE); 
 static GpioConfig in4_pin = GPIO_PIN_CONFIG(IN4_PORT, IN4_PIN, GPIO_BIDIRECTIONAL_MODE); 
 
-//TODO: should I remove this? does the advpwm initiate the pins?
-/* static GpioConfig ena_pin = GPIO_PIN_CONFIG(EnA_PORT, EnA_PIN, GPIO_BIDIRECTIONAL_MODE); */
-/* static GpioConfig enb_pin = GPIO_PIN_CONFIG(EnB_PORT, EnB_PIN, GPIO_BIDIRECTIONAL_MODE); */
-
 static volatile __bit is_moving = 0;
 // This is a very important value which determines the movement of the DC Motors will continue till when. It's basically the current time + the time needed to achieve a specific cm moved or a degree rotated.
 static volatile uint32_t differential_control_movement_ms;
 
-#pragma save
-// Suppress warning "unreferenced function argument"
-#pragma disable_warning 85
-/* FROM advpwm-hal.h:
- * **IMPORTANT:** You MUST define both pwmOnCounterInterrupt() and
- * pwmOnChannelInterrupt(), even if you don't use them. */
-void pwmOnCounterInterrupt(PWM_Counter counter, PWM_CounterInterrupt HAL_PWM_SEGMENT event) {}
-void pwmOnChannelInterrupt(PWM_Channel channel, uint16_t HAL_PWM_SEGMENT counterValue) {}
-#pragma restore
-
 void differential_control_init(void) {
+
+  uint16_t reloadValue;
+  uint16_t prescalar = pwmCalculatePrescalerAndReloadValue(PWM_MOTOR_FREQ, &reloadValue);
 
   // Initializing EnA Pin
   pwmConfigureCounter(
     PWM_MOTOR_RIGHT_COUNTER,
-    PWM_MOTOR_FREQ * 65535UL, 
-    PWM_MOTOR_FREQ, 
+    prescalar,
+    reloadValue,
     PWM_FREE_RUNNING, 
     PWM_NO_TRIGGER,
     0, 
-    PWM_IMMEDIATE_UPDATE,
+    PWM_BUFFERED_UPDATE,
     PWM_CONTINUOUS,
     PWM_EDGE_ALIGNED_UP,
     PWM_DISABLE_ALL_UE,
@@ -44,7 +33,7 @@ void differential_control_init(void) {
     OUTPUT_HIGH, 
     DISABLE_INTERRUPT, 
     PWM_IMMEDIATE_UPDATE,
-    32578
+    DEFAULT_PWM_DUTY_CYCLE
   );
   pwmConfigureOutput(
     PWM_MOTOR_RIGHT_CHANNEL,
@@ -61,12 +50,12 @@ void differential_control_init(void) {
   // Initializing EnB Pin
   pwmConfigureCounter(
     PWM_MOTOR_LEFT_COUNTER,
-    PWM_MOTOR_FREQ * 65535UL, 
-    PWM_MOTOR_FREQ, 
+    prescalar,
+    reloadValue,
     PWM_FREE_RUNNING, 
     PWM_NO_TRIGGER,
     0, 
-    PWM_IMMEDIATE_UPDATE,
+    PWM_BUFFERED_UPDATE,
     PWM_CONTINUOUS,
     PWM_EDGE_ALIGNED_UP,
     PWM_DISABLE_ALL_UE,
@@ -77,7 +66,7 @@ void differential_control_init(void) {
     OUTPUT_HIGH, 
     DISABLE_INTERRUPT, 
     PWM_IMMEDIATE_UPDATE,
-    32578
+    DEFAULT_PWM_DUTY_CYCLE 
   );
   pwmConfigureOutput(
     PWM_MOTOR_LEFT_CHANNEL,
@@ -101,20 +90,11 @@ void differential_control_init(void) {
   gpioConfigure(&in3_pin);
   gpioConfigure(&in4_pin);
 
-  //TODO: remove this
-  /* gpioConfigure(&ena_pin); */
-  /* gpioConfigure(&enb_pin); */
-
   // Setting ALL Pins to GND, so as keep Motor IDLE
   gpioWrite(&in1_pin, 0);
   gpioWrite(&in2_pin, 0);
   gpioWrite(&in3_pin, 0);
   gpioWrite(&in4_pin, 0);
-
-  //TODO: remove this
-  /* gpioWrite(&ena_pin, 1); */
-  /* gpioWrite(&enb_pin, 1); */
-
 }
 
 void differential_control_forward(uint8_t distance_cm, uint16_t duty_cycle) {

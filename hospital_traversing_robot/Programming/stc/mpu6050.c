@@ -133,8 +133,6 @@ void calibrate_gyro(void) {
   GYRO_OFFSET[1] += (int16_t)(sum[1] / GYRO_CALIBRATION_SAMPLES);
   GYRO_OFFSET[2] += (int16_t)(sum[2] / GYRO_CALIBRATION_SAMPLES);
 
-  printf("GX: %d, GX: %d, GX: %d\n", GYRO_OFFSET[0], GYRO_OFFSET[1], GYRO_OFFSET[2]);
-  
 }
 
 I2C_AckNak read_raw_accel(void) {
