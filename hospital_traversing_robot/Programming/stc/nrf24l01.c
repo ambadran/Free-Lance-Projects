@@ -82,8 +82,14 @@ void nrf24_CE(uint8_t input)
   gpioWrite(&CE_pin, input);
 }
 
+void uint8_to_bin_str(uint8_t num, char *bin_buf) {
+    for (uint8_t i = 0; i < 8; i++)
+        bin_buf[i] = (num & (1 << (7 - i))) ? '1' : '0';
+    bin_buf[8] = '\0';
+}
 void nrf24_print_internal_register_values(void) {
   uint8_t pipe_address[ADDRESS_WIDTH_DEFAULT];
+  char bin_buf[9];
 
   for (int i=0; i<24; i++) {
     if (i == 0x0a || i == 0x0b || i == 0x10) {
@@ -96,20 +102,27 @@ void nrf24_print_internal_register_values(void) {
                                                           pipe_address[4]  \
                                                           );
 
-    } else {
+    } else if (i==0x05) {
       nrf24_read(i, &register_current_value, 1, CLOSE);
       printf("\rRegister 0x%02x: %d\n", i, register_current_value);
+    }
+    else {
+      nrf24_read(i, &register_current_value, 1, CLOSE);
+      uint8_to_bin_str(register_current_value, bin_buf);
+      printf("\rRegister 0x%02x: 0b%s\n", i, bin_buf);
 
     }
     delay1ms(20);
   }
 
   nrf24_read(0X1C, &register_current_value, 1, CLOSE);
-  printf("\rRegister 0x1C: %d\n", register_current_value);
+  uint8_to_bin_str(register_current_value, bin_buf);
+  printf("\rRegister 0x1C: 0b%s\n", bin_buf);
   delay1ms(20);
 
   nrf24_read(0X1D, &register_current_value, 1, CLOSE);
-  printf("\rRegister 0x1D: %d\n", register_current_value);
+  uint8_to_bin_str(register_current_value, bin_buf);
+  printf("\rRegister 0x1D: 0b%s\n", bin_buf);
   delay1ms(20);
 
   printf("\n\n");

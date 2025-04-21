@@ -12,7 +12,7 @@
 #define RF_DATARATE_DEFAULT           1000            /*250, 1000, 2000*/
 #define RF_PWR_DEFAULT                0               /*0, -6, -12, -18*/
 #define STATIC_PAYLOAD_WIDTH_DEFAULT  32               /*for static payload mode, configurable between 1 and 32 bytes for PRX device ONLY (RX_PW_Pn, n for data pipe n)(no register for payload length in PTX device)*/
-#define NUMBER_OF_DP_DEFAULT          1               /*number of datapipes, 1 to 6*/ 
+#define NUMBER_OF_DP_DEFAULT          2               /*number of datapipes, 1 to 6*/ 
 #define RETRANSMIT_DELAY_DEFAULT      500
 #define RETRANSMIT_COUNT_DEFAULT      2
  
@@ -190,6 +190,7 @@ void nrf24_SPI(uint8_t input);
 uint8_t SPI_send_command(uint8_t command);
 void nrf24_CE(uint8_t input);
 
+void uint8_to_bin_str(uint8_t num, char *bin_buf);
 void nrf24_print_internal_register_values(void);
 NRF24_SEND_STRING_STATUS nrf24_send_string(uint8_t* string);
 

@@ -53,9 +53,9 @@ class Station:
         self.nrf.open_rx_pipe(1, self.PIPES[1])
         self.nrf.start_listening()
         
-        self.state = state.RECEIVER
+        # self.state = state.RECEIVER
 
-        _thread.start_new_thread(self.keep_receiving, ())
+        # _thread.start_new_thread(self.keep_receiving, ())
 
     def receive(self) -> str:
         '''
@@ -83,20 +83,57 @@ class Station:
         sends enter
         '''
         self.state = state.TRANSMITTER
+        sleep_ms(20)
         self.nrf.send_ascii(string+'\n')
         self.state = state.RECEIVER
 
-    def forward(self, value: int):
-        self.send(f"Fi{value}")
+    def forward(self, distance: int, speed: int=None):
+        '''
+        distance is in cm
+        speed is a Percentage value that gets converted to 16-bit value 
+            to be sent to as 16-bit duty cycle
+        '''
+        if speed is None:
+            self.send(f"Fi{distance}")
+        else:
+            speed = int((speed/100)*65535)
+            self.send(f"Fi{distance}j{speed}")
 
-    def backward(self, value: int):
-        self.send(f"Bi{value}")
+    def backward(self, distance: int, speed: int=None):
+        '''
+        distance is in cm
+        speed is a Percentage value that gets converted to 16-bit value 
+            to be sent to as 16-bit duty cycle
+        '''
+        if speed is None:
+            self.send(f"Bi{distance}")
+        else:
+            speed = int((speed/100)*65535)
+            self.send(f"Bi{distance}j{speed}")
 
-    def right(self, value: int):
-        self.send(f"Ri{value}")
-        
-    def left(self, value: int):
-        self.send(f"Li{value}")
+    def right(self, distance: int, speed: int=None):
+        '''
+        distance is in cm
+        speed is a Percentage value that gets converted to 16-bit value 
+            to be sent to as 16-bit duty cycle
+        '''
+        if speed is None:
+            self.send(f"Ri{distance}")
+        else:
+            speed = int((speed/100)*65535)
+            self.send(f"Ri{distance}j{speed}")
+
+    def left(self, distance: int, speed: int=None):
+        '''
+        distance is in cm
+        speed is a Percentage value that gets converted to 16-bit value 
+            to be sent to as 16-bit duty cycle
+        '''
+        if speed is None:
+            self.send(f"Li{distance}")
+        else:
+            speed = int((speed/100)*65535)
+            self.send(f"Li{distance}j{speed}")
 
     def print_nrf_registers(self):
         '''
