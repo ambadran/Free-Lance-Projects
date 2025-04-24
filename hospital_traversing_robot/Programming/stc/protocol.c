@@ -82,8 +82,9 @@ void protocol_main_loop(void) {
     }
 
     // real-time processing
-    differential_control_process();
     report_toggle_led();
+    differential_control_process();
+    complementary_filter_process();
 
   }
 }

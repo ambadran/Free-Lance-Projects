@@ -289,30 +289,41 @@ LINE_STATUS terminal_execute_line(char* line) {
       break;
 
     case COMMAND_IMU:
-      read_accel();
-      read_gyro();
+      read_accel();  //TODO: remove after implementing period check
+      read_gyro();  //TODO: remove after implementing period check
       switch(command.i) {
         case 1:
-          report("ACCEL X: %dg\n", get_accel(0));
+          report("ACCEL X: %ldg\n", get_accel(0));
           break;
         case 2:
-          report("ACCEL Y: %dg\n", get_accel(1));
+          report("ACCEL Y: %ldg\n", get_accel(1));
           break;
         case 3:
-          report("ACCEL Z: %dg\n", get_accel(2));
+          report("ACCEL Z: %ldg\n", get_accel(2));
           break;
         case 4:
-          report("GYRO X: %ddeg/sec\n", get_gyro(0));
+          report("GYRO X: %lddeg/sec\n", get_gyro(0));
           break;
         case 5:
-          report("GYRO Y: %ddeg/sec\n", get_gyro(1));
+          report("GYRO Y: %lddeg/sec\n", get_gyro(1));
           break;
         case 6:
-          report("GYRO Z: %ddeg/sec\n", get_gyro(2));
+          report("GYRO Z: %lddeg/sec\n", get_gyro(2));
+          break;
+        case 7:
+          report("Gyro offset x: %d\nGyro offset y: %d\nGyro offset z: %d\n", get_gyro_calibration_values(0), get_gyro_calibration_values(1), get_gyro_calibration_values(2));
+          break;
+
+        case 8:
+          report("Tilt x: %ld\n", get_tilt_x());
+          break;
+          
+        case 9:
+          report("Tilt y: %ld\n", get_tilt_y());
           break;
 
         default:
-          report("ACCEL X: %dg\nACCEL Y: %dg\nACCEL Z: %dg\nGYRO X: %ddeg/sec\nGYRO Y: %ddeg/sec\nGYRO Z: %ddeg/sec\n", get_accel(0), get_accel(1), get_accel(2), get_gyro(0), get_gyro(1), get_gyro(2));
+          report("ACCEL X: %ldg\nACCEL Y: %ldg\nACCEL Z: %ldg\nGYRO X: %lddeg/sec\nGYRO Y: %lddeg/sec\nGYRO Z: %lddeg/sec\nTilt x: %ld\nTilt y: %ld\n", get_accel(0), get_accel(1), get_accel(2), get_gyro(0), get_gyro(1), get_gyro(2), get_tilt_x(), get_tilt_y());
       }
 
       break;

@@ -120,14 +120,14 @@
 
 /* Settings to choose from
  */
-#define ACCEL_SENSITIVITY_0 0
-#define ACCEL_SENSITIVITY_1 1
-#define ACCEL_SENSITIVITY_2 2
-#define ACCEL_SENSITIVITY_3 3
-#define GYRO_SENSITIVITY_0 0
-#define GYRO_SENSITIVITY_1 1
-#define GYRO_SENSITIVITY_2 2
-#define GYRO_SENSITIVITY_3 3
+#define ACCEL_SENSITIVITY_0 0  // 16-bit range is divided into max 2g
+#define ACCEL_SENSITIVITY_1 1  // 16-bit range is divided into max 4g
+#define ACCEL_SENSITIVITY_2 2  // 16-bit range is divided into max 8g
+#define ACCEL_SENSITIVITY_3 3  // 16-bit range is divided into max 16g
+#define GYRO_SENSITIVITY_0 0  // 16-bit range is divided into max 250deg/sec
+#define GYRO_SENSITIVITY_1 1  // 16-bit range is divided into max 500deg/sec
+#define GYRO_SENSITIVITY_2 2  // 16-bit range is divided into max 1000deg/sec
+#define GYRO_SENSITIVITY_3 3  // 16-bit range is divided into max 2000deg/sec
 
 
 /* Expected Responses
@@ -141,13 +141,16 @@ I2C_AckNak mpu6050_write_bytes(uint8_t register_to_write, uint8_t* values, int8_
 I2C_AckNak mpu6050_read_bytes(uint8_t register_to_read, uint8_t* reg_values, int8_t bytes_num);
 void mpu6050_test_responsiveness(void);
 void calibrate_gyro(void);
+int16_t get_gyro_calibration_values(uint8_t ind);
 I2C_AckNak read_raw_accel(void);
 I2C_AckNak read_raw_gyro(void);
 I2C_AckNak read_accel(void);
 I2C_AckNak read_gyro(void);
+I2C_AckNak read_gyro_no_z(void);
+I2C_AckNak read_gyro_only_z(void);
 int16_t get_raw_accel(uint8_t ind);
 int16_t get_raw_gyro(uint8_t ind);
-int16_t get_accel(uint8_t ind);
-int16_t get_gyro(uint8_t ind);
+int32_t get_accel(uint8_t ind);
+int32_t get_gyro(uint8_t ind);
 
 #endif

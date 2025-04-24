@@ -99,17 +99,26 @@
 /* #define ULTRASONIC_STATE_MACHINE */
 
 /* MPU6050 Settings */
-#define ACCEL_SENSITIVITY ACCEL_SENSITIVITY_0
-#define GYRO_SENSITIVITY GYRO_SENSITIVITY_1
+// Since there is no FPU in this MCU, we'll resort into using fixed point values
+// 16384(16-bit reg) = 1g (floating point) = 1000 (fixed point value)
+#define ACCEL_SCALE 1000  // fixed-point value instead of floating point, 
+#define GYRO_SCALE 100  // fixed-point value instead of floating point
+#define ACCEL_SENSITIVITY ACCEL_SENSITIVITY_0  // 16-bit range is divided into max 2g
+#define GYRO_SENSITIVITY GYRO_SENSITIVITY_1  // 16-bit range is divided into max 500deg/sec
 //TODO: These values are set in place and no calibration routine yet
-#define DEFAULT_ACCEL_OFFSET_X -940
-#define DEFAULT_ACCEL_OFFSET_Y -200
-#define DEFAULT_ACCEL_OFFSET_Z 800
+#define DEFAULT_ACCEL_OFFSET_X 940
+#define DEFAULT_ACCEL_OFFSET_Y 200
+#define DEFAULT_ACCEL_OFFSET_Z -800
 //NOTE: gyro offset is calculated with every power up using a calibration routine
 #define DEFAULT_GYRO_OFFSET_X 0
 #define DEFAULT_GYRO_OFFSET_Y 0
 #define DEFAULT_GYRO_OFFSET_Z 0
 #define GYRO_CALIBRATION_SAMPLES 1000
+
+/* Complementary Filter */
+#define COMP_FILTER_DT 20
+#define COMP_FILTER_ALPHA 30  // %
+#define COMP_FILTER_BETA  (100-COMP_FILTER_ALPHA)  // %
 
 /* NEO M8N Settings */
 
@@ -139,9 +148,10 @@
 #include "global_timer.h"
 #include "report.h"
 #include "differential_control.h"
-#include "mpu6050.h"
 #include "neo_m8n.h"
 #include "nrf24l01.h"
+#include "mpu6050.h"
+#include "complementary_filter.h"
 #include "terminal.h"
 #include "protocol.h"
 

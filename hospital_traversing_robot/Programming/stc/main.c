@@ -20,6 +20,7 @@ void main(void) {
   neo_m8n_init();
   nrf24_device(RECEIVER, RESET);
   mpu6050_init();
+  complementary_filter_init();
 
   delay1ms(500);
 
