@@ -101,7 +101,7 @@
 /* MPU6050 Settings */
 // Since there is no FPU in this MCU, we'll resort into using fixed point values
 // 16384(16-bit reg) = 1g (floating point) = 1000 (fixed point value)
-#define ACCEL_SCALE 1000  // fixed-point value instead of floating point, 
+#define ACCEL_SCALE 10  // fixed-point value instead of floating point, 
 #define GYRO_SCALE 100  // fixed-point value instead of floating point
 #define ACCEL_SENSITIVITY ACCEL_SENSITIVITY_0  // 16-bit range is divided into max 2g
 #define GYRO_SENSITIVITY GYRO_SENSITIVITY_1  // 16-bit range is divided into max 500deg/sec
