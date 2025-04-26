@@ -1,5 +1,7 @@
 #include "project-defs.h"
 
+#define CLAMP_TO_ANGLE(x) ((x) > (90) ? (90) : ((x) < (-90) ? (-90) : (x)))
+
 static const int16_t ACCEL_SENSITIVITY_VALUES[] = {16384, 8192, 4096, 2048};
 static const float GYRO_SENSITIVITY_VALUES[] = {131.0, 65.5, 32.8, 16.4};
 
@@ -214,11 +216,9 @@ I2C_AckNak read_gyro_only_z(void) {
   return ack_state;
 }
 
-
 int16_t get_raw_accel(uint8_t ind) { return raw_accel_values[ind]; }
 int16_t get_raw_gyro(uint8_t ind) { return raw_gyro_values[ind]; }
 int32_t get_accel(uint8_t ind) { return accel_values[ind]; }
 int32_t get_gyro(uint8_t ind) { return gyro_values[ind]; }
-
 
 

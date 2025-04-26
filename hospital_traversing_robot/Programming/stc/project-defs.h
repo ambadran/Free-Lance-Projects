@@ -101,14 +101,15 @@
 /* MPU6050 Settings */
 // Since there is no FPU in this MCU, we'll resort into using fixed point values
 // 16384(16-bit reg) = 1g (floating point) = 1000 (fixed point value)
-#define ACCEL_SCALE 10  // fixed-point value instead of floating point, 
+#define ACCEL_SCALE 90  // fixed-point value instead of floating point, 
+// I made it 90 instead of 100, because I will take the Ax and Ay value to be the exact degree value -90 to 90
 #define GYRO_SCALE 100  // fixed-point value instead of floating point
 #define ACCEL_SENSITIVITY ACCEL_SENSITIVITY_0  // 16-bit range is divided into max 2g
 #define GYRO_SENSITIVITY GYRO_SENSITIVITY_1  // 16-bit range is divided into max 500deg/sec
 //TODO: These values are set in place and no calibration routine yet
-#define DEFAULT_ACCEL_OFFSET_X 940
-#define DEFAULT_ACCEL_OFFSET_Y 200
-#define DEFAULT_ACCEL_OFFSET_Z -800
+#define DEFAULT_ACCEL_OFFSET_X 0
+#define DEFAULT_ACCEL_OFFSET_Y 0
+#define DEFAULT_ACCEL_OFFSET_Z 0
 //NOTE: gyro offset is calculated with every power up using a calibration routine
 #define DEFAULT_GYRO_OFFSET_X 0
 #define DEFAULT_GYRO_OFFSET_Y 0
@@ -116,7 +117,7 @@
 #define GYRO_CALIBRATION_SAMPLES 1000
 
 /* Complementary Filter */
-#define COMP_FILTER_DT 20
+#define COMP_FILTER_DT 100
 #define COMP_FILTER_ALPHA 30  // %
 #define COMP_FILTER_BETA  (100-COMP_FILTER_ALPHA)  // %
 
@@ -134,6 +135,7 @@
 
 #include <STC/8H8KxxU/SKDIP28.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdarg.h>
