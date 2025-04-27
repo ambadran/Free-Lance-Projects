@@ -118,6 +118,11 @@
 #define DEFAULT_GYRO_OFFSET_Z 0
 #define GYRO_CALIBRATION_SAMPLES 1000
 
+/* HMC5883L settings */
+#define DEFAULT_MAG_OFFSET_X 0
+#define DEFAULT_MAG_OFFSET_Y 0
+#define DEFAULT_MAG_OFFSET_Z 0
+
 /* Complementary Filter */
 #define COMP_FILTER_DT 100
 #define COMP_FILTER_ALPHA 30  // %
