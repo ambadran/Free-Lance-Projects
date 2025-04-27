@@ -315,15 +315,15 @@ LINE_STATUS terminal_execute_line(char* line) {
           break;
 
         case 8:
-          report("Roll Angle: %lddeg\n", get_roll());
+          report("Roll Angle: %lddeg\n", get_accel_roll());
           break;
           
         case 9:
-          report("Pitch: %ld\n", get_pitch());
+          report("Pitch: %ld\n", get_accel_pitch());
           break;
 
         default:
-          report("ACCEL X: %ldg\nACCEL Y: %ldg\nACCEL Z: %ldg\nGYRO X: %lddeg/sec\nGYRO Y: %lddeg/sec\nGYRO Z: %lddeg/sec\nROll: %ld\nPitch: %ld\n", get_accel(0), get_accel(1), get_accel(2), get_gyro(0), get_gyro(1), get_gyro(2), get_roll(), get_pitch());
+          report("ACCEL X: %ldg\nACCEL Y: %ldg\nACCEL Z: %ldg\nGYRO X: %lddeg/sec\nGYRO Y: %lddeg/sec\nGYRO Z: %lddeg/sec\nROll: %ld\nPitch: %ld\n", get_accel(0), get_accel(1), get_accel(2), get_gyro(0), get_gyro(1), get_gyro(2), get_accel_roll(), get_accel_pitch());
       }
 
       break;

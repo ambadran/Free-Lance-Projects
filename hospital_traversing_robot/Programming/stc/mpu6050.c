@@ -1,7 +1,5 @@
 #include "project-defs.h"
 
-#define CLAMP_TO_ANGLE(x) ((x) > (90) ? (90) : ((x) < (-90) ? (-90) : (x)))
-
 static const int16_t ACCEL_SENSITIVITY_VALUES[] = {16384, 8192, 4096, 2048};
 static const float GYRO_SENSITIVITY_VALUES[] = {131.0, 65.5, 32.8, 16.4};
 
@@ -221,4 +219,10 @@ int16_t get_raw_gyro(uint8_t ind) { return raw_gyro_values[ind]; }
 int32_t get_accel(uint8_t ind) { return accel_values[ind]; }
 int32_t get_gyro(uint8_t ind) { return gyro_values[ind]; }
 
-
+// this calculation depends on the ACCEL_SCALE being a specific value to convert the gravity value directly to degrees using just a multiple
+// The value is still probably not correctly scaled as the single axis orientation equation is arctan2(Axy/Az). 
+// however in this case getting the correctly scaled angles is not important. Plus tiny differences is also registered as number change.
+// This calculation WILL NOT WORK in case multi-axis tilting at the same time. This will need the full equation arctan2(Axy/sqrt(Axy^2+Az^2))
+// Here I will just clamp the actual accerlation value and call it a day :P
+int8_t get_accel_pitch(void) { return CLAMP_TO_ANGLE(get_accel(0)); }
+int8_t get_accel_roll(void) { return CLAMP_TO_ANGLE(get_accel(1)); }

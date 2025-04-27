@@ -99,6 +99,8 @@
 /* #define ULTRASONIC_STATE_MACHINE */
 
 /* MPU6050 Settings */
+// If this setting is enabled the MCU will do nothing but keep printing the MPU values
+#define TEST_MPU 
 // Since there is no FPU in this MCU, we'll resort into using fixed point values
 // 16384(16-bit reg) = 1g (floating point) = 1000 (fixed point value)
 #define ACCEL_SCALE 90  // fixed-point value instead of floating point, 
@@ -153,6 +155,7 @@
 #include "neo_m8n.h"
 #include "nrf24l01.h"
 #include "mpu6050.h"
+#include "hmc5883l.h"
 #include "complementary_filter.h"
 #include "terminal.h"
 #include "protocol.h"
