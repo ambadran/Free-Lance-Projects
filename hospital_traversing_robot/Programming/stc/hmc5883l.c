@@ -23,15 +23,12 @@ void hmc5883l_init(void) {
   // testing responsiveness
   hmc5883l_check_responsiveness();
 
-  //TODO: remove
-  hmc5883l_print_internal_registers();
-
   // settings the registers
-  hmc5883l_set_avg_sampling(HMC5883L_AVG_SAMPLE_2);
+  hmc5883l_set_avg_sampling(HMC5883L_AVG_SAMPLE_8);
   hmc5883l_set_datarate(HMC5883L_DATARATE_15HZ);
   hmc5883l_set_measurement_mode(HMC5883L_MEASUREMENT_MODE_NORMAL);
   hmc5883l_set_gain(HMC5883L_GAIN_1090);
-  hmc5883l_set_operating_mode(HMC5883L_OPERATING_MODE_SINGLE);
+  hmc5883l_set_operating_mode(HMC5883L_OPERATING_MODE_CONTINOUS);
 
   // calibration
   hmc5883l_calibrate();
@@ -59,14 +56,17 @@ I2C_AckNak hmc5883l_read_byte(uint8_t register_to_read, uint8_t* reg_value) {
 }
 
 I2C_AckNak hmc5883l_read_bytes(uint8_t register_to_read, uint8_t* reg_values, uint8_t bytes_num) {
-  I2C_AckNak ack_state = i2cStartCommand(MPU6050_ADDRESS, I2C_WRITE);  // should return I2C_ACK 
+
+  I2C_AckNak ack_state = i2cStartCommand(HMC5883L_ADDRESS, I2C_WRITE);  // should return I2C_ACK 
   i2cSendByte(register_to_read);
   i2cStartCommand(HMC5883L_ADDRESS, I2C_READ);
   for( ; bytes_num >= 1 ; bytes_num--) {
     *reg_values++ = i2cReadByteSendAck(I2C_ACK);
   }
-  *reg_values++ = i2cReadByteSendAck(I2C_ACK);
+  *reg_values++ = i2cReadByteSendAck(I2C_NAK);
   i2cStop();
+
+  return ack_state;
 }
 
 void hmc5883l_check_responsiveness(void) {
@@ -111,7 +111,7 @@ void hmc5883l_check_responsiveness(void) {
 void hmc5883l_print_internal_registers(void) {
   char bin_buf[20];
 
-  for (int i=0; i < HMC5883L_NUM_REGISTER; i++) {
+  for (int i=0; i <= HMC5883L_NUM_REGISTER; i++) {
     hmc5883l_read_byte(i, &reg_value);
     uint8_to_bin_str(reg_value, bin_buf);
     printf("Register %d: 0b%s\n", i, bin_buf);
@@ -132,8 +132,8 @@ void hmc5883l_set_avg_sampling(hmc5883l_avg_sample_t hmc5883l_avg_sample) {
 void hmc5883l_set_datarate(hmc5883l_datarate_t hmc5883l_datarate) {
   hmc5883l_read_byte(HMC5883L_REG_CONFIG_A, &reg_value); 
 
-  reg_value &= ~(0b111 << 3);
-  reg_value |= (hmc5883l_datarate << 3); 
+  reg_value &= ~(0b111 << 2);
+  reg_value |= (hmc5883l_datarate << 2); 
 
   hmc5883l_write_byte(HMC5883L_REG_CONFIG_A, reg_value);
 }
@@ -178,13 +178,14 @@ int16_t get_mag_calibration_values(uint8_t ind) { return MAG_OFFSET[ind]; }
 
 I2C_AckNak read_raw_mag(void) {
   
-  // reading the raw values
-  I2C_AckNak ack_state = hmc5883l_read_bytes(HMC5883L_REG_OUT_X_M, raw_values, 6);
-
-  // assigning
+  I2C_AckNak ack_state = hmc5883l_read_bytes(HMC5883L_REG_OUT_X_M, raw_values, 2);
   raw_mag_values[0] = (int16_t)((raw_values[0] << 8) | raw_values[1]);
-  raw_mag_values[1] = (int16_t)((raw_values[2] << 8) | raw_values[3]);
-  raw_mag_values[2] = (int16_t)((raw_values[4] << 8) | raw_values[5]);
+
+  ack_state = hmc5883l_read_bytes(HMC5883L_REG_OUT_Z_M, raw_values, 2);
+  raw_mag_values[1] = (int16_t)((raw_values[0] << 8) | raw_values[1]);
+ 
+  ack_state = hmc5883l_read_bytes(HMC5883L_REG_OUT_Y_M, raw_values, 2);
+  raw_mag_values[2] = (int16_t)((raw_values[0] << 8) | raw_values[1]);
 
   return ack_state;
 }
@@ -196,11 +197,11 @@ I2C_AckNak read_mag(void) {
 
   // Apply Offset, multiple by scale value to get fixed-point value (instead of floating-point) then apply scale offset.
   // the accel values are now (x)*scale uT //TODO: check really from the datasheet
-  mag_values[0] = (int32_t)(raw_mag_values[0] - MAG_OFFSET[0]) * GAIN_VALUE_MULTIPLE[DEFAULT_MAG_GAIN] / 1000;
-  mag_values[1] = (int32_t)(raw_mag_values[1] - MAG_OFFSET[1]) * GAIN_VALUE_MULTIPLE[DEFAULT_MAG_GAIN] / 1000;
-  mag_values[2] = (int32_t)(raw_mag_values[2] - MAG_OFFSET[2]) * GAIN_VALUE_MULTIPLE[DEFAULT_MAG_GAIN] / 1000;
+  mag_values[0] = (int32_t)(raw_mag_values[0] - MAG_OFFSET[0]) * GAIN_VALUE_MULTIPLE[mag_gain_value] / 1000;
+  mag_values[1] = (int32_t)(raw_mag_values[1] - MAG_OFFSET[1]) * GAIN_VALUE_MULTIPLE[mag_gain_value] / 1000;
+  mag_values[2] = (int32_t)(raw_mag_values[2] - MAG_OFFSET[2]) * GAIN_VALUE_MULTIPLE[mag_gain_value] / 1000;
 
-
+  return ack_state;
 }
-int16_t get_raw_mag(uint8_t ind) { return mag_raw_values[ind]; }
+int16_t get_raw_mag(uint8_t ind) { return raw_mag_values[ind]; }
 int32_t get_mag(uint8_t ind) { return mag_values[ind]; }

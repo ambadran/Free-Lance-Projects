@@ -289,8 +289,9 @@ LINE_STATUS terminal_execute_line(char* line) {
       break;
 
     case COMMAND_IMU:
-      read_accel();  //TODO: remove after implementing period check
-      read_gyro();  //TODO: remove after implementing period check
+      /* read_accel();  //TODO: remove after implementing period check */
+      /* read_gyro();  //TODO: remove after implementing period check */
+
       switch(command.i) {
         case 1:
           report("ACCEL X: %ldg\nACCEL Y: %ldg\nACCEL Z: %ldg\n", get_accel(0), get_accel(1), get_accel(2));
@@ -319,12 +320,13 @@ LINE_STATUS terminal_execute_line(char* line) {
         case 9:
           /* report("Yaw: %ld\n",  ); */
           break;
-        case 16:
+        case 10:
           mpu6050_print_internal_registers();
           break;
-        case 17:
+        case 11:
           hmc5883l_print_internal_registers();
           break;
+
 /* ("ACCEL X: %ldg\nACCEL Y: %ldg\nACCEL Z: %ldg\nGYRO X: %lddeg/sec\nGYRO Y: %lddeg/sec\nGYRO Z: %lddeg/sec\nMAG X: %lduT\nMAG Y: %lduT\nMAG Z: %lduT\n"),get_accel(0), get_accel(1), get_accel(2), get_gyro(0), get_gyro(1), get_gyro(2), get_mag(0), get_mag(1), get_mag(2), */
         default:
           report("Roll: %d\nPitch: %d\nYaw: \n", get_accel_roll(), get_accel_pitch());
