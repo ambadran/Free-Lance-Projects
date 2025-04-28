@@ -18,8 +18,18 @@ void hmc5883l_init(void) {
   // testing responsiveness
   hmc5883l_check_responsiveness();
 
-  // settings the registers
+  //TODO: remove
+  hmc5883l_print_internal_registers();
 
+  // settings the registers
+  hmc5883l_set_avg_sampling(HMC5883L_AVG_SAMPLE_2);
+  hmc5883l_set_datarate(HMC5883L_DATARATE_15HZ);
+  hmc5883l_set_measurement_mode(HMC5883L_MEASUREMENT_MODE_NORMAL);
+  hmc5883l_set_gain(HMC5883L_GAIN_1090);
+  hmc5883l_set_operating_mode(HMC5883L_OPERATING_MODE_SINGLE);
+
+  // calibration
+  //TODO:
 }
 
 I2C_AckNak hmc5883l_write_byte(uint8_t register_to_write, uint8_t value) {
@@ -80,5 +90,68 @@ void hmc5883l_check_responsiveness(void) {
       delay1ms(200);
     }
   }
+}
+
+void hmc5883l_print_internal_registers(void) {
+  char bin_buf[20];
+
+  for (int i=0; i < HMC5883L_NUM_REGISTER; i++) {
+    hmc5883l_read_byte(i, &reg_value);
+    uint8_to_bin_str(reg_value, bin_buf);
+    printf("Register %d: 0b%s\n", i, bin_buf);
+
+    delay1ms(20);
+  }
+}
+
+void hmc5883l_set_avg_sampling(hmc5883l_avg_sample_t hmc5883l_avg_sample) {
+  hmc5883l_read_byte(HMC5883L_REG_CONFIG_A, &reg_value);
+
+  reg_value &= ~(0b11 << 5);
+  reg_value |= (hmc5883l_avg_sample << 5);
+
+  hmc5883l_write_byte(HMC5883L_REG_CONFIG_A, reg_value);
+}
+
+void hmc5883l_set_datarate(hmc5883l_datarate_t hmc5883l_datarate) {
+  hmc5883l_read_byte(HMC5883L_REG_CONFIG_A, &reg_value); 
+
+  reg_value &= ~(0b111 << 3);
+  reg_value |= (hmc5883l_datarate << 3); 
+
+  hmc5883l_write_byte(HMC5883L_REG_CONFIG_A, reg_value);
+}
+
+void hmc5883l_set_measurement_mode(hmc5883l_measurement_mode_t hmc5883l_measurement_mode) {
+  hmc5883l_read_byte(HMC5883L_REG_CONFIG_A, &reg_value);
+
+  reg_value &= ~(0b11);
+  reg_value |= (hmc5883l_measurement_mode);
+
+  hmc5883l_write_byte(HMC5883L_REG_CONFIG_A, reg_value);
+}
+
+void hmc5883l_set_gain(hmc5883l_gain_t hmc5883l_gain) {
+  hmc5883l_read_byte(HMC5883L_REG_CONFIG_B, &reg_value); 
+
+  reg_value &= ~(0b111 << 5);
+  reg_value |= (hmc5883l_gain << 5); 
+
+  hmc5883l_write_byte(HMC5883L_REG_CONFIG_B, reg_value);
 
 }
+
+void hmc5883l_set_operating_mode(hmc5883l_operating_mode_t hmc5883l_operating_mode) {
+  hmc5883l_read_byte(HMC5883L_REG_MODE, &reg_value);
+
+  reg_value &= ~(0b11);
+  reg_value |= (hmc5883l_operating_mode);
+
+  hmc5883l_write_byte(HMC5883L_REG_MODE, reg_value);
+
+}
+
+int16_t get_mag_calibration_values(uint8_t ind) { return MAG_OFFSET[ind]; }
+
+int16_t get_raw_mag(uint8_t ind) { return mag_raw_values[ind]; }
+int32_t get_mag(uint8_t ind) { return mag_values[ind]; }

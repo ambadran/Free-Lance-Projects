@@ -116,6 +116,11 @@ void mpu6050_test_responsiveness(void) {
   }
 }
 
+//TODO:
+void mpu6050_print_internal_registers(void) {
+
+}
+
 void calibrate_gyro(void) {
 
   int32_t sum[] = {0, 0, 0};
@@ -133,6 +138,8 @@ void calibrate_gyro(void) {
   GYRO_OFFSET[1] += (int16_t)(sum[1] / GYRO_CALIBRATION_SAMPLES);
   GYRO_OFFSET[2] += (int16_t)(sum[2] / GYRO_CALIBRATION_SAMPLES);
 }
+
+int16_t get_accel_calibration_values(uint8_t ind) { return ACCEL_OFFSET[ind]; }
 int16_t get_gyro_calibration_values(uint8_t ind) { return GYRO_OFFSET[ind]; }
 
 I2C_AckNak read_raw_accel(void) {
