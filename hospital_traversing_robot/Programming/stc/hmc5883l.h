@@ -66,6 +66,7 @@ typedef enum {
 void hmc5883l_init(void);
 I2C_AckNak hmc5883l_write_byte(uint8_t register_to_write, uint8_t value);
 I2C_AckNak hmc5883l_read_byte(uint8_t register_to_read, uint8_t* reg_value);
+I2C_AckNak hmc5883l_read_bytes(uint8_t register_to_read, uint8_t* reg_values, uint8_t bytes_num);
 void hmc5883l_check_responsiveness(void);
 void hmc5883l_print_internal_registers(void);
 void hmc5883l_set_avg_sampling(hmc5883l_avg_sample_t hmc5883l_avg_sample);
@@ -73,9 +74,10 @@ void hmc5883l_set_datarate(hmc5883l_datarate_t hmc5883l_datarate);
 void hmc5883l_set_measurement_mode(hmc5883l_measurement_mode_t hmc5883l_measurement_mode);
 void hmc5883l_set_gain(hmc5883l_gain_t hmc5883l_gain);
 void hmc5883l_set_operating_mode(hmc5883l_operating_mode_t hmc5883l_operating_mode);
+void hmc5883l_calibrate(void);
 int16_t get_mag_calibration_values(uint8_t ind);
-//TODO: calibrate function
-//TODO: read
+I2C_AckNak read_raw_mag(void);
+I2C_AckNak read_mag(void);
 int16_t get_raw_mag(uint8_t ind);
 int32_t get_mag(uint8_t ind);
 

@@ -1,5 +1,9 @@
 #include "project-defs.h"
 
+// Setting options
+static uint8_t mag_gain_value = DEFAULT_MAG_GAIN;
+static const int16_t GAIN_VALUE_MULTIPLE[8] = {73, 920, 1220, 1520, 2270, 2560, 3030, 4350};  // these are fixed-point values, the true value is multiply by  one of them THEN divide by 1000
+
 // a global variable to store read register value instaed of creating one repeatedly
 static uint8_t reg_value = 0;
 
@@ -7,7 +11,8 @@ static uint8_t reg_value = 0;
 static int16_t MAG_OFFSET[] = {DEFAULT_MAG_OFFSET_X, DEFAULT_MAG_OFFSET_Y, DEFAULT_MAG_OFFSET_Z};
 
 // Actual Values
-static int16_t mag_raw_values[] = {0, 0, 0};
+static uint8_t raw_values[] = {0, 0, 0, 0, 0, 0};  // the temporary buffer to read the values fresh out of the mpu6050
+static int16_t raw_mag_values[] = {0, 0, 0};
 static int32_t mag_values[] = {0, 0, 0};
 
 void hmc5883l_init(void) {
@@ -29,7 +34,7 @@ void hmc5883l_init(void) {
   hmc5883l_set_operating_mode(HMC5883L_OPERATING_MODE_SINGLE);
 
   // calibration
-  //TODO:
+  hmc5883l_calibrate();
 }
 
 I2C_AckNak hmc5883l_write_byte(uint8_t register_to_write, uint8_t value) {
@@ -51,6 +56,17 @@ I2C_AckNak hmc5883l_read_byte(uint8_t register_to_read, uint8_t* reg_value) {
   i2cStop();
 
   return ack_state;
+}
+
+I2C_AckNak hmc5883l_read_bytes(uint8_t register_to_read, uint8_t* reg_values, uint8_t bytes_num) {
+  I2C_AckNak ack_state = i2cStartCommand(MPU6050_ADDRESS, I2C_WRITE);  // should return I2C_ACK 
+  i2cSendByte(register_to_read);
+  i2cStartCommand(HMC5883L_ADDRESS, I2C_READ);
+  for( ; bytes_num >= 1 ; bytes_num--) {
+    *reg_values++ = i2cReadByteSendAck(I2C_ACK);
+  }
+  *reg_values++ = i2cReadByteSendAck(I2C_ACK);
+  i2cStop();
 }
 
 void hmc5883l_check_responsiveness(void) {
@@ -132,6 +148,10 @@ void hmc5883l_set_measurement_mode(hmc5883l_measurement_mode_t hmc5883l_measurem
 }
 
 void hmc5883l_set_gain(hmc5883l_gain_t hmc5883l_gain) {
+
+  // updating the local variable to have correct multiple for real mag value
+  mag_gain_value = hmc5883l_gain;
+
   hmc5883l_read_byte(HMC5883L_REG_CONFIG_B, &reg_value); 
 
   reg_value &= ~(0b111 << 5);
@@ -151,7 +171,36 @@ void hmc5883l_set_operating_mode(hmc5883l_operating_mode_t hmc5883l_operating_mo
 
 }
 
+void hmc5883l_calibrate(void) {
+
+}
 int16_t get_mag_calibration_values(uint8_t ind) { return MAG_OFFSET[ind]; }
 
+I2C_AckNak read_raw_mag(void) {
+  
+  // reading the raw values
+  I2C_AckNak ack_state = hmc5883l_read_bytes(HMC5883L_REG_OUT_X_M, raw_values, 6);
+
+  // assigning
+  raw_mag_values[0] = (int16_t)((raw_values[0] << 8) | raw_values[1]);
+  raw_mag_values[1] = (int16_t)((raw_values[2] << 8) | raw_values[3]);
+  raw_mag_values[2] = (int16_t)((raw_values[4] << 8) | raw_values[5]);
+
+  return ack_state;
+}
+
+I2C_AckNak read_mag(void) {
+
+  // reading the raw values
+  I2C_AckNak ack_state = read_raw_mag();
+
+  // Apply Offset, multiple by scale value to get fixed-point value (instead of floating-point) then apply scale offset.
+  // the accel values are now (x)*scale uT //TODO: check really from the datasheet
+  mag_values[0] = (int32_t)(raw_mag_values[0] - MAG_OFFSET[0]) * GAIN_VALUE_MULTIPLE[DEFAULT_MAG_GAIN] / 1000;
+  mag_values[1] = (int32_t)(raw_mag_values[1] - MAG_OFFSET[1]) * GAIN_VALUE_MULTIPLE[DEFAULT_MAG_GAIN] / 1000;
+  mag_values[2] = (int32_t)(raw_mag_values[2] - MAG_OFFSET[2]) * GAIN_VALUE_MULTIPLE[DEFAULT_MAG_GAIN] / 1000;
+
+
+}
 int16_t get_raw_mag(uint8_t ind) { return mag_raw_values[ind]; }
 int32_t get_mag(uint8_t ind) { return mag_values[ind]; }

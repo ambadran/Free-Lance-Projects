@@ -293,48 +293,30 @@ LINE_STATUS terminal_execute_line(char* line) {
       read_gyro();  //TODO: remove after implementing period check
       switch(command.i) {
         case 1:
-          report("ACCEL X: %ldg\n", get_accel(0));
+          report("ACCEL X: %ldg\nACCEL Y: %ldg\nACCEL Z: %ldg\n", get_accel(0), get_accel(1), get_accel(2));
           break;
         case 2:
-          report("ACCEL Y: %ldg\n", get_accel(1));
+          report("GYRO X: %lddeg/sec\nGYRO Y: %lddeg/sec\nGYRO Z: %lddeg/sec\n", get_gyro(0), get_gyro(1), get_gyro(2));
           break;
         case 3:
-          report("ACCEL Z: %ldg\n", get_accel(2));
+          report("MAG X: %lddeg/sec\nMAG Y: %lddeg/sec\nMAG Z: %lddeg/sec\n", get_mag(0), get_mag(1), get_mag(2));
           break;
         case 4:
-          report("GYRO X: %lddeg/sec\n", get_gyro(0));
-          break;
-        case 5:
-          report("GYRO Y: %lddeg/sec\n", get_gyro(1));
-          break;
-        case 6:
-          report("GYRO Z: %lddeg/sec\n", get_gyro(2));
-          break;
-        case 7:
-          report("MAG X: %lddeg/sec\n", get_mag(2));
-          break;
-        case 8:
-          report("MAG Y: %lddeg/sec\n", get_mag(2));
-          break;
-        case 9:
-          report("MAG Z: %lddeg/sec\n", get_mag(2));
-          break;
-        case 10:
           report("Accel offset x: %d\nAccel offset y: %d\nAccel offset z: %d\n", get_accel_calibration_values(0), get_accel_calibration_values(1), get_accel_calibration_values(2));
           break;
-        case 11:
+        case 5:
           report("Gyro offset x: %d\nGyro offset y: %d\nGyro offset z: %d\n", get_gyro_calibration_values(0), get_gyro_calibration_values(1), get_gyro_calibration_values(2));
           break;
-        case 12:
+        case 6:
           report("Mag offset x: %d\nMag offset y: %d\nMag offset z: %d\n", get_mag_calibration_values(0), get_mag_calibration_values(1), get_mag_calibration_values(2));
           break;
-        case 13:
+        case 7:
           report("Roll Angle: %lddeg\n", get_accel_roll());
           break;
-        case 14:
+        case 8:
           report("Pitch: %ld\n", get_accel_pitch());
           break;
-        case 15:
+        case 9:
           /* report("Yaw: %ld\n",  ); */
           break;
         case 16:
