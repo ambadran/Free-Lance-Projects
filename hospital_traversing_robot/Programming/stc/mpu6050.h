@@ -136,6 +136,8 @@
  */
 #define WHO_AM_I_RESPONSE 0x68
 
+#define RAD_TO_DEG 57.3
+
 void mpu6050_init(void);
 I2C_AckNak mpu6050_write_byte(uint8_t register_to_write, uint8_t value);
 I2C_AckNak mpu6050_read_byte(uint8_t register_to_read, uint8_t* reg_value);
@@ -150,8 +152,6 @@ I2C_AckNak read_raw_accel(void);
 I2C_AckNak read_raw_gyro(void);
 I2C_AckNak read_accel(void);
 I2C_AckNak read_gyro(void);
-I2C_AckNak read_gyro_no_z(void);
-I2C_AckNak read_gyro_only_z(void);
 int16_t get_raw_accel(uint8_t ind);
 int16_t get_raw_gyro(uint8_t ind);
 int32_t get_accel(uint8_t ind);

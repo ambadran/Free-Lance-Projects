@@ -100,13 +100,10 @@
 
 /* MPU6050 Settings */
 // If this setting is enabled the MCU will do nothing but keep printing the MPU values
-// #define TEST_MPU_ACCEL
+#define TEST_MPU_ACCEL
 // #define TEST_MPU_GYRO
-// Since there is no FPU in this MCU, we'll resort into using fixed point values
-// 16384(16-bit reg) = 1g (floating point) = 1000 (fixed point value)
-#define ACCEL_SCALE 90  // fixed-point value instead of floating point, 
-// I made it 90 instead of 100, because I will take the Ax and Ay value to be the exact degree value -90 to 90
-#define GYRO_SCALE 100  // fixed-point value instead of floating point
+#define ACCEL_SCALE 1000  // fixed-point value instead of floating point, 
+#define GYRO_SCALE 1000  // fixed-point value instead of floating point
 #define ACCEL_SENSITIVITY ACCEL_SENSITIVITY_0  // 16-bit range is divided into max 2g
 #define GYRO_SENSITIVITY GYRO_SENSITIVITY_1  // 16-bit range is divided into max 500deg/sec
 //TODO: These values are set in place and no calibration routine yet
@@ -118,9 +115,10 @@
 #define DEFAULT_GYRO_OFFSET_Y 0
 #define DEFAULT_GYRO_OFFSET_Z 0
 #define GYRO_CALIBRATION_SAMPLES 1000
+#define GYRO_DT 10
 
 /* HMC5883L settings */
-#define TEST_MPU_MAG
+/* #define TEST_MPU_MAG */
 #define DEFAULT_MAG_GAIN HMC5883L_GAIN_1090
 #define DEFAULT_MAG_OFFSET_X 0
 #define DEFAULT_MAG_OFFSET_Y 0
@@ -149,6 +147,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdarg.h>
+#include <math.h>
 #include <delay.h>
 #include <gpio-hal.h>
 #include <timer-hal.h>

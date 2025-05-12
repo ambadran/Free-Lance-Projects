@@ -108,6 +108,7 @@ class Station:
         if speed is None:
             self.send(f"Bi{distance}")
         else:
+            OOOOOOOOOOOOO
             speed = int((speed/100)*65535)
             self.send(f"Bi{distance}j{speed}")
 

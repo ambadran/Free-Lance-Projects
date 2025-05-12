@@ -196,40 +196,18 @@ I2C_AckNak read_gyro(void) {
   return ack_state;
 }
 
-I2C_AckNak read_gyro_no_z(void) {
-
-  // reading the raw values
-  I2C_AckNak ack_state =read_raw_gyro();
-
-  // Apply Offset, multiple by scale value to get fixed-point value (instead of floating-point) then apply scale offset.
-  // the gyro values are now (x)*scale deg/sec
-  gyro_values[0] = (int32_t)(raw_gyro_values[0] - GYRO_OFFSET[0]) * GYRO_SCALE / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY];
-  gyro_values[1] = (int32_t)(raw_gyro_values[1] - GYRO_OFFSET[1]) * GYRO_SCALE / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY];
-
-  return ack_state;
-}
-
-I2C_AckNak read_gyro_only_z(void) {
-
-  // reading the raw values
-  I2C_AckNak ack_state =read_raw_gyro();
-
-  // Apply Offset, multiple by scale value to get fixed-point value (instead of floating-point) then apply scale offset.
-  // the gyro values are now (x)*scale deg/sec
-  gyro_values[2] = (int32_t)(raw_gyro_values[2] - GYRO_OFFSET[2]) * GYRO_SCALE / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY];
-
-  return ack_state;
-}
-
 int16_t get_raw_accel(uint8_t ind) { return raw_accel_values[ind]; }
 int16_t get_raw_gyro(uint8_t ind) { return raw_gyro_values[ind]; }
 int32_t get_accel(uint8_t ind) { return accel_values[ind]; }
 int32_t get_gyro(uint8_t ind) { return gyro_values[ind]; }
 
-// this calculation depends on the ACCEL_SCALE being a specific value to convert the gravity value directly to degrees using just a multiple
-// The value is still probably not correctly scaled as the single axis orientation equation is arctan2(Axy/Az). 
-// however in this case getting the correctly scaled angles is not important. Plus tiny differences is also registered as number change.
-// This calculation WILL NOT WORK in case multi-axis tilting at the same time. This will need the full equation arctan2(Axy/sqrt(Axy^2+Az^2))
-// Here I will just clamp the actual accerlation value and call it a day :P
-int8_t get_accel_pitch(void) { return CLAMP_TO_ANGLE(get_accel(0)); }
-int8_t get_accel_roll(void) { return CLAMP_TO_ANGLE(get_accel(1)); }
+int8_t get_accel_pitch(void) {
+  return (int8_t)(atan2f(accel_values[1], sqrtf(accel_values[0]*accel_values[0] + accel_values[2]*accel_values[2]))*RAD_TO_DEG);
+}
+
+int8_t get_accel_roll(void) {
+  return (int8_t)(atan2f(accel_values[0], sqrtf(accel_values[1]*accel_values[1] + accel_values[2]*accel_values[2]))*RAD_TO_DEG);
+}
+
+
+
