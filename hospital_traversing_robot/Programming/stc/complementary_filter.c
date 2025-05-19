@@ -18,17 +18,18 @@ void complementary_filter_process(void) {
       // read latest accel values
       read_accel();
       read_gyro();
-      /* read_mag(); */
+      read_mag();
 
       // compute Accel with Complementary Filter
       /* int16_t pitch = (get_accel_pitch()*COMP_FILTER_ALPHA + get_gyro(0)*COMP_FILTER_BETA)/100; */
       /* int16_t roll = (get_accel_roll()*COMP_FILTER_ALPHA + get_gyro(1)*COMP_FILTER_BETA)/100; */
       int16_t pitch = get_accel_pitch();
       int16_t roll = get_accel_roll();
+      int16_t yaw = get_mag_yaw(roll, pitch);
 
       // testing the IMU
 #if defined(TEST_MPU_ACCEL)
-      printf("Roll: %ddeg, Pitch: %ddeg (in %ldms)   \r", roll, pitch, get_current_time()-start);
+      printf("Roll: %ddeg, Pitch: %ddeg, yaw: %ddeg (in %ldms)   \r", roll, pitch, yaw, get_current_time()-start);
 #elif defined(TEST_MPU_GYRO)
       /* printf("Roll: %ddeg, Pitch: %ddeg    \r", get_gyro_roll(), get_gyro_pitch()); */
 #elif defined(TEST_MPU_MAG)

@@ -182,10 +182,10 @@ I2C_AckNak read_raw_mag(void) {
   raw_mag_values[0] = (int16_t)((raw_values[0] << 8) | raw_values[1]);
 
   ack_state = hmc5883l_read_bytes(HMC5883L_REG_OUT_Z_M, raw_values, 2);
-  raw_mag_values[1] = (int16_t)((raw_values[0] << 8) | raw_values[1]);
+  raw_mag_values[2] = (int16_t)((raw_values[0] << 8) | raw_values[1]);
  
   ack_state = hmc5883l_read_bytes(HMC5883L_REG_OUT_Y_M, raw_values, 2);
-  raw_mag_values[2] = (int16_t)((raw_values[0] << 8) | raw_values[1]);
+  raw_mag_values[1] = (int16_t)((raw_values[0] << 8) | raw_values[1]);
 
   return ack_state;
 }
@@ -205,3 +205,27 @@ I2C_AckNak read_mag(void) {
 }
 int16_t get_raw_mag(uint8_t ind) { return raw_mag_values[ind]; }
 int32_t get_mag(uint8_t ind) { return mag_values[ind]; }
+
+int16_t get_mag_yaw(int16_t roll, int16_t pitch) {
+
+     /* // Convert roll and pitch from degrees to radians */
+    /* float rollRad = (float)roll * 0.01745; */
+    /* float pitchRad = (float)pitch * 0.01745; */
+
+    /* // Tilt compensation */
+    /* float xh = get_mag(0) * cosf(pitchRad) + get_mag(2) * sinf(pitchRad); */
+    /* float yh = get_mag(0) * sinf(rollRad) * sinf(pitchRad) + get_mag(1) * cosf(rollRad) - get_mag(2) * sinf(rollRad) * cosf(pitchRad); */
+
+    /* // Heading calculation */
+    /* return (int16_t)(atan2f(yh, xh) * RAD_TO_DEG); */
+  float heading = atan2f(get_mag(1), get_mag(0));
+  // Correct for when signs are reversed.
+  if(heading < 0)
+    heading += 6.283185307;
+    
+  // Check for wrap due to addition of declination.
+  if(heading > 6.283185307)
+    heading -= 6.283185307;
+
+  return (int16_t)(heading * RAD_TO_DEG);
+}
