@@ -1,0 +1,41 @@
+#ifndef PATH_PLANNING_H
+#define PATH_PLANNING_H
+
+typedef enum {
+  MOVEMENT_ACCEPTED,
+  MOVEMENT_REJECTED
+} movement_acceptance_t;
+
+typedef enum {
+  ROOM0,
+  ROOM1,
+  ROOM2,
+  ROOM3,
+  ROOM4,
+  ROOM5,
+  ROOM6,
+  ROOM7,
+  ROOM8,
+  ROOM_FRONT0,
+  ROOM_FRONT1,
+  ROOM_FRONT2,
+  ROOM_FRONT3,
+  ROOM_FRONT4,
+  ROOM_FRONT5,
+  ROOM_FRONT6,
+  ROOM_FRONT7,
+  ROOM_FRONT8,
+  STAIR0_FLOOR0_FRONT,
+  STAIR0_FLOOR1_FRONT,
+  STAIR1_FLOOR1_FRONT,
+  STAIR1_FLOOR2_FRONT,
+  STAIR2_FLOOR2_FRONT,
+  STAIR2_FLOOR3_FRONT,
+  STAIR0,
+  STAIR1,
+  STAIR2
+} location_t;
+
+void path_planner_init(void);
+
+#endif

@@ -164,6 +164,7 @@
 #include "mpu6050.h"
 #include "hmc5883l.h"
 #include "complementary_filter.h"
+#include "path_planning.h"
 #include "terminal.h"
 #include "protocol.h"
 
