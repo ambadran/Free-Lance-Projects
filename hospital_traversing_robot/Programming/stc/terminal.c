@@ -152,6 +152,10 @@ LINE_STATUS terminal_execute_line(char* line) {
         command.command_type = COMMAND_IMU;
         break;
 
+      case 'P':
+        command.command_type = COMMAND_PATH_PLAN;
+        break;
+
       case 'i':
         // reading int argument for a multi-argument command
         if (!read_int(line, &char_count, &int_value)) {
@@ -217,6 +221,13 @@ LINE_STATUS terminal_execute_line(char* line) {
       break;
 
     case COMMAND_IMU:
+      break;
+
+    case COMMAND_PATH_PLAN:
+      if (command.i > LOCATION_COUNT || command.j > LOCATION_COUNT) {
+        printf("Error: invalid location index, max location index is %d", LOCATION_COUNT-1);
+        return LINE_FAILED;
+      }
       break;
 
     default:
@@ -312,13 +323,13 @@ LINE_STATUS terminal_execute_line(char* line) {
           report("Mag offset x: %d\nMag offset y: %d\nMag offset z: %d\n", get_mag_calibration_values(0), get_mag_calibration_values(1), get_mag_calibration_values(2));
           break;
         case 7:
-          report("Roll Angle: %lddeg\n", get_accel_roll());
+          report("Roll Angle: %ddeg\n", get_compl_roll());
           break;
         case 8:
-          report("Pitch: %ld\n", get_accel_pitch());
+          report("Pitch: %d\n", get_compl_pitch());
           break;
         case 9:
-          /* report("Yaw: %ld\n",  ); */
+          report("Yaw: %d\n",  get_compl_yaw());
           break;
         case 10:
           mpu6050_print_internal_registers();
@@ -329,9 +340,17 @@ LINE_STATUS terminal_execute_line(char* line) {
 
 /* ("ACCEL X: %ldg\nACCEL Y: %ldg\nACCEL Z: %ldg\nGYRO X: %lddeg/sec\nGYRO Y: %lddeg/sec\nGYRO Z: %lddeg/sec\nMAG X: %lduT\nMAG Y: %lduT\nMAG Z: %lduT\n"),get_accel(0), get_accel(1), get_accel(2), get_gyro(0), get_gyro(1), get_gyro(2), get_mag(0), get_mag(1), get_mag(2), */
         default:
-          report("Roll: %d\nPitch: %d\nYaw: \n", get_accel_roll(), get_accel_pitch());
+          report("Roll: %d\nPitch: %d\nYaw: %d\n", get_compl_roll(), get_compl_pitch(), get_compl_yaw());
       }
 
+      break;
+
+    case COMMAND_PATH_PLAN:
+      if(find_path(command.i, command.j) == PATH_FOUND) {
+        print_path();
+      } else {
+        printf("No Path was found!");
+      }
       break;
 
     default:

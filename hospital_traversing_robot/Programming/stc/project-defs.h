@@ -100,7 +100,7 @@
 
 /* MPU6050 Settings */
 // If this setting is enabled the MCU will do nothing but keep printing the MPU values
-#define TEST_MPU_ACCEL
+// #define TEST_MPU_ACCEL
 // #define TEST_MPU_GYRO
 #define ACCEL_SCALE 1000  // fixed-point value instead of floating point, 
 #define GYRO_SCALE 1000  // fixed-point value instead of floating point

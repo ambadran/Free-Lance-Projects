@@ -2,9 +2,9 @@
 #define PATH_PLANNING_H
 
 typedef enum {
-  MOVEMENT_ACCEPTED,
-  MOVEMENT_REJECTED
-} movement_acceptance_t;
+  PATH_NOT_FOUND,
+  PATH_FOUND
+} path_result_status_t;
 
 typedef enum {
   ROOM0,
@@ -33,9 +33,25 @@ typedef enum {
   STAIR2_FLOOR3_FRONT,
   STAIR0,
   STAIR1,
-  STAIR2
+  STAIR2,
+  LOCATION_COUNT
 } location_t;
 
-void path_planner_init(void);
+#define MAX_NEIGHBORS 3
+#define MAX_QUEUE LOCATION_COUNT
+#define MAX_PATH_LEN LOCATION_COUNT
+
+/*
+  We will return the path as a statically allocated linked list of up to
+  LOCATION_COUNT nodes.  No malloc/free.  Each node holds a location_t
+  plus an “index of the next node” (−1 if none).
+*/
+typedef struct {
+    location_t loc;
+    int8_t     next;   // index in the array, or −1 if end of list
+} PathNode;
+
+path_result_status_t find_path(location_t start, location_t dest);
+void print_path(void);
 
 #endif

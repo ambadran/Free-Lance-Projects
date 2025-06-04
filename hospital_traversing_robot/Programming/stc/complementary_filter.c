@@ -1,6 +1,9 @@
 #include "project-defs.h"
 
 static volatile uint32_t complementary_filter_next_dt = 0;
+static int16_t pitch = 0;
+static int16_t roll = 0;
+static int16_t yaw = 0;
 
 void complementary_filter_init(void) {
   complementary_filter_next_dt = get_current_time();
@@ -23,9 +26,9 @@ void complementary_filter_process(void) {
       // compute Accel with Complementary Filter
       /* int16_t pitch = (get_accel_pitch()*COMP_FILTER_ALPHA + get_gyro(0)*COMP_FILTER_BETA)/100; */
       /* int16_t roll = (get_accel_roll()*COMP_FILTER_ALPHA + get_gyro(1)*COMP_FILTER_BETA)/100; */
-      int16_t pitch = get_accel_pitch();
-      int16_t roll = get_accel_roll();
-      int16_t yaw = get_mag_yaw(roll, pitch);
+      pitch = get_accel_pitch();
+      roll = get_accel_roll();
+      yaw = get_mag_yaw(roll, pitch);
 
       // testing the IMU
 #if defined(TEST_MPU_ACCEL)
@@ -38,4 +41,7 @@ void complementary_filter_process(void) {
   }
 }
 
+int16_t get_compl_pitch(void) { return pitch; }
+int16_t get_compl_roll(void) { return roll; }
+int16_t get_compl_yaw(void) { return yaw; }
 
