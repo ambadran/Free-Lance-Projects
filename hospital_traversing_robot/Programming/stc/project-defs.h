@@ -161,6 +161,7 @@
 #include "differential_control.h"
 #include "neo_m8n.h"
 #include "nrf24l01.h"
+#include "hc_05.h"
 #include "mpu6050.h"
 #include "hmc5883l.h"
 #include "complementary_filter.h"
