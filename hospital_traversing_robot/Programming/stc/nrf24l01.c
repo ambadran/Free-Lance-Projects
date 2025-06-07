@@ -164,6 +164,8 @@ NRF24_SEND_STRING_STATUS nrf24_send_string(uint8_t* string) {
 
   /* nrf24_device(RECEIVER, RESET); */
 
+  //TODO: ignore if not initialized!
+
   // adjusting string to be payload_width size
   uint8_t str_size = strlen(string);
   if( str_size > current_payload_width) {

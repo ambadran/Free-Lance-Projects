@@ -95,14 +95,14 @@ LINE_STATUS terminal_execute_line(char* line) {
     // Checking letter is a letter
     // checking if it's before A or after z or any character in between Z and a in the ascii table
     if ( letter < 'A' || letter > 'z' || (letter > 'Z' && letter < 'a')) {
-      printf("\rExpected a letter!\n"); 
+      report("\rExpected a letter!\n"); 
       return LINE_FAILED;
     }
 
     // small letter case is not a command, it's parameter
     if (!(letter >= 'a' && letter < 'z') && \
         (command.command_type != COMMAND_NOT_SET)) {
-        printf("Can't have >1 command letter in one command!\n");
+        report("Can't have >1 command letter in one command!\n");
         return LINE_FAILED;
     }
 
@@ -113,7 +113,7 @@ LINE_STATUS terminal_execute_line(char* line) {
       case 'A':
         // testing reading int argument
         if (!read_int(line, &char_count, &int_value)) {
-          printf("Bad integer Number Format\n");
+          report("Bad integer Number Format\n");
           return LINE_FAILED;
 
         } 
@@ -152,6 +152,10 @@ LINE_STATUS terminal_execute_line(char* line) {
         command.command_type = COMMAND_IMU;
         break;
 
+      case 'U':
+        command.command_type = COMMAND_ULTRASONIC;
+        break;
+
       case 'P':
         command.command_type = COMMAND_PATH_PLAN;
         break;
@@ -159,7 +163,7 @@ LINE_STATUS terminal_execute_line(char* line) {
       case 'i':
         // reading int argument for a multi-argument command
         if (!read_int(line, &char_count, &int_value)) {
-          printf("Bad int Number Format\n");
+          report("Bad int Number Format\n");
           return LINE_FAILED;
         }
         command.i = int_value;
@@ -168,14 +172,14 @@ LINE_STATUS terminal_execute_line(char* line) {
       case 'j':
         // reading int argument for a multi-argument command
         if (!read_int(line, &char_count, &int_value)) {
-          printf("Bad int Number Format\n");
+          report("Bad int Number Format\n");
           return LINE_FAILED;
         }
         command.j = int_value;
         break;
 
       default:
-        printf("Command Letter Not Implemented\n");
+        report("Command Letter Not Implemented\n");
         return LINE_FAILED;
     }
   }
@@ -190,42 +194,62 @@ LINE_STATUS terminal_execute_line(char* line) {
 
     case COMMAND_MOVE_FORWARD:
     case COMMAND_MOVE_BACKWARD:
-    case COMMAND_MOVE_RIGHT: //TODO: should test for different i values
-    case COMMAND_MOVE_LEFT: //TODO: should test for different i values
       if (command.i <= 0 || command.i > 100) {
 
-        printf("Distance Parameter 'i' out of range!\n");
+        report("Error: Parameter 'i' out of range. Forward/Backward cm value >0 and <100\n");
+        return LINE_FAILED;
+
+      } else if (command.j == 0) {
+        //IMP: support for default PWM duty cycle 'j' value
+        // since duty cycle = 0 means no movement, so it makes no sense
+        // Also if pwm signal needs to be inverted, the advpwm lib supports that!
+        command.j = DEFAULT_PWM_DUTY_CYCLE; 
+      }
+      break;
+
+    case COMMAND_MOVE_RIGHT: //TODO: should test for different i values
+    case COMMAND_MOVE_LEFT: //TODO: should test for different i values
+      if (command.i < -360 || command.i > 360 || command.i == 0) {
+
+        report("Error Parameter 'i' out of range. Right/Left degree value >-360 && <360 && !=0\n");
         return LINE_FAILED;
 
       }  else if (command.j == 0) {
         //IMP: support for default PWM duty cycle 'j' value
         // since duty cycle = 0 means no movement, so it makes no sense
         // Also if pwm signal needs to be inverted, the advpwm lib supports that!
-        command.j = DEFAULT_PWM_DUTY_CYCLE; //TODO: replace all these constant with #defs
+        command.j = DEFAULT_PWM_DUTY_CYCLE; 
       }
 
       if (differential_control_is_moving()) {
-        printf("Robot ALready Moving!\n");
+        report("Robot ALready Moving!\n");
         return LINE_FAILED;
       }
 
-      // Passed
       break;
 
     case COMMAND_GPS:
       if(command.i >= GPS_NUM_DATA) {
-        printf("Error: only %d data supported\n", GPS_NUM_DATA);
+        report("Error: only %d data supported\n", GPS_NUM_DATA);
         return LINE_FAILED;
       }
 
       break;
 
     case COMMAND_IMU:
+      //TODO: test for max number of i, unfortuantely couldn't get an automated way for the maximum number of IMU i parameters
+      break;
+
+    case COMMAND_ULTRASONIC:
+      if(command.i > 1 || command.i < -1) {
+        report("Error: 'i' Out of range.\ni==-1 calls hc05_stop_cycle()\ni==0 returns latest distance and HC05 state\ni==1 calls hc05_start_cycle()\n");
+      }
       break;
 
     case COMMAND_PATH_PLAN:
+      //TODO: V.IMP add an option to draw from current position to wanted. for example if i==-1 then from whatever last saved current location to j value
       if (command.i > LOCATION_COUNT || command.j > LOCATION_COUNT) {
-        printf("Error: invalid location index, max location index is %d", LOCATION_COUNT-1);
+        report("Error: invalid location index, max location index is %d", LOCATION_COUNT-1);
         return LINE_FAILED;
       }
       break;
@@ -235,7 +259,7 @@ LINE_STATUS terminal_execute_line(char* line) {
       // then a correct command wasn't passed in Step2.
       // which means that the default: of Step2 should run
       // so WTF?!??!
-      printf("SHOULD NEVER REACH HERE IN ERROR CHECKING.\n");
+      report("SHOULD NEVER REACH HERE IN ERROR CHECKING.\n");
       return LINE_FAILED;
   }
 
@@ -256,23 +280,23 @@ LINE_STATUS terminal_execute_line(char* line) {
       break;
 
     case COMMAND_MOVE_FORWARD:
-      differential_control_forward((uint8_t)command.i, command.j);
-      printf("Forward: %d @ freq: %u\n", command.i, command.j);
+      differential_control_forward((uint8_t)command.i, (uint16_t)command.j);
+      report("Forward: %d @ freq: %u\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_BACKWARD:
-      differential_control_backward((uint8_t)command.i, command.j);
-      printf("Backward: %d @ freq: %u\n", command.i, command.j);
+      differential_control_backward((uint8_t)command.i, (uint16_t)command.j);
+      report("Backward: %d @ freq: %u\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_RIGHT:
-      differential_control_right((uint8_t)command.i, command.j);
-      printf("Right: %d @ freq: %u\n", command.i, command.j);
+      differential_control_right((uint8_t)command.i, (uint16_t)command.j);
+      report("Right: %d @ freq: %u\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_LEFT:
-      differential_control_left((uint8_t)command.i, command.j);
-      printf("Left: %d @ freq: %u\n", command.i, command.j);
+      differential_control_left((uint8_t)command.i, (uint16_t)command.j);
+      report("Left: %d @ freq: %u\n", command.i, command.j);
       break;
 
     case COMMAND_GPS:
@@ -300,9 +324,6 @@ LINE_STATUS terminal_execute_line(char* line) {
       break;
 
     case COMMAND_IMU:
-      /* read_accel();  //TODO: remove after implementing period check */
-      /* read_gyro();  //TODO: remove after implementing period check */
-
       switch(command.i) {
         case 1:
           report("ACCEL X: %ldg\nACCEL Y: %ldg\nACCEL Z: %ldg\n", get_accel(0), get_accel(1), get_accel(2));
@@ -323,13 +344,16 @@ LINE_STATUS terminal_execute_line(char* line) {
           report("Mag offset x: %d\nMag offset y: %d\nMag offset z: %d\n", get_mag_calibration_values(0), get_mag_calibration_values(1), get_mag_calibration_values(2));
           break;
         case 7:
-          report("Roll Angle: %ddeg\n", get_compl_roll());
+          //TODO: test mpu6050 device status, is it active?
+          report("Roll Angle: %ddeg\n", get_compl_roll_deg());
           break;
         case 8:
-          report("Pitch: %d\n", get_compl_pitch());
+          //TODO: test mpu6050 device status, is it active?
+          report("Pitch Angle: %ddeg\n", get_compl_pitch_deg());
           break;
         case 9:
-          report("Yaw: %d\n",  get_compl_yaw());
+          //TODO: test hmc5883l device status, is it active?
+          report("Yaw Angle: %ddeg\n",  get_compl_yaw_deg());
           break;
         case 10:
           mpu6050_print_internal_registers();
@@ -340,16 +364,51 @@ LINE_STATUS terminal_execute_line(char* line) {
 
 /* ("ACCEL X: %ldg\nACCEL Y: %ldg\nACCEL Z: %ldg\nGYRO X: %lddeg/sec\nGYRO Y: %lddeg/sec\nGYRO Z: %lddeg/sec\nMAG X: %lduT\nMAG Y: %lduT\nMAG Z: %lduT\n"),get_accel(0), get_accel(1), get_accel(2), get_gyro(0), get_gyro(1), get_gyro(2), get_mag(0), get_mag(1), get_mag(2), */
         default:
-          report("Roll: %d\nPitch: %d\nYaw: %d\n", get_compl_roll(), get_compl_pitch(), get_compl_yaw());
+          report("Roll: %d\nPitch: %d\nYaw: %d\n", get_compl_roll_deg(), get_compl_pitch_deg(), get_compl_yaw_deg());
+      }
+
+      break;
+
+    case COMMAND_ULTRASONIC:
+      switch(command.i) {
+        case -1:
+          HC05_CYCLE_FUNC_RESPONSE hc05_cycle_command_response = hc05_stop_cycle();
+
+          if(hc05_cycle_command_response == HC05_STOP_CYCLE_OK) {
+            report("HC05 Ultrasonic Cycle Successfully Stopped!\n");
+          } else if (hc05_cycle_command_response == HC05_STOP_CYCLE_ALREADY_IDLE){
+            report("HC05 Ultrasonic Cycle is already Stopped!\n");
+          }
+          break;
+
+        case 1:
+          HC05_CYCLE_FUNC_RESPONSE hc05_cycle_command_response = hc05_start_cycle();
+
+          if(hc05_cycle_command_response == HC05_START_CYCLE_OK) {
+            report("HC05 Ultrasonic Cycle Successfully Started!\n");
+          } else if (hc05_cycle_command_response == HC05_START_CYCLE_ALREADY_ACTIVE){
+            report("HC05 Ultrasonic Cycle is already Active!\n");
+          }
+          break;
+
+        default: //i==0, tested in testing phase
+          HC05_STATUS hc05_status = get_hc05_status();
+
+          if(hc05_status != HC05_ACTIVE) {
+            report("Current HC05 machine State: %s\n", HC05_STATUS_TO_STRING[hc05_status]);
+          } else {
+            report("Distance: %d (HC05 Machine State: HC05_ACTIVE)\n", get_ultrasonic_distance_cm());
+          }
       }
 
       break;
 
     case COMMAND_PATH_PLAN:
+      //TODO: V.IMP add an option to draw from current position to wanted. for example if i==-1 then from whatever last saved current location to j value
       if(find_path(command.i, command.j) == PATH_FOUND) {
         print_path();
       } else {
-        printf("No Path was found!");
+        report("No Path was found!");
       }
       break;
 
@@ -358,7 +417,7 @@ LINE_STATUS terminal_execute_line(char* line) {
       // then a correct command wasn't passed in Step2.
       // which means that the default: of Step2 should run
       // so WTF?!??!
-      printf("SHOULD NEVER REACH HERE.");
+      report("SHOULD NEVER REACH HERE.");
       return LINE_FAILED;
   }
 

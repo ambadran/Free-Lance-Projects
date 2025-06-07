@@ -83,6 +83,7 @@ void protocol_main_loop(void) {
 
     // real-time processing
     report_toggle_led();
+    hc05_process_cycle_phases();
     differential_control_process();
     complementary_filter_process();
 

@@ -13,6 +13,11 @@ size_t uint8_strlen(const uint8_t *str) {
 
 void report_init(void) {
 
+  serialConsoleInitialise(
+      CONSOLE_UART, 
+      CONSOLE_SPEED, 
+      CONSOLE_PIN_CONFIG
+      );
   gpioConfigure(&led_pin);
   led_timer_count = get_current_time();
 

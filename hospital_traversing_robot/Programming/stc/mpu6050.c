@@ -201,11 +201,11 @@ int16_t get_raw_gyro(uint8_t ind) { return raw_gyro_values[ind]; }
 int32_t get_accel(uint8_t ind) { return accel_values[ind]; }
 int32_t get_gyro(uint8_t ind) { return gyro_values[ind]; }
 
-int16_t get_accel_pitch(void) {
+int16_t get_accel_pitch_deg(void) {
   return (int16_t)(atan2f(accel_values[1], sqrtf(accel_values[0]*accel_values[0] + accel_values[2]*accel_values[2]))*RAD_TO_DEG);
 }
 
-int16_t get_accel_roll(void) {
+int16_t get_accel_roll_deg(void) {
   return (int16_t)(atan2f(accel_values[0], sqrtf(accel_values[1]*accel_values[1] + accel_values[2]*accel_values[2]))*RAD_TO_DEG);
 }
 

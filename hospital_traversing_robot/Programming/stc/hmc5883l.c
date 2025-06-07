@@ -206,7 +206,7 @@ I2C_AckNak read_mag(void) {
 int16_t get_raw_mag(uint8_t ind) { return raw_mag_values[ind]; }
 int32_t get_mag(uint8_t ind) { return mag_values[ind]; }
 
-int16_t get_mag_yaw(int16_t roll, int16_t pitch) {
+int16_t get_mag_yaw_deg(int16_t roll, int16_t pitch) {
 
      /* // Convert roll and pitch from degrees to radians */
     /* float rollRad = (float)roll * 0.01745; */

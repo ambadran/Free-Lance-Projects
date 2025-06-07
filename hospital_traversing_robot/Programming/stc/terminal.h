@@ -19,14 +19,14 @@ typedef enum {
   COMMAND_MOVE_LEFT,
   COMMAND_GPS,
   COMMAND_IMU,
-  COMMAND_ULTRASONIC_DISTANCE,
+  COMMAND_ULTRASONIC,
   COMMAND_PATH_PLAN
 } command_type_t;
 
 typedef struct {
   command_type_t command_type;
-  uint16_t i;
-  uint16_t j;
+  int16_t i;
+  int16_t j;
   command_modal_status_t command_modal_status;
 } command_t;
 

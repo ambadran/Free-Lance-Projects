@@ -26,10 +26,10 @@
 #define NRF24_CE_PORT GPIO_PORT2  
 #define NRF24_CE_PIN GPIO_PIN6  
 
-#define ULTRASONIC_TRIGGER_PORT GPIO_PORT3
-#define ULTRASONIC_TRIGGER_PIN GPIO_PIN2
-#define ULTRASONIC_ECHO_PORT GPIO_PORT3
-#define ULTRASONIC_ECHO_PIN GPIO_PIN3
+#define HC05_TRIGGER_PORT GPIO_PORT3
+#define HC05_TRIGGER_PIN GPIO_PIN2
+#define HC05_ECHO_PORT GPIO_PORT3
+#define HC05_ECHO_PIN GPIO_PIN3
 
 #define NEO_M8N_PORT GPIO_PORT1
 #define NEO_M8N_RX_PIN GPIO_PIN0
@@ -74,14 +74,13 @@
 #define GLOBAL_TIMER_INTERRUPT TIMER0_INTERRUPT
 // TIMER1 is used for CONSOLE_UART
 #define NEO_M8N_TIMER UART_USE_OWN_TIMER // TIMER2 is used for UART2
-                                         
-/* #define ULTRASONIC_TIMER TIMER4 */
-/* #define ULTRASONIC_TIMER_ISR timer4_isr */
-/* #define ULTRASONIC_TIMER_INTERRUPT TIMER4_INTERRUPT */
+#define HC05_TIMER TIMER3
+#define HC05_TIMER_ISR timer3_isr
+#define HC05_TIMER_INTERRUPT TIMER3_INTERRUPT
 
 /* external pin interrupts */
-#define ULTRASONIC_INT_PIN_ISR extint0_isr
-#define ULTRASONIC_INT_PIN_INTERRUPT EXTINT0_INTERRUPT
+#define HC05_INT_PIN_ISR extint0_isr
+#define HC05_INT_PIN_INTERRUPT EXTINT0_INTERRUPT
 
 /* SPI settings */
 #define SPI_PIN_CONFIG 1
@@ -95,12 +94,12 @@
 //#define NRF_DEBUGGING  //uncomment to print all the nrf24l01 registers after setting them with nrf24_device()
 #define RF_CHANNEL_DEFAULT 46
 
-/* Ultrasonic Sensor Settings*/
-/* #define ULTRASONIC_STATE_MACHINE */
+/* HC05 Sensor Settings*/
+#define HC05_TIMER_COUNTER_TO_CM  233 //TODO: actually calculate and get this value
+
 
 /* MPU6050 Settings */
-// If this setting is enabled the MCU will do nothing but keep printing the MPU values
-// #define TEST_MPU_ACCEL
+// #define TEST_MPU_ACCEL  // If this setting is enabled the MCU will do nothing but keep printing the MPU values
 // #define TEST_MPU_GYRO
 #define ACCEL_SCALE 1000  // fixed-point value instead of floating point, 
 #define GYRO_SCALE 1000  // fixed-point value instead of floating point
@@ -165,6 +164,7 @@
 #include "mpu6050.h"
 #include "hmc5883l.h"
 #include "complementary_filter.h"
+#include "closed_loop_movements.h"
 #include "path_planning.h"
 #include "terminal.h"
 #include "protocol.h"

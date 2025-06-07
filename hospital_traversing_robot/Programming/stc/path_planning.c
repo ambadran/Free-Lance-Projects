@@ -130,6 +130,8 @@ static PathNode path_nodes[LOCATION_COUNT];
     - Output:  path_nodes[.] form a singly linked list from start → … → dest.
 */
 path_result_status_t find_path(location_t start, location_t dest) {
+    //TODO: V.IMP add an option to draw from current position to wanted. for example if i==-1 then from whatever last saved current location to j value
+ 
     // Special case: if start == dest, return a single-node list
     if (start == dest) {
         path_nodes[0].loc  = start;

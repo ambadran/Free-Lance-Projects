@@ -80,6 +80,6 @@ I2C_AckNak read_raw_mag(void);
 I2C_AckNak read_mag(void);
 int16_t get_raw_mag(uint8_t ind);
 int32_t get_mag(uint8_t ind);
-int16_t get_mag_yaw(int16_t roll, int16_t pitch);
+int16_t get_mag_yaw_deg(int16_t roll, int16_t pitch);
 
 #endif
