@@ -280,22 +280,22 @@ LINE_STATUS terminal_execute_line(char* line) {
       break;
 
     case COMMAND_MOVE_FORWARD:
-      differential_control_forward((uint8_t)command.i, (uint16_t)command.j);
+      differential_control_forward((uint8_t)command.i, command.j);
       report("Forward: %d @ freq: %u\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_BACKWARD:
-      differential_control_backward((uint8_t)command.i, (uint16_t)command.j);
+      differential_control_backward((uint8_t)command.i, command.j);
       report("Backward: %d @ freq: %u\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_RIGHT:
-      differential_control_right((uint8_t)command.i, (uint16_t)command.j);
+      differential_control_right((uint8_t)command.i, command.j);
       report("Right: %d @ freq: %u\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_LEFT:
-      differential_control_left((uint8_t)command.i, (uint16_t)command.j);
+      differential_control_left((uint8_t)command.i, command.j);
       report("Left: %d @ freq: %u\n", command.i, command.j);
       break;
 
@@ -370,9 +370,10 @@ LINE_STATUS terminal_execute_line(char* line) {
       break;
 
     case COMMAND_ULTRASONIC:
+      HC05_CYCLE_FUNC_RESPONSE hc05_cycle_command_response;
       switch(command.i) {
         case -1:
-          HC05_CYCLE_FUNC_RESPONSE hc05_cycle_command_response = hc05_stop_cycle();
+          hc05_cycle_command_response = hc05_stop_cycle();
 
           if(hc05_cycle_command_response == HC05_STOP_CYCLE_OK) {
             report("HC05 Ultrasonic Cycle Successfully Stopped!\n");
@@ -382,7 +383,7 @@ LINE_STATUS terminal_execute_line(char* line) {
           break;
 
         case 1:
-          HC05_CYCLE_FUNC_RESPONSE hc05_cycle_command_response = hc05_start_cycle();
+          hc05_cycle_command_response = hc05_start_cycle();
 
           if(hc05_cycle_command_response == HC05_START_CYCLE_OK) {
             report("HC05 Ultrasonic Cycle Successfully Started!\n");

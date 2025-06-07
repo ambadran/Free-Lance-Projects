@@ -39,7 +39,7 @@ void hc05_init(void) {
 
 }
 
-HC05_START_CYCLE_FUNC_RESPONSE hc05_start_cycle(void) {
+HC05_CYCLE_FUNC_RESPONSE hc05_start_cycle(void) {
 
   // in any case, enable IRQ now
   echo_pin.pinInterrupt = ENABLE_GPIO_PIN_INTERRUPT;
