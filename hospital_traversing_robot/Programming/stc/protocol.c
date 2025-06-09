@@ -55,8 +55,8 @@ static void protocol_execute_line(char* line) {
 
     LINE_STATUS line_state = terminal_execute_line(line);
 
-    if (line_state == LINE_PASSED) { printf("Command passed..\n\n"); } 
-    else if (line_state == LINE_FAILED) { printf("Command Failed..\n\n"); }
+    if (line_state == LINE_PASSED) { report("Command passed..\n\n"); } 
+    else if (line_state == LINE_FAILED) { report("Command Failed..\n\n"); }
 
   }
 
@@ -64,6 +64,7 @@ static void protocol_execute_line(char* line) {
 
 void protocol_main_loop(void) {
   printf("\nStarting..\n");
+  uint32_t test = get_current_time();
 
   while(1) {
     if (uartGetCharacter_modified(&c, 1) != UART_RECEIVE_EMPTY) {
@@ -83,9 +84,9 @@ void protocol_main_loop(void) {
 
     // real-time processing
     report_toggle_led();
-    hc05_process_cycle_phases();
+    /* hcsr04_process_cycle_phases(); */
     differential_control_process();
-    complementary_filter_process();
-
+    orientation_process();
+    execute_path_process();
   }
 }

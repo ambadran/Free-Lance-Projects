@@ -110,7 +110,7 @@ void mpu6050_test_responsiveness(void) {
    }
   if(reg_value != WHO_AM_I_RESPONSE) {
     while (1) {
-      printf("MPU6050 WHO_AM_I register responded with '%d' (not %d) \r", reg_value, WHO_AM_I_RESPONSE);
+      printf("MPU6050 Failed: WHO_AM_I register responded with '%d' (not %d) \r", reg_value, WHO_AM_I_RESPONSE);
       delay1ms(200);
     }
   }
@@ -189,9 +189,9 @@ I2C_AckNak read_gyro(void) {
 
   // Apply Offset, multiple by scale value to get fixed-point value (instead of floating-point) then apply scale offset.
   // the gyro values are now (x)*scale deg/sec
-  gyro_values[0] = (int32_t)(raw_gyro_values[0] - GYRO_OFFSET[0]) * GYRO_SCALE / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY];
-  gyro_values[1] = (int32_t)(raw_gyro_values[1] - GYRO_OFFSET[1]) * GYRO_SCALE / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY];
-  gyro_values[2] = (int32_t)(raw_gyro_values[2] - GYRO_OFFSET[2]) * GYRO_SCALE / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY];
+  gyro_values[0] = (int32_t)(raw_gyro_values[0] - GYRO_OFFSET[0]) / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY];
+  gyro_values[1] = (int32_t)(raw_gyro_values[1] - GYRO_OFFSET[1]) / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY];
+  gyro_values[2] = (int32_t)(raw_gyro_values[2] - GYRO_OFFSET[2]) / GYRO_SENSITIVITY_VALUES[GYRO_SENSITIVITY];
 
   return ack_state;
 }
@@ -200,14 +200,5 @@ int16_t get_raw_accel(uint8_t ind) { return raw_accel_values[ind]; }
 int16_t get_raw_gyro(uint8_t ind) { return raw_gyro_values[ind]; }
 int32_t get_accel(uint8_t ind) { return accel_values[ind]; }
 int32_t get_gyro(uint8_t ind) { return gyro_values[ind]; }
-
-int16_t get_accel_pitch_deg(void) {
-  return (int16_t)(atan2f(accel_values[1], sqrtf(accel_values[0]*accel_values[0] + accel_values[2]*accel_values[2]))*RAD_TO_DEG);
-}
-
-int16_t get_accel_roll_deg(void) {
-  return (int16_t)(atan2f(accel_values[0], sqrtf(accel_values[1]*accel_values[1] + accel_values[2]*accel_values[2]))*RAD_TO_DEG);
-}
-
 
 

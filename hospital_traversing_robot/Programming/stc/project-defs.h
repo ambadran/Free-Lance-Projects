@@ -26,10 +26,10 @@
 #define NRF24_CE_PORT GPIO_PORT2  
 #define NRF24_CE_PIN GPIO_PIN6  
 
-#define HC05_TRIGGER_PORT GPIO_PORT3
-#define HC05_TRIGGER_PIN GPIO_PIN2
-#define HC05_ECHO_PORT GPIO_PORT3
-#define HC05_ECHO_PIN GPIO_PIN3
+#define HCSR04_TRIGGER_PORT GPIO_PORT3
+#define HCSR04_TRIGGER_PIN GPIO_PIN2
+#define HCSR04_ECHO_PORT GPIO_PORT3
+#define HCSR04_ECHO_PIN GPIO_PIN3
 
 #define NEO_M8N_PORT GPIO_PORT1
 #define NEO_M8N_RX_PIN GPIO_PIN0
@@ -42,7 +42,7 @@
 #define HAL_UARTS 2
 #define UART2_RX_BUFFER_SIZE 233 //MUST DO THIS TO RECEIVE ALL NMEA STATEMENT!
 
-#define CONSOLE_SPEED 115200
+#define CONSOLE_SPEED 250000
 #define CONSOLE_UART UART1
 #define CONSOLE_PIN_CONFIG 0  // TX->P3.1, RX->P3.0
 
@@ -74,13 +74,13 @@
 #define GLOBAL_TIMER_INTERRUPT TIMER0_INTERRUPT
 // TIMER1 is used for CONSOLE_UART
 #define NEO_M8N_TIMER UART_USE_OWN_TIMER // TIMER2 is used for UART2
-#define HC05_TIMER TIMER3
-#define HC05_TIMER_ISR timer3_isr
-#define HC05_TIMER_INTERRUPT TIMER3_INTERRUPT
+#define HCSR04_TIMER TIMER4
+#define HCSR04_TIMER_ISR timer4_isr
+#define HCSR04_TIMER_INTERRUPT TIMER4_INTERRUPT
 
 /* external pin interrupts */
-#define HC05_INT_PIN_ISR extint0_isr
-#define HC05_INT_PIN_INTERRUPT EXTINT0_INTERRUPT
+#define HCSR04_INT_PIN_ISR extint1_isr  // ECHO Pin, P3.3
+#define HCSR04_INT_PIN_INTERRUPT EXTINT1_INTERRUPT // ECHO Pin, P3.3
 
 /* SPI settings */
 #define SPI_PIN_CONFIG 1
@@ -95,14 +95,15 @@
 #define RF_CHANNEL_DEFAULT 46
 
 /* HC05 Sensor Settings*/
-#define HC05_TIMER_COUNTER_TO_CM  233 //TODO: actually calculate and get this value
+#define ULTRASONIC_DEBUG
+#define HCSR04_TIMER_COUNTER_TO_CM  233 //TODO: actually calculate and get this value
+#define HCSR04_READ_PERIOD_MS 500
 
 
 /* MPU6050 Settings */
 // #define TEST_MPU_ACCEL  // If this setting is enabled the MCU will do nothing but keep printing the MPU values
 // #define TEST_MPU_GYRO
 #define ACCEL_SCALE 1000  // fixed-point value instead of floating point, 
-#define GYRO_SCALE 1000  // fixed-point value instead of floating point
 #define ACCEL_SENSITIVITY ACCEL_SENSITIVITY_0  // 16-bit range is divided into max 2g
 #define GYRO_SENSITIVITY GYRO_SENSITIVITY_1  // 16-bit range is divided into max 500deg/sec
 //TODO: These values are set in place and no calibration routine yet
@@ -123,18 +124,28 @@
 #define DEFAULT_MAG_OFFSET_Y 0
 #define DEFAULT_MAG_OFFSET_Z 0
 
-/* Complementary Filter */
-#define COMP_FILTER_DT 100
+/* Orientation HAL settings */
+#define COMP_FILTER_DT 30
 #define COMP_FILTER_ALPHA 30  // %
-#define COMP_FILTER_BETA  (100-COMP_FILTER_ALPHA)  // %
+#define COMP_FILTER_BETA  (100-COMP_FILTER_ALPHA) 
+// Getting the orientation can be done through multitude of ways.
+// for example roll could be derived from only accelerometer or only gyroscope or sensor fuse both
+// The next setting specifies how each orientation: ROLL, PITCH, YAW is derived
+// This allows flexible orientation aquiring and test the different advantages of each method
+#define orientation_get_roll_deg get_accel_roll_deg
+#define orientation_get_pitch_deg get_accel_pitch_deg
+#define orientation_get_yaw_deg get_gyro_yaw_deg
 
 /* NEO M8N Settings */
 
 /* Differential Control Settings */
-#define CM_TO_MOVEMENT_MS 500  // 1cm is moved in CM_TO_MOVEMENT_MS
-#define DEGREE_TO_MOVEMENT_MS 15 // 1 degree is moved in DEGREE_TO_MOVEMENT_MS
+#define CM_TO_MOVEMENT_MS 15  // 1cm is moved in CM_TO_MOVEMENT_MS
+#define DEGREE_TO_MOVEMENT_MS 9 // 1 degree is moved in DEGREE_TO_MOVEMENT_MS
 #define PWM_MOTOR_FREQ 10000
-#define DEFAULT_PWM_DUTY_CYCLE 50000  // The range is (0-2^16)
+#define DEFAULT_PWM_DUTY_CYCLE 40000  // The range is (0-2^16)
+
+/* Path Planning Settings */
+/* #define PATH_PLANNING_DEBUG */
 
 // Others 
 /* #define GPIO_HAS_INT_WK */
@@ -157,13 +168,13 @@
 #include <advpwm-hal.h>
 #include "global_timer.h"
 #include "report.h"
+#include "nrf24l01.h"
 #include "differential_control.h"
 #include "neo_m8n.h"
-#include "nrf24l01.h"
-#include "hc_05.h"
+#include "hc_sr04.h"
 #include "mpu6050.h"
 #include "hmc5883l.h"
-#include "complementary_filter.h"
+#include "orientation.h"
 #include "closed_loop_movements.h"
 #include "path_planning.h"
 #include "terminal.h"

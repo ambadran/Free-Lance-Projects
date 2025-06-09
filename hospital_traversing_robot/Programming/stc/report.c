@@ -24,10 +24,10 @@ void report_init(void) {
 }
 
 void report_toggle_led(void) {
-  if ((get_current_time() - led_timer_count) >= LED_BLINK_PERIOD) {
+  if (get_current_time() >= led_timer_count) {
 
     gpioToggle(&led_pin);
-    led_timer_count = get_current_time();                          
+    led_timer_count = get_current_time()+LED_BLINK_PERIOD;
 
   }
 }

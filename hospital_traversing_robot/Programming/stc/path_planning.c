@@ -8,6 +8,30 @@
  */
 #include "project-defs.h"
 
+// Result Path linkedlist
+static PathNode path_nodes[LOCATION_COUNT];
+
+// Execute path status
+static execute_path_status_t execute_path_status = PATH_EXECUTE_IDLE;
+
+// Current movement
+static movement_fn_t current_movement_func = NULL;
+static int8_t idx = 0;
+static int8_t next_idx = 0;
+static location_t cur = INVALID_LOCATION;
+static location_t next = INVALID_LOCATION;
+static closed_loop_func_status_t closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IDLE;
+
+const char* EXECUTE_PATH_STATUS_TO_STRING[PATH_EXECUTE_STATUS_COUNT] = {
+  "PATH_EXECUTE_IDLE",
+  "PATH_EXECUTE_MOVEMENT_FAILED",
+  "PATH_EXECUTE_STARTING",
+  "PATH_EXECUTE_INVALID_MOVE_WANTED",
+  "PATH_EXECUTE_GETTING_NEXT_MOVEMENT",
+  "PATH_EXECUTE_MOVEMENT_IN_PROGRESS",
+  "PATH_EXECUTE_FINISHED_SUCCESSFULLY"
+};
+
 /* This is a mapping from the location_t indexes to the string names
  */
 static const char* IND_TO_STR_MAP[LOCATION_COUNT] = {
@@ -35,9 +59,6 @@ static const char* IND_TO_STR_MAP[LOCATION_COUNT] = {
   "STAIR1_FLOOR2_FRONT",
   "STAIR2_FLOOR2_FRONT",
   "STAIR2_FLOOR3_FRONT",
-  "STAIR0",
-  "STAIR1",
-  "STAIR2"
 };
 
 /* Please refer to the diagram drawn by hand to have better understanding of the map.
@@ -46,19 +67,19 @@ static const char* IND_TO_STR_MAP[LOCATION_COUNT] = {
  */
 static const location_t successors[LOCATION_COUNT][MAX_NEIGHBORS] = {
     // ROOM0 .. ROOM8 each only connects to its “front”
-    [ROOM0] = { ROOM_FRONT0,         -1,                  -1 },
-    [ROOM1] = { ROOM_FRONT1,         -1,                  -1 },
-    [ROOM2] = { ROOM_FRONT2,         -1,                  -1 },
-    [ROOM3] = { ROOM_FRONT3,         -1,                  -1 },
-    [ROOM4] = { ROOM_FRONT4,         -1,                  -1 },
-    [ROOM5] = { ROOM_FRONT5,         -1,                  -1 },
-    [ROOM6] = { ROOM_FRONT6,         -1,                  -1 },
-    [ROOM7] = { ROOM_FRONT7,         -1,                  -1 },
-    [ROOM8] = { ROOM_FRONT8,         -1,                  -1 },
+    [ROOM0] = { ROOM_FRONT0, INVALID_LOCATION, INVALID_LOCATION },
+    [ROOM1] = { ROOM_FRONT1, INVALID_LOCATION, INVALID_LOCATION },
+    [ROOM2] = { ROOM_FRONT2, INVALID_LOCATION, INVALID_LOCATION },
+    [ROOM3] = { ROOM_FRONT3, INVALID_LOCATION, INVALID_LOCATION },
+    [ROOM4] = { ROOM_FRONT4, INVALID_LOCATION, INVALID_LOCATION },
+    [ROOM5] = { ROOM_FRONT5, INVALID_LOCATION, INVALID_LOCATION },
+    [ROOM6] = { ROOM_FRONT6, INVALID_LOCATION, INVALID_LOCATION },
+    [ROOM7] = { ROOM_FRONT7, INVALID_LOCATION, INVALID_LOCATION },
+    [ROOM8] = { ROOM_FRONT8, INVALID_LOCATION, INVALID_LOCATION },
 
     // ROOM_FRONTx each connects to its ROOMx, and to the corridor chain, 
     // and for floors 0 and 2, also to the appropriate stair‐front.
-    [ROOM_FRONT0] = { ROOM_FRONT1,         ROOM0,        -1          },
+    [ROOM_FRONT0] = { ROOM_FRONT1,         ROOM0,        INVALID_LOCATION          },
     [ROOM_FRONT1] = { ROOM_FRONT0,         ROOM1,        ROOM_FRONT2 },
     [ROOM_FRONT2] = { STAIR0_FLOOR0_FRONT, ROOM0,        ROOM_FRONT1 },
 
@@ -71,17 +92,13 @@ static const location_t successors[LOCATION_COUNT][MAX_NEIGHBORS] = {
     [ROOM_FRONT8] = { ROOM_FRONT7,         ROOM8,        STAIR2_FLOOR2_FRONT },
 
     // Stair‐fronts each connect back to one Stair and to exactly one room‐front (except STAIR2_FLOOR3_FRONT)
-    [STAIR0_FLOOR0_FRONT] = { STAIR0, ROOM_FRONT2, -1 },
-    [STAIR0_FLOOR1_FRONT] = { STAIR0, ROOM_FRONT3, -1 },
-    [STAIR1_FLOOR1_FRONT] = { STAIR1, ROOM_FRONT5, -1 },
-    [STAIR1_FLOOR2_FRONT] = { STAIR1, ROOM_FRONT6, -1 },
-    [STAIR2_FLOOR2_FRONT] = { STAIR2, ROOM_FRONT8, -1 },
-    [STAIR2_FLOOR3_FRONT] = { STAIR2,          -1, -1 },
+    [STAIR0_FLOOR0_FRONT] = { STAIR0_FLOOR1_FRONT, ROOM_FRONT2,      INVALID_LOCATION },
+    [STAIR0_FLOOR1_FRONT] = { STAIR0_FLOOR0_FRONT, ROOM_FRONT3,      INVALID_LOCATION },
+    [STAIR1_FLOOR1_FRONT] = { STAIR1_FLOOR2_FRONT, ROOM_FRONT5,      INVALID_LOCATION },
+    [STAIR1_FLOOR2_FRONT] = { STAIR1_FLOOR1_FRONT, ROOM_FRONT6,      INVALID_LOCATION },
+    [STAIR2_FLOOR2_FRONT] = { STAIR2_FLOOR3_FRONT, ROOM_FRONT8,      INVALID_LOCATION },
+    [STAIR2_FLOOR3_FRONT] = { STAIR2_FLOOR2_FRONT, INVALID_LOCATION, INVALID_LOCATION },
 
-    // STAIR0, STAIR1, STAIR2 each connect to their two front‐nodes
-    [STAIR0] = { STAIR0_FLOOR0_FRONT, STAIR0_FLOOR1_FRONT, -1 },
-    [STAIR1] = { STAIR1_FLOOR1_FRONT, STAIR1_FLOOR2_FRONT, -1 },
-    [STAIR2] = { STAIR2_FLOOR2_FRONT, STAIR2_FLOOR3_FRONT, -1 }
 };
 
 /*
@@ -113,14 +130,78 @@ static const int successor_counts[LOCATION_COUNT] = {
     [STAIR2_FLOOR2_FRONT] = 2,
     [STAIR2_FLOOR3_FRONT] = 1,
 
-    // Stairs themselves:
-    [STAIR0] = 2,
-    [STAIR1] = 2,
-    [STAIR2] = 2
 };
 
-// Result Path linkedlist
-static PathNode path_nodes[LOCATION_COUNT];
+// Internal lookup table for from→to mapping
+static const struct {
+    location_t from;
+    location_t to;
+    movement_fn_t fn;
+} single_move_func_map[] = {
+  // Enter room
+  {ROOM0, ROOM_FRONT0, closed_loop_exit_room},
+  {ROOM1, ROOM_FRONT1, closed_loop_exit_room},
+  {ROOM2, ROOM_FRONT2, closed_loop_exit_room},
+  {ROOM3, ROOM_FRONT3, closed_loop_exit_room},
+  {ROOM4, ROOM_FRONT4, closed_loop_exit_room},
+  {ROOM5, ROOM_FRONT5, closed_loop_exit_room},
+  {ROOM6, ROOM_FRONT6, closed_loop_exit_room},
+  {ROOM7, ROOM_FRONT7, closed_loop_exit_room},
+  {ROOM8, ROOM_FRONT8, closed_loop_exit_room},
+  // Exit room
+  {ROOM_FRONT0, ROOM0, closed_loop_enter_room},
+  {ROOM_FRONT1, ROOM1, closed_loop_enter_room},
+  {ROOM_FRONT2, ROOM2, closed_loop_enter_room},
+  {ROOM_FRONT3, ROOM3, closed_loop_enter_room},
+  {ROOM_FRONT4, ROOM4, closed_loop_enter_room},
+  {ROOM_FRONT5, ROOM5, closed_loop_enter_room},
+  {ROOM_FRONT6, ROOM6, closed_loop_enter_room},
+  {ROOM_FRONT7, ROOM7, closed_loop_enter_room},
+  {ROOM_FRONT8, ROOM8, closed_loop_enter_room},
+
+  // Corridor Movements First Floor
+  {ROOM_FRONT0, ROOM_FRONT1, closed_loop_corridor_east},
+  {ROOM_FRONT1, ROOM_FRONT2, closed_loop_corridor_east},
+  {ROOM_FRONT1, ROOM_FRONT0, closed_loop_corridor_west},
+  {ROOM_FRONT2, ROOM_FRONT1, closed_loop_corridor_west},
+  {ROOM_FRONT2, STAIR0_FLOOR0_FRONT, closed_loop_corridor_south},
+
+  // Corridor Movements Second Floor
+  {STAIR0_FLOOR1_FRONT, ROOM_FRONT3, closed_loop_corridor_north},
+  {ROOM_FRONT3, ROOM_FRONT4, closed_loop_corridor_east},
+  {ROOM_FRONT4, ROOM_FRONT5, closed_loop_corridor_east},
+  {ROOM_FRONT4, ROOM_FRONT3, closed_loop_corridor_west},
+  {ROOM_FRONT5, ROOM_FRONT4, closed_loop_corridor_west},
+  {ROOM_FRONT5, STAIR1_FLOOR1_FRONT, closed_loop_corridor_south},
+
+  // Corridor Movements Third Floor
+  {STAIR1_FLOOR2_FRONT, ROOM_FRONT6, closed_loop_corridor_north},
+  {ROOM_FRONT6, ROOM_FRONT7, closed_loop_corridor_east},
+  {ROOM_FRONT7, ROOM_FRONT8, closed_loop_corridor_east},
+  {ROOM_FRONT7, ROOM_FRONT6, closed_loop_corridor_west},
+  {ROOM_FRONT8, ROOM_FRONT7, closed_loop_corridor_west},
+  {ROOM_FRONT8, STAIR2_FLOOR2_FRONT, closed_loop_corridor_south},
+
+  // Stairs!
+  {STAIR0_FLOOR0_FRONT, STAIR0_FLOOR1_FRONT, closed_loop_stairs_up},
+  {STAIR0_FLOOR1_FRONT, STAIR0_FLOOR0_FRONT, closed_loop_stairs_down},
+  {STAIR1_FLOOR1_FRONT, STAIR1_FLOOR2_FRONT, closed_loop_stairs_up},
+  {STAIR1_FLOOR2_FRONT, STAIR1_FLOOR1_FRONT, closed_loop_stairs_down},
+  {STAIR2_FLOOR2_FRONT, STAIR2_FLOOR3_FRONT, closed_loop_stairs_up},
+  {STAIR2_FLOOR3_FRONT, STAIR2_FLOOR2_FRONT, closed_loop_stairs_down},
+
+  // Termination entry
+  { LOCATION_COUNT, LOCATION_COUNT, NULL }
+};
+
+movement_fn_t get_single_move_func(location_t from, location_t to) {
+  for (int i = 0; single_move_func_map[i].fn != NULL; i++) {
+    if (single_move_func_map[i].from == from && single_move_func_map[i].to == to) {
+      return single_move_func_map[i].fn;
+    }
+  }
+  return NULL;
+}
 
 /*
   find_path(…):
@@ -142,7 +223,8 @@ path_result_status_t find_path(location_t start, location_t dest) {
     // Standard BFS bookkeeping (fixed‐size arrays only)
     bool    visited[LOCATION_COUNT] = { PATH_NOT_FOUND };
     int8_t  pred[LOCATION_COUNT];    // predecessor in BFS tree
-    for (int i = 0; i < LOCATION_COUNT; i++) {
+    int i;
+    for (i = 0; i < LOCATION_COUNT; i++) {
         pred[i] = -1;
     }
 
@@ -194,7 +276,7 @@ path_result_status_t find_path(location_t start, location_t dest) {
     //   each node.l oc = actual location, and node.next = next‐index or −1
     int8_t prev_index = -1;
     int8_t next_index = 0;
-    for (int i = path_len - 1; i >= 0; i--) {
+    for (i = path_len - 1; i >= 0; i--) {
         path_nodes[next_index].loc  = reversed_path[i];
         path_nodes[next_index].next = -1;
         if (prev_index >= 0) {
@@ -212,11 +294,115 @@ void print_path(void) {
   int8_t walker = 0;
   while(walker >= 0) {
     if (path_nodes[walker].next == -1) {
-      printf("%s\n", IND_TO_STR_MAP[path_nodes[walker].loc]);
+      report("%s\n", IND_TO_STR_MAP[path_nodes[walker].loc]);
       return;
     } else {
-      printf("%s -> ", IND_TO_STR_MAP[path_nodes[walker].loc]);
+      report("%s -> ", IND_TO_STR_MAP[path_nodes[walker].loc]);
       walker = path_nodes[walker].next;
     }
   }
 }
+
+void execute_path_process(void) {
+
+  switch(execute_path_status) {
+
+    case PATH_EXECUTE_IDLE:
+      break;
+
+    case PATH_EXECUTE_MOVEMENT_FAILED:
+    case PATH_EXECUTE_INVALID_MOVE_WANTED:
+      report("Path Execution Failed! Status: %s \n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
+      idx = 0;
+      next_idx = 0;
+      execute_path_status = PATH_EXECUTE_IDLE;
+      break;
+
+    case PATH_EXECUTE_STARTING:
+      //TODO: test if path_nodes is assigned
+#ifdef PATH_PLANNING_DEBUG
+      printf("Path Execution Status: %s \n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
+#endif
+      execute_path_status = PATH_EXECUTE_GETTING_NEXT_MOVEMENT;
+
+#ifdef PATH_PLANNING_DEBUG
+      printf("Path Execution Status: %s \n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
+#endif
+      break;
+
+    case PATH_EXECUTE_GETTING_NEXT_MOVEMENT:
+      if (path_nodes[idx].next >= 0) {
+        cur = path_nodes[idx].loc;
+        int next_idx = path_nodes[idx].next;
+        next = path_nodes[next_idx].loc;
+
+        current_movement_func = get_single_move_func(cur, next);
+        if (current_movement_func == NULL) { 
+          execute_path_status = PATH_EXECUTE_INVALID_MOVE_WANTED;
+        } else {
+          idx = next_idx;
+          execute_path_status = PATH_EXECUTE_MOVEMENT_IN_PROGRESS;
+        }
+
+      } else {
+        // finished traversing all the path_node linkedlist :D
+        execute_path_status = PATH_EXECUTE_FINISHED_SUCCESSFULLY;
+      }
+#ifdef PATH_PLANNING_DEBUG
+      printf("Path Execution Status: %s \n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
+#endif
+      break;
+
+    case PATH_EXECUTE_MOVEMENT_IN_PROGRESS:
+      closed_loop_func_status = current_movement_func();  // perform the movement from cur to next
+      switch(closed_loop_func_status) {
+
+        case CLOSED_LOOP_MOVEMENT_FAILED:
+#ifndef PATH_PLANNING_DEBUG
+          printf("current movement func failed!!!\n");
+#endif
+          execute_path_status = PATH_EXECUTE_MOVEMENT_FAILED;
+          break;
+
+        case CLOSED_LOOP_MOVEMENT_IN_PROGRESS:
+          break;
+
+        case CLOSED_LOOP_MOVEMENT_SUCCESS:
+#ifdef PATH_PLANNING_DEBUG
+          printf("current movement func finished successfully!!!\n");
+#endif
+          execute_path_status = PATH_EXECUTE_GETTING_NEXT_MOVEMENT;
+          break;
+
+        /* case CLOSED_LOOP_MOVEMENT_IDLE: */
+          /* //WTF?? IMPOSSIBLE */
+          /* break; */
+      }
+#ifdef PATH_PLANNING_DEBUG
+      printf("Path Execution Status: %s \n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
+#endif
+      break;
+
+    case PATH_EXECUTE_FINISHED_SUCCESSFULLY:
+      idx = 0;
+      next_idx = 0;
+      closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IDLE;
+      execute_path_status = PATH_EXECUTE_IDLE;
+      report("Path Execution Finished Successfully!");
+      break;
+  }
+}
+
+void execute_path_start(void) {
+  execute_path_status = PATH_EXECUTE_STARTING;
+}
+
+void execute_path_stop(void) {
+  idx = 0;
+  next_idx = 0;
+  closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IDLE;
+  execute_path_status = PATH_EXECUTE_IDLE;
+}
+
+execute_path_status_t execute_path_get_status(void) { return execute_path_status; }
+

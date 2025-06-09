@@ -2,8 +2,8 @@
 
 /**** MUST DECLARE INTERRUPTS IN MAIN.C FILE AS PER SDCC REQUIREMENT ****/
 INTERRUPT(GLOBAL_TIMER_ISR, GLOBAL_TIMER_INTERRUPT);
-INTERRUPT(HC05_TIMER_ISR, HC05_TIMER_INTERRUPT);
-INTERRUPT(HC05_INT_PIN_ISR, HC05_INT_PIN_INTERRUPT);
+/* INTERRUPT(HCSR04_TIMER_ISR, HCSR04_TIMER_INTERRUPT); */
+/* INTERRUPT(HCSR04_INT_PIN_ISR, HCSR04_INT_PIN_INTERRUPT); */
 
 void main(void) {
   INIT_EXTENDED_SFR();
@@ -16,10 +16,9 @@ void main(void) {
   neo_m8n_init();
   mpu6050_init();
   hmc5883l_init();
-  hc05_init();
+  hcsr04_init();
   differential_control_init();
-  complementary_filter_init();
-  closed_loop_movements_init();
+  orientation_init();
 
   // Main Routine
   protocol_main_loop();

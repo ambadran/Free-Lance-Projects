@@ -20,7 +20,8 @@ typedef enum {
   COMMAND_GPS,
   COMMAND_IMU,
   COMMAND_ULTRASONIC,
-  COMMAND_PATH_PLAN
+  COMMAND_PATH_PLAN,
+  COMMAND_EXECUTE_PATH
 } command_type_t;
 
 typedef struct {

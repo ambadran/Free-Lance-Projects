@@ -160,6 +160,10 @@ LINE_STATUS terminal_execute_line(char* line) {
         command.command_type = COMMAND_PATH_PLAN;
         break;
 
+      case 'E':
+        command.command_type = COMMAND_EXECUTE_PATH;
+        break;
+
       case 'i':
         // reading int argument for a multi-argument command
         if (!read_int(line, &char_count, &int_value)) {
@@ -187,7 +191,7 @@ LINE_STATUS terminal_execute_line(char* line) {
   /* [ Step 3: Error checking ] */
   switch(command.command_type) {
 
-    case COMMAND_TEST_INT_READING:
+    case COMMAND_TEST_INT_READING: 
     case COMMAND_GET_CURRENT_TIME:
     case COMMAND_GET_NRF24_REGISTERS:
       break;
@@ -204,6 +208,11 @@ LINE_STATUS terminal_execute_line(char* line) {
         // since duty cycle = 0 means no movement, so it makes no sense
         // Also if pwm signal needs to be inverted, the advpwm lib supports that!
         command.j = DEFAULT_PWM_DUTY_CYCLE; 
+      }
+
+      if (differential_control_is_moving()) {
+        report("Robot ALready Moving!\n");
+        return LINE_FAILED;
       }
       break;
 
@@ -225,7 +234,6 @@ LINE_STATUS terminal_execute_line(char* line) {
         report("Robot ALready Moving!\n");
         return LINE_FAILED;
       }
-
       break;
 
     case COMMAND_GPS:
@@ -242,7 +250,7 @@ LINE_STATUS terminal_execute_line(char* line) {
 
     case COMMAND_ULTRASONIC:
       if(command.i > 1 || command.i < -1) {
-        report("Error: 'i' Out of range.\ni==-1 calls hc05_stop_cycle()\ni==0 returns latest distance and HC05 state\ni==1 calls hc05_start_cycle()\n");
+        report("Error: 'i' Out of range.\ni==-1 calls hcsr04_stop_cycle()\ni==0 returns latest distance and HCSR04 state\ni==1 calls hcsr04_start_cycle()\n");
       }
       break;
 
@@ -251,6 +259,12 @@ LINE_STATUS terminal_execute_line(char* line) {
       if (command.i > LOCATION_COUNT || command.j > LOCATION_COUNT) {
         report("Error: invalid location index, max location index is %d", LOCATION_COUNT-1);
         return LINE_FAILED;
+      }
+      break;
+    
+    case COMMAND_EXECUTE_PATH:
+      if(command.i > 1 || command.i < -1) {
+        report("Error: 'i' out of range. \ni==-1 Stops Path Execution\ni==0 returns current Path Execution Status\ni==1 Starts Path Execution\n");
       }
       break;
 
@@ -276,27 +290,26 @@ LINE_STATUS terminal_execute_line(char* line) {
 
     case COMMAND_GET_CURRENT_TIME:
       report("Current Time Passed: %lu\n", get_current_time());
-      /* report("testing!\n"); */
       break;
 
     case COMMAND_MOVE_FORWARD:
-      differential_control_forward((uint8_t)command.i, command.j);
-      report("Forward: %d @ freq: %u\n", command.i, command.j);
+      differential_control_set_movement((uint8_t)command.i, command.j, DIFFERENTIAL_MOVE_FORWARD);
+      report("Forward: %d duty: %u\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_BACKWARD:
-      differential_control_backward((uint8_t)command.i, command.j);
-      report("Backward: %d @ freq: %u\n", command.i, command.j);
+      differential_control_set_movement((uint8_t)command.i, command.j, DIFFERENTIAL_MOVE_BACKWARD);
+      report("Backward: %d duty: %u\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_RIGHT:
-      differential_control_right((uint8_t)command.i, command.j);
-      report("Right: %d @ freq: %u\n", command.i, command.j);
+      differential_control_set_movement((uint8_t)command.i, command.j, DIFFERENTIAL_MOVE_RIGHT);
+      report("Right: %d duty: %u\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_LEFT:
-      differential_control_left((uint8_t)command.i, command.j);
-      report("Left: %d @ freq: %u\n", command.i, command.j);
+      differential_control_set_movement((uint8_t)command.i, command.j, DIFFERENTIAL_MOVE_LEFT);
+      report("Left: %d duty: %u\n", command.i, command.j);
       break;
 
     case COMMAND_GPS:
@@ -345,15 +358,15 @@ LINE_STATUS terminal_execute_line(char* line) {
           break;
         case 7:
           //TODO: test mpu6050 device status, is it active?
-          report("Roll Angle: %ddeg\n", get_compl_roll_deg());
+          report("Roll Angle: %ddeg\n", orientation_get_roll_deg());
           break;
         case 8:
           //TODO: test mpu6050 device status, is it active?
-          report("Pitch Angle: %ddeg\n", get_compl_pitch_deg());
+          report("Pitch Angle: %ddeg\n", orientation_get_pitch_deg());
           break;
         case 9:
           //TODO: test hmc5883l device status, is it active?
-          report("Yaw Angle: %ddeg\n",  get_compl_yaw_deg());
+          report("Yaw Angle: %ddeg\n",  orientation_get_yaw_deg());
           break;
         case 10:
           mpu6050_print_internal_registers();
@@ -364,42 +377,42 @@ LINE_STATUS terminal_execute_line(char* line) {
 
 /* ("ACCEL X: %ldg\nACCEL Y: %ldg\nACCEL Z: %ldg\nGYRO X: %lddeg/sec\nGYRO Y: %lddeg/sec\nGYRO Z: %lddeg/sec\nMAG X: %lduT\nMAG Y: %lduT\nMAG Z: %lduT\n"),get_accel(0), get_accel(1), get_accel(2), get_gyro(0), get_gyro(1), get_gyro(2), get_mag(0), get_mag(1), get_mag(2), */
         default:
-          report("Roll: %d\nPitch: %d\nYaw: %d\n", get_compl_roll_deg(), get_compl_pitch_deg(), get_compl_yaw_deg());
+          report("Roll: %d\nPitch: %d\nYaw: %d\n", orientation_get_roll_deg(), orientation_get_pitch_deg(), orientation_get_yaw_deg());
       }
 
       break;
 
     case COMMAND_ULTRASONIC:
-      HC05_CYCLE_FUNC_RESPONSE hc05_cycle_command_response;
       switch(command.i) {
-        case -1:
-          hc05_cycle_command_response = hc05_stop_cycle();
-
-          if(hc05_cycle_command_response == HC05_STOP_CYCLE_OK) {
-            report("HC05 Ultrasonic Cycle Successfully Stopped!\n");
-          } else if (hc05_cycle_command_response == HC05_STOP_CYCLE_ALREADY_IDLE){
-            report("HC05 Ultrasonic Cycle is already Stopped!\n");
+        case -1: {
+          HCSR04_CYCLE_FUNC_RESPONSE hcsr04_cycle_command_response = hcsr04_stop_cycle();
+          if(hcsr04_cycle_command_response == HCSR04_STOP_CYCLE_OK) {
+            report("HCSR04 Ultrasonic Cycle Successfully Stopped!\n");
+          } else if (hcsr04_cycle_command_response == HCSR04_STOP_CYCLE_ALREADY_IDLE){
+            report("HCSR04 Ultrasonic Cycle is already Stopped!\n");
           }
           break;
+        }
 
-        case 1:
-          hc05_cycle_command_response = hc05_start_cycle();
-
-          if(hc05_cycle_command_response == HC05_START_CYCLE_OK) {
-            report("HC05 Ultrasonic Cycle Successfully Started!\n");
-          } else if (hc05_cycle_command_response == HC05_START_CYCLE_ALREADY_ACTIVE){
-            report("HC05 Ultrasonic Cycle is already Active!\n");
+        case 1: {
+          HCSR04_CYCLE_FUNC_RESPONSE hcsr04_cycle_command_response = hcsr04_start_cycle();
+          if(hcsr04_cycle_command_response == HCSR04_START_CYCLE_OK) {
+            report("HCSR04 Ultrasonic Cycle Successfully Started!\n");
+          } else if (hcsr04_cycle_command_response == HCSR04_START_CYCLE_ALREADY_ACTIVE){
+            report("HCSR04 Ultrasonic Cycle is already Active!\n");
           }
           break;
+        }
 
-        default: //i==0, tested in testing phase
-          HC05_STATUS hc05_status = get_hc05_status();
+        default: { //i==0, tested in testing phase
+          HCSR04_STATUS hcsr04_status = get_hcsr04_status();
 
-          if(hc05_status != HC05_ACTIVE) {
-            report("Current HC05 machine State: %s\n", HC05_STATUS_TO_STRING[hc05_status]);
+          if(hcsr04_status != HCSR04_ACTIVE) {
+            report("HCSR04 State: %s, HCSR04 Phase: %s\n", HCSR04_STATUS_TO_STRING[hcsr04_status], HCSR04_PHASE_TO_STRING[get_hcsr04_phase()]);
           } else {
-            report("Distance: %d (HC05 Machine State: HC05_ACTIVE)\n", get_ultrasonic_distance_cm());
+            report("Distance: %d (HCSR04 Machine State: HCSR04_ACTIVE)\n", get_ultrasonic_distance_cm());
           }
+        }
       }
 
       break;
@@ -410,6 +423,23 @@ LINE_STATUS terminal_execute_line(char* line) {
         print_path();
       } else {
         report("No Path was found!");
+      }
+      break;
+
+    case COMMAND_EXECUTE_PATH:
+      switch(command.i) {
+        case -1:
+          execute_path_stop();
+          report("Path Execution Stopped!\n");
+          break;
+
+        case 0:
+          report("Path Execution Current Status: %s\n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_get_status()]);
+          break;
+
+        case 1:
+          execute_path_start();
+          report("Path Execution Starting..\n");
       }
       break;
 

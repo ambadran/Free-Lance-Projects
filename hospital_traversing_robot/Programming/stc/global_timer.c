@@ -5,7 +5,7 @@ static volatile uint32_t global_timer_counter;
 void global_timer_init(void) {
     startTimer(
       GLOBAL_TIMER, 
-      frequencyToSysclkDivisor(1000), // 1ms interrupt
+      frequencyToSysclkDivisor(500), // 1ms interrupt
       DISABLE_OUTPUT, 
       ENABLE_INTERRUPT, 
       FREE_RUNNING

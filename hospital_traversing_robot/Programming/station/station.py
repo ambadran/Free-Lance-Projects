@@ -52,7 +52,7 @@ class Station:
         self.nrf.open_tx_pipe(self.PIPES[0])
         self.nrf.open_rx_pipe(1, self.PIPES[1])
         self.nrf.start_listening()
-        
+
         # self.state = state.RECEIVER
 
         # _thread.start_new_thread(self.keep_receiving, ())
@@ -61,11 +61,14 @@ class Station:
         '''
         listens, prints if received and saves values in internal attributes
         '''
+
         if self.state == state.RECEIVER:
             if self.nrf.any():
+                buf = ""
                 while self.nrf.any():
-                    buf = self.nrf.recv()
-                    print(buf.decode(), end="")
+                    buf += self.nrf.recv().decode()
+                    # sleep_ms(500)
+                return buf
 
     def keep_receiving(self):
         '''
@@ -73,7 +76,9 @@ class Station:
         '''
         try:
             while True:
-                self.receive()
+                buf = self.receive()
+                if buf:
+                    print(buf)
                 sleep_us(self.RX_POLL_DELAY)
         except KeyboardInterrupt:
             pass
@@ -86,6 +91,9 @@ class Station:
         sleep_ms(20)
         self.nrf.send_ascii(string+'\n')
         self.state = state.RECEIVER
+
+        self.keep_receiving()
+
 
     def forward(self, distance: int, speed: int=None):
         '''
@@ -108,7 +116,6 @@ class Station:
         if speed is None:
             self.send(f"Bi{distance}")
         else:
-            OOOOOOOOOOOOO
             speed = int((speed/100)*65535)
             self.send(f"Bi{distance}j{speed}")
 

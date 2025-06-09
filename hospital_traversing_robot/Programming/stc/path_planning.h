@@ -7,7 +7,20 @@ typedef enum {
 } path_result_status_t;
 
 typedef enum {
-  ROOM0,
+  PATH_EXECUTE_IDLE,
+  PATH_EXECUTE_MOVEMENT_FAILED,
+  PATH_EXECUTE_STARTING,
+  PATH_EXECUTE_INVALID_MOVE_WANTED,
+  PATH_EXECUTE_GETTING_NEXT_MOVEMENT,
+  PATH_EXECUTE_MOVEMENT_IN_PROGRESS,
+  PATH_EXECUTE_FINISHED_SUCCESSFULLY,
+  PATH_EXECUTE_STATUS_COUNT
+} execute_path_status_t;
+extern const char* EXECUTE_PATH_STATUS_TO_STRING[];
+
+typedef enum {
+  INVALID_LOCATION = -1,
+  ROOM0 = 0,
   ROOM1,
   ROOM2,
   ROOM3,
@@ -31,10 +44,7 @@ typedef enum {
   STAIR1_FLOOR2_FRONT,
   STAIR2_FLOOR2_FRONT,
   STAIR2_FLOOR3_FRONT,
-  STAIR0,
-  STAIR1,
-  STAIR2,
-  LOCATION_COUNT
+  LOCATION_COUNT,
 } location_t;
 
 #define MAX_NEIGHBORS 3
@@ -53,5 +63,19 @@ typedef struct {
 
 path_result_status_t find_path(location_t start, location_t dest);
 void print_path(void);
+
+/* A function pointer type for a closed-loop movement from one location to the next
+ * Mapping Returns the movement function to go from 'from' to 'to', or NULL if invalid
+ */
+typedef closed_loop_func_status_t (*movement_fn_t)(void);
+movement_fn_t get_single_move_func(location_t from, location_t to);
+
+// Executes the entire path: calls each segment's movement function in turn
+// path_nodes[] is the array filled by find_path_nohead(), terminated by next == -1
+void execute_path_process(void);
+
+void execute_path_start(void);
+void execute_path_stop(void);
+execute_path_status_t execute_path_get_status(void);
 
 #endif

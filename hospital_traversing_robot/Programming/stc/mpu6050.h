@@ -156,7 +156,5 @@ int16_t get_raw_accel(uint8_t ind);
 int16_t get_raw_gyro(uint8_t ind);
 int32_t get_accel(uint8_t ind);
 int32_t get_gyro(uint8_t ind);
-int16_t get_accel_roll_deg(void);
-int16_t get_accel_pitch_deg(void);
 
 #endif

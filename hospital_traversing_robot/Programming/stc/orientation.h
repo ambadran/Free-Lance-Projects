@@ -1,0 +1,14 @@
+#ifndef ORIENTATION_H
+#define ORIENTAITON_H
+
+void orientation_init(void);
+void orientation_process(void);
+void orientation_lock_yaw_measurement(void);
+void orientation_unlock_yaw_measurement(void);
+
+void set_gyro_yaw(int16_t yaw);
+int16_t get_accel_roll_deg(void);
+int16_t get_accel_pitch_deg(void);
+int16_t get_gyro_yaw_deg(void);
+
+#endif
