@@ -2,7 +2,7 @@
 Main Routine
 """
 from micropython import const
-from machine import Pin, SPI
+from machine import Pin, SPI, Timer
 from nrf24l01 import NRF24L01
 from time import sleep_ms, sleep_us
 import _thread
@@ -53,9 +53,29 @@ class Station:
         self.nrf.open_rx_pipe(1, self.PIPES[1])
         self.nrf.start_listening()
 
-        # self.state = state.RECEIVER
+        self.state = state.RECEIVER
+        self.start_periodic_receive_timer()
 
-        # _thread.start_new_thread(self.keep_receiving, ())
+    def start_periodic_receive_timer(self):
+        '''
+        start a timer that checks receive periodically. So as to catch any transmittion from the STC microcontroller after receiving a command acknowledgement
+        '''
+        self.timer = Timer(period=500, mode=Timer.PERIODIC, callback=self.periodic_receive)
+
+    def stop_periodic_receive_timer(self):
+        '''
+        Stop receive timer,
+        useful when I am catching command acknowledgement after sending a command
+        '''
+        self.timer.deinit()
+
+    def periodic_receive(self, t):
+        '''
+        periodict check of any STC transmissions
+        '''
+        buf = self.receive()
+        if buf:
+            print(buf, end="")
 
     def receive(self) -> str:
         '''
@@ -92,8 +112,16 @@ class Station:
         self.nrf.send_ascii(string+'\n')
         self.state = state.RECEIVER
 
-        self.keep_receiving()
-
+        self.stop_periodic_receive_timer()
+        response = ""
+        while "Command Passed" not in response and "Command Failed" not in response:
+            buf = self.receive()
+            if buf:
+                response += buf
+            sleep_us(self.RX_POLL_DELAY)
+            print("Awaiting Controller command acknowledgement.. \r ", end='')
+        print('\n', response)
+        self.start_periodic_receive_timer()
 
     def forward(self, distance: int, speed: int=None):
         '''

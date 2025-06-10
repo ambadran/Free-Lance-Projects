@@ -124,6 +124,14 @@
 #define DEFAULT_MAG_OFFSET_Y 0
 #define DEFAULT_MAG_OFFSET_Z 0
 
+/* NEO M8N Settings */
+
+/* Differential Control Settings */
+#define CM_TO_MOVEMENT_MS 15  // 1cm is moved in CM_TO_MOVEMENT_MS
+#define DEGREE_TO_MOVEMENT_MS 9 // 1 degree is moved in DEGREE_TO_MOVEMENT_MS
+#define PWM_MOTOR_FREQ 10000
+#define DEFAULT_PWM_DUTY_CYCLE 40000  // The range is (0-2^16)
+
 /* Orientation HAL settings */
 #define COMP_FILTER_DT 30
 #define COMP_FILTER_ALPHA 30  // %
@@ -135,17 +143,15 @@
 #define orientation_get_roll_deg get_accel_roll_deg
 #define orientation_get_pitch_deg get_accel_pitch_deg
 #define orientation_get_yaw_deg get_gyro_yaw_deg
+// very important if no absolute yaw measurement procedure is implemented
+#define STARTING_YAW_VALUE WEST
 
-/* NEO M8N Settings */
-
-/* Differential Control Settings */
-#define CM_TO_MOVEMENT_MS 15  // 1cm is moved in CM_TO_MOVEMENT_MS
-#define DEGREE_TO_MOVEMENT_MS 9 // 1 degree is moved in DEGREE_TO_MOVEMENT_MS
-#define PWM_MOTOR_FREQ 10000
-#define DEFAULT_PWM_DUTY_CYCLE 40000  // The range is (0-2^16)
+/* Closed loop Control Settings */
+#define OVERSHOOT_MULTIPLE 0.5
+#define CLOSED_LOOP_MINIMUM_YAW_TOLERANCE 2
 
 /* Path Planning Settings */
-/* #define PATH_PLANNING_DEBUG */
+#define PATH_PLANNING_DEBUG
 
 // Others 
 /* #define GPIO_HAS_INT_WK */

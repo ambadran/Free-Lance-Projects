@@ -156,6 +156,10 @@ LINE_STATUS terminal_execute_line(char* line) {
         command.command_type = COMMAND_ULTRASONIC;
         break;
 
+      case 'C':
+        command.command_type = COMMAND_CLOSED_LOOP_MOVE;
+        break;
+
       case 'P':
         command.command_type = COMMAND_PATH_PLAN;
         break;
@@ -250,14 +254,42 @@ LINE_STATUS terminal_execute_line(char* line) {
 
     case COMMAND_ULTRASONIC:
       if(command.i > 1 || command.i < -1) {
-        report("Error: 'i' Out of range.\ni==-1 calls hcsr04_stop_cycle()\ni==0 returns latest distance and HCSR04 state\ni==1 calls hcsr04_start_cycle()\n");
+        report("Error: 'i' Out of range.\n");
+        report("i==-1 calls hcsr04_stop_cycle()\n");
+        report("i==0 returns latest distance and HCSR04 state\n");
+        report("i==1 calls hcsr04_start_cycle()\n");
+        return LINE_FAILED;
       }
       break;
+
+    case COMMAND_CLOSED_LOOP_MOVE:
+      if(command.i > 1 || command.i < -1) {
+        report("Error: 'i' Out of range.\n");
+        report("i==-1 reset closed loop control to idle\n");
+        report("i==0 returns closed loop control status\n");
+        report("i==1 starts closed loop movement of 'j'\n");
+        return LINE_FAILED;
+
+      } else if (command.j > CLOSED_LOOP_FUNC_NUM) {
+        report("Error: 'j' Out of range.\n");
+        report("Closed loop functions Available:\n");
+        report("#TODO\n");
+        return LINE_FAILED;
+
+      } else if (command.i == 1) {
+          if(closed_loop_func_status == CLOSED_LOOP_MOVEMENT_FAILED) {
+            report("CLOSED LOOP FUNCTION FAILED!!\n");
+            report("Must Ci-1 to reset CL status!\n");
+            return LINE_FAILED;
+          }
+      }
+      break;
+
 
     case COMMAND_PATH_PLAN:
       //TODO: V.IMP add an option to draw from current position to wanted. for example if i==-1 then from whatever last saved current location to j value
       if (command.i > LOCATION_COUNT || command.j > LOCATION_COUNT) {
-        report("Error: invalid location index, max location index is %d", LOCATION_COUNT-1);
+        report("Error: max location index is %d\n", LOCATION_COUNT-1);
         return LINE_FAILED;
       }
       break;
@@ -265,6 +297,7 @@ LINE_STATUS terminal_execute_line(char* line) {
     case COMMAND_EXECUTE_PATH:
       if(command.i > 1 || command.i < -1) {
         report("Error: 'i' out of range. \ni==-1 Stops Path Execution\ni==0 returns current Path Execution Status\ni==1 Starts Path Execution\n");
+        return LINE_FAILED;
       }
       break;
 
@@ -417,6 +450,65 @@ LINE_STATUS terminal_execute_line(char* line) {
 
       break;
 
+    case COMMAND_CLOSED_LOOP_MOVE:
+      switch(command.i) {
+        case -1:
+          // reset closed loop status
+          closed_loop_reset_to_idle();
+          break;
+
+        case 0:
+          // return current closed loop status
+          report("Closed loop control status: ");
+          report("%s\n", CLOSED_LOOP_STATUS_TO_STRING[closed_loop_func_status]);
+          break;
+
+        case 1:
+          switch(command.j) {
+            case 0:
+              closed_loop_current_func = closed_loop_move_idle;
+              break;
+
+            case 1:
+              /* closed_loop_orient(); */
+              break;
+
+            case 2:
+              closed_loop_current_func = closed_loop_exit_room;
+              break;
+
+            case 3:
+              closed_loop_current_func = closed_loop_enter_room;
+              break;
+
+            case 4:
+              closed_loop_current_func = closed_loop_corridor_north;
+              break;
+
+            case 5:
+              closed_loop_current_func = closed_loop_corridor_east;
+              break;
+
+            case 6:
+              closed_loop_current_func = closed_loop_corridor_west;
+              break;
+
+            case 7:
+              closed_loop_current_func = closed_loop_corridor_south;
+              break;
+
+            case 8:
+              closed_loop_current_func = closed_loop_stairs_up;
+              break;
+
+            case 9:
+              closed_loop_current_func = closed_loop_stairs_down;
+              break;
+          }
+          break;
+      }
+      break;
+
     case COMMAND_PATH_PLAN:
       //TODO: V.IMP add an option to draw from current position to wanted. for example if i==-1 then from whatever last saved current location to j value
       if(find_path(command.i, command.j) == PATH_FOUND) {
@@ -434,7 +526,8 @@ LINE_STATUS terminal_execute_line(char* line) {
           break;
 
         case 0:
-          report("Path Execution Current Status: %s\n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_get_status()]);
+          report("Path Execution Current Status: ");
+          report("%s\n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_get_status()]);
           break;
 
         case 1:

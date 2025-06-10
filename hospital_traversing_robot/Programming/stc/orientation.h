@@ -1,6 +1,13 @@
 #ifndef ORIENTATION_H
 #define ORIENTAITON_H
 
+typedef enum {
+  NORTH = 0,
+  EAST = 90,
+  WEST = -90,
+  SOUTH = 180,
+} directions_t;
+
 void orientation_init(void);
 void orientation_process(void);
 void orientation_lock_yaw_measurement(void);

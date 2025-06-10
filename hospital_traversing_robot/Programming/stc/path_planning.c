@@ -15,16 +15,15 @@ static PathNode path_nodes[LOCATION_COUNT];
 static execute_path_status_t execute_path_status = PATH_EXECUTE_IDLE;
 
 // Current movement
-static movement_fn_t current_movement_func = NULL;
 static int8_t idx = 0;
 static int8_t next_idx = 0;
 static location_t cur = INVALID_LOCATION;
 static location_t next = INVALID_LOCATION;
-static closed_loop_func_status_t closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IDLE;
 
 const char* EXECUTE_PATH_STATUS_TO_STRING[PATH_EXECUTE_STATUS_COUNT] = {
   "PATH_EXECUTE_IDLE",
   "PATH_EXECUTE_MOVEMENT_FAILED",
+  "PATH_EXECUTE_CL_MOVE_ALREADY_RUNNING",
   "PATH_EXECUTE_STARTING",
   "PATH_EXECUTE_INVALID_MOVE_WANTED",
   "PATH_EXECUTE_GETTING_NEXT_MOVEMENT",
@@ -136,7 +135,7 @@ static const int successor_counts[LOCATION_COUNT] = {
 static const struct {
     location_t from;
     location_t to;
-    movement_fn_t fn;
+    closed_loop_movement_func_t fn;
 } single_move_func_map[] = {
   // Enter room
   {ROOM0, ROOM_FRONT0, closed_loop_exit_room},
@@ -194,7 +193,7 @@ static const struct {
   { LOCATION_COUNT, LOCATION_COUNT, NULL }
 };
 
-movement_fn_t get_single_move_func(location_t from, location_t to) {
+closed_loop_movement_func_t get_single_move_func(location_t from, location_t to) {
   for (int i = 0; single_move_func_map[i].fn != NULL; i++) {
     if (single_move_func_map[i].from == from && single_move_func_map[i].to == to) {
       return single_move_func_map[i].fn;
@@ -312,7 +311,10 @@ void execute_path_process(void) {
 
     case PATH_EXECUTE_MOVEMENT_FAILED:
     case PATH_EXECUTE_INVALID_MOVE_WANTED:
-      report("Path Execution Failed! Status: %s \n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
+    case PATH_EXECUTE_CL_MOVE_ALREADY_RUNNING:
+      report("Path Execution Failed: ");
+      report("%s\n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
+      // resetting internal variables
       idx = 0;
       next_idx = 0;
       execute_path_status = PATH_EXECUTE_IDLE;
@@ -323,7 +325,27 @@ void execute_path_process(void) {
 #ifdef PATH_PLANNING_DEBUG
       printf("Path Execution Status: %s \n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
 #endif
-      execute_path_status = PATH_EXECUTE_GETTING_NEXT_MOVEMENT;
+      switch(closed_loop_func_status) {
+        case CLOSED_LOOP_MOVEMENT_IDLE:
+        case CLOSED_LOOP_MOVEMENT_SUCCESS:
+          execute_path_status = PATH_EXECUTE_GETTING_NEXT_MOVEMENT;
+          break;
+
+        case CLOSED_LOOP_MOVEMENT_IN_PROGRESS:
+          execute_path_status = PATH_EXECUTE_CL_MOVE_ALREADY_RUNNING;
+          report("Failed: ");
+          report("%s\n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
+          break;
+
+        case CLOSED_LOOP_MOVEMENT_FAILED:
+        default:
+          execute_path_status = PATH_EXECUTE_MOVEMENT_FAILED;
+          report("CL status: ");
+          report("%s\n", CLOSED_LOOP_STATUS_TO_STRING[closed_loop_func_status]);
+          report("Ci-1 to reset CL status!\n");
+          break;
+
+      }
 
 #ifdef PATH_PLANNING_DEBUG
       printf("Path Execution Status: %s \n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
@@ -336,9 +358,10 @@ void execute_path_process(void) {
         int next_idx = path_nodes[idx].next;
         next = path_nodes[next_idx].loc;
 
-        current_movement_func = get_single_move_func(cur, next);
-        if (current_movement_func == NULL) { 
+        closed_loop_current_func = get_single_move_func(cur, next);
+        if (closed_loop_current_func == NULL) { 
           execute_path_status = PATH_EXECUTE_INVALID_MOVE_WANTED;
+          closed_loop_current_func = closed_loop_move_idle;
         } else {
           idx = next_idx;
           execute_path_status = PATH_EXECUTE_MOVEMENT_IN_PROGRESS;
@@ -354,13 +377,11 @@ void execute_path_process(void) {
       break;
 
     case PATH_EXECUTE_MOVEMENT_IN_PROGRESS:
-      closed_loop_func_status = current_movement_func();  // perform the movement from cur to next
       switch(closed_loop_func_status) {
 
         case CLOSED_LOOP_MOVEMENT_FAILED:
-#ifndef PATH_PLANNING_DEBUG
-          printf("current movement func failed!!!\n");
-#endif
+          report("CLOSED LOOP FUNCTION FAILED!!\n");
+          report("Must Ci-1 to reset CL status!\n");
           execute_path_status = PATH_EXECUTE_MOVEMENT_FAILED;
           break;
 
@@ -374,9 +395,9 @@ void execute_path_process(void) {
           execute_path_status = PATH_EXECUTE_GETTING_NEXT_MOVEMENT;
           break;
 
-        /* case CLOSED_LOOP_MOVEMENT_IDLE: */
-          /* //WTF?? IMPOSSIBLE */
-          /* break; */
+        case CLOSED_LOOP_MOVEMENT_IDLE:
+          while(1) { report("closed loop is idle when it should never be\n"); }
+          break;
       }
 #ifdef PATH_PLANNING_DEBUG
       printf("Path Execution Status: %s \n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
@@ -386,7 +407,7 @@ void execute_path_process(void) {
     case PATH_EXECUTE_FINISHED_SUCCESSFULLY:
       idx = 0;
       next_idx = 0;
-      closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IDLE;
+      closed_loop_reset_to_idle();
       execute_path_status = PATH_EXECUTE_IDLE;
       report("Path Execution Finished Successfully!");
       break;
@@ -400,7 +421,7 @@ void execute_path_start(void) {
 void execute_path_stop(void) {
   idx = 0;
   next_idx = 0;
-  closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IDLE;
+  closed_loop_reset_to_idle();
   execute_path_status = PATH_EXECUTE_IDLE;
 }
 

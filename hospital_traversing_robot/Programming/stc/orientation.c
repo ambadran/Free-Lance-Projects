@@ -5,7 +5,7 @@ static volatile uint32_t complementary_filter_next_dt = 0;
 static volatile uint8_t yaw_lock = 1;
 static int16_t pitch = 0;
 static int16_t roll = 0;
-static int16_t yaw = 0;
+static int16_t yaw = STARTING_YAW_VALUE;
 
 void orientation_init(void) {
   complementary_filter_next_dt = get_current_time();

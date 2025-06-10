@@ -55,7 +55,7 @@ static void protocol_execute_line(char* line) {
 
     LINE_STATUS line_state = terminal_execute_line(line);
 
-    if (line_state == LINE_PASSED) { report("Command passed..\n\n"); } 
+    if (line_state == LINE_PASSED) { report("Command Passed..\n\n"); } 
     else if (line_state == LINE_FAILED) { report("Command Failed..\n\n"); }
 
   }
@@ -87,6 +87,7 @@ void protocol_main_loop(void) {
     /* hcsr04_process_cycle_phases(); */
     differential_control_process();
     orientation_process();
+    closed_loop_current_func();
     execute_path_process();
   }
 }

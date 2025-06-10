@@ -9,6 +9,7 @@ typedef enum {
 typedef enum {
   PATH_EXECUTE_IDLE,
   PATH_EXECUTE_MOVEMENT_FAILED,
+  PATH_EXECUTE_CL_MOVE_ALREADY_RUNNING,
   PATH_EXECUTE_STARTING,
   PATH_EXECUTE_INVALID_MOVE_WANTED,
   PATH_EXECUTE_GETTING_NEXT_MOVEMENT,
@@ -67,8 +68,7 @@ void print_path(void);
 /* A function pointer type for a closed-loop movement from one location to the next
  * Mapping Returns the movement function to go from 'from' to 'to', or NULL if invalid
  */
-typedef closed_loop_func_status_t (*movement_fn_t)(void);
-movement_fn_t get_single_move_func(location_t from, location_t to);
+closed_loop_movement_func_t get_single_move_func(location_t from, location_t to);
 
 // Executes the entire path: calls each segment's movement function in turn
 // path_nodes[] is the array filled by find_path_nohead(), terminated by next == -1
