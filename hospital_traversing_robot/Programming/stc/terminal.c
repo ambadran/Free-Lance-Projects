@@ -277,11 +277,20 @@ LINE_STATUS terminal_execute_line(char* line) {
         return LINE_FAILED;
 
       } else if (command.i == 1) {
-          if(closed_loop_func_status == CLOSED_LOOP_MOVEMENT_FAILED) {
+        switch(closed_loop_func_status) {
+          case CLOSED_LOOP_MOVEMENT_FAILED:
             report("CLOSED LOOP FUNCTION FAILED!!\n");
             report("Must Ci-1 to reset CL status!\n");
             return LINE_FAILED;
-          }
+
+          case CLOSED_LOOP_MOVEMENT_IN_PROGRESS:
+            report("CL Func ALREADY IN PROGRESS!!\n");
+            return LINE_FAILED;
+
+          case CLOSED_LOOP_MOVEMENT_SUCCESS:
+            closed_loop_reset_to_idle();
+            break;
+        }
       }
       break;
 
@@ -390,21 +399,29 @@ LINE_STATUS terminal_execute_line(char* line) {
           report("Mag offset x: %d\nMag offset y: %d\nMag offset z: %d\n", get_mag_calibration_values(0), get_mag_calibration_values(1), get_mag_calibration_values(2));
           break;
         case 7:
-          //TODO: test mpu6050 device status, is it active?
           report("Roll Angle: %ddeg\n", orientation_get_roll_deg());
           break;
         case 8:
-          //TODO: test mpu6050 device status, is it active?
           report("Pitch Angle: %ddeg\n", orientation_get_pitch_deg());
           break;
         case 9:
-          //TODO: test hmc5883l device status, is it active?
           report("Yaw Angle: %ddeg\n",  orientation_get_yaw_deg());
           break;
         case 10:
-          mpu6050_print_internal_registers();
+          orientation_unlock_yaw_measurement();
+          report("Unlocking Yaw summing from gyro!\n");
           break;
         case 11:
+          orientation_lock_yaw_measurement();
+          report("locking Yaw summing from gyro!\n");
+          break;
+        case 12:
+          orientation_set_gyro_yaw(STARTING_YAW_VALUE);
+          report("Yaw Value is now Reset!\n");
+        case 13:
+          mpu6050_print_internal_registers();
+          break;
+        case 14:
           hmc5883l_print_internal_registers();
           break;
 

@@ -392,6 +392,7 @@ void execute_path_process(void) {
 #ifdef PATH_PLANNING_DEBUG
           printf("current movement func finished successfully!!!\n");
 #endif
+          closed_loop_move_idle();
           execute_path_status = PATH_EXECUTE_GETTING_NEXT_MOVEMENT;
           break;
 

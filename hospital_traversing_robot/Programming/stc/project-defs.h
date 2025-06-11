@@ -105,7 +105,7 @@
 // #define TEST_MPU_GYRO
 #define ACCEL_SCALE 1000  // fixed-point value instead of floating point, 
 #define ACCEL_SENSITIVITY ACCEL_SENSITIVITY_0  // 16-bit range is divided into max 2g
-#define GYRO_SENSITIVITY GYRO_SENSITIVITY_1  // 16-bit range is divided into max 500deg/sec
+#define GYRO_SENSITIVITY GYRO_SENSITIVITY_0  // 16-bit range is divided into max 500deg/sec
 //TODO: These values are set in place and no calibration routine yet
 #define DEFAULT_ACCEL_OFFSET_X 0
 #define DEFAULT_ACCEL_OFFSET_Y 0
@@ -147,7 +147,7 @@
 #define STARTING_YAW_VALUE WEST
 
 /* Closed loop Control Settings */
-#define OVERSHOOT_MULTIPLE 0.5
+#define OVERSHOOT_MULTIPLE 3
 #define CLOSED_LOOP_MINIMUM_YAW_TOLERANCE 2
 
 /* Path Planning Settings */

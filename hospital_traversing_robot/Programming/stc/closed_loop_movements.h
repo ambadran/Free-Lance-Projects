@@ -3,6 +3,8 @@
 
 #define CLOSED_LOOP_FUNC_NUM 11
 
+// should never be tampered with except inside closed loop functions
+// needs to be reseted manually if fault is detected, user is supposed to set physical orientation of robot to default value if fail
 typedef enum {
   CLOSED_LOOP_MOVEMENT_IDLE,
   CLOSED_LOOP_MOVEMENT_FAILED,

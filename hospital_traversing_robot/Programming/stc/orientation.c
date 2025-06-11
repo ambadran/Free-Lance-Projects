@@ -24,10 +24,8 @@ void orientation_process(void) {
       if(read_accel() != I2C_ACK || read_gyro() != I2C_ACK) {
         report("MPU6050 NOT RESPONSIVE!\n");
       }
-      pitch = get_accel_pitch_deg();
-      roll = get_accel_roll_deg();
       if(!yaw_lock) {
-        yaw = get_gyro_yaw_deg();
+        orientation_sum_latest_gyro_to_yaw();
       }
 
       // FUCK YOU MAGNETOMETER
@@ -52,21 +50,17 @@ void orientation_process(void) {
   }
 }
 
+void orientation_sum_latest_gyro_to_yaw(void) { 
+  yaw += (get_gyro(2)*COMP_FILTER_DT)/1000; 
+  if (yaw < -EAST) {
+    yaw += EAST*2;
+  }
+}
 void orientation_lock_yaw_measurement(void) { yaw_lock = 1; }
 void orientation_unlock_yaw_measurement(void) { yaw_lock = 0; }
+void orientation_set_gyro_yaw(int16_t current_yaw) { yaw=current_yaw; }
 
-void set_gyro_yaw(int16_t current_yaw) { yaw=current_yaw; }
-
-int16_t get_accel_pitch_deg(void) {
-  return (int16_t)(atan2f(get_accel(1), sqrtf(get_accel(0)*get_accel(0) + get_accel(2)*get_accel(2)))*RAD_TO_DEG);
-}
-
-int16_t get_accel_roll_deg(void) {
-  return (int16_t)(atan2f(get_accel(0), sqrtf(get_accel(1)*get_accel(1) + get_accel(2)*get_accel(2)))*RAD_TO_DEG);
-}
-
-int16_t get_gyro_yaw_deg(void) {
-  yaw = yaw + get_gyro(2);
-  return yaw;
-}
+int16_t get_accel_pitch_deg(void) { return (int16_t)(atan2f(get_accel(1), sqrtf(get_accel(0)*get_accel(0) + get_accel(2)*get_accel(2)))*RAD_TO_DEG); }
+int16_t get_accel_roll_deg(void) { return (int16_t)(atan2f(get_accel(0), sqrtf(get_accel(1)*get_accel(1) + get_accel(2)*get_accel(2)))*RAD_TO_DEG); }
+int16_t get_gyro_yaw_deg(void) { return yaw; }
 

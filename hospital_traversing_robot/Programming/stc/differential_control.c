@@ -138,10 +138,10 @@ void differential_control_backward(uint8_t distance_cm, uint16_t duty_cycle) {
 void differential_control_right(uint8_t angle_deg, uint16_t duty_cycle) {
 
   while(!uartIsTransmissionComplete(CONSOLE_UART)); // needed because same as console port unfortuantely
-  gpioWrite(&in1_pin, 0);
-  gpioWrite(&in2_pin, 1);
-  gpioWrite(&in3_pin, 1);
-  gpioWrite(&in4_pin, 0);
+  gpioWrite(&in1_pin, 1);
+  gpioWrite(&in2_pin, 0);
+  gpioWrite(&in3_pin, 0);
+  gpioWrite(&in4_pin, 1);
   pwmSetDutyCycle(PWM_MOTOR_RIGHT_CHANNEL, duty_cycle);
   pwmSetDutyCycle(PWM_MOTOR_LEFT_CHANNEL, duty_cycle);
 
@@ -153,10 +153,10 @@ void differential_control_right(uint8_t angle_deg, uint16_t duty_cycle) {
 void differential_control_left(uint8_t angle_deg, uint16_t duty_cycle) {
 
   while(!uartIsTransmissionComplete(CONSOLE_UART)); // needed because same as console port unfortuantely
-  gpioWrite(&in1_pin, 1);
-  gpioWrite(&in2_pin, 0);
-  gpioWrite(&in3_pin, 0);
-  gpioWrite(&in4_pin, 1);
+  gpioWrite(&in1_pin, 0);
+  gpioWrite(&in2_pin, 1);
+  gpioWrite(&in3_pin, 1);
+  gpioWrite(&in4_pin, 0);
   pwmSetDutyCycle(PWM_MOTOR_RIGHT_CHANNEL, duty_cycle);
   pwmSetDutyCycle(PWM_MOTOR_LEFT_CHANNEL, duty_cycle);
 
@@ -188,7 +188,7 @@ void differential_control_process(void) {
     case DIFFERENTIAL_MOVE_IN_PROGRESS:
       if(get_current_time() >= differential_control_movement_ms) { 
         differential_control_stop(); 
-        report("Finished Movement\n");
+        report("Differential Control Finished\n");
       }
       break;
 

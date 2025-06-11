@@ -118,8 +118,9 @@ class Station:
             buf = self.receive()
             if buf:
                 response += buf
-            sleep_us(self.RX_POLL_DELAY)
-            print("Awaiting Controller command acknowledgement.. \r ", end='')
+            # sleep_us(self.RX_POLL_DELAY)
+            sleep_ms(20)
+            print(".", end='')
         print('\n', response)
         self.start_periodic_receive_timer()
 
