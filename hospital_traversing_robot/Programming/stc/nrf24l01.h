@@ -178,7 +178,6 @@
 #define NOP_CMD             0XFF              /*might be used to read the status register*/
 
 typedef enum {
-  SENT_FAILED_WRONG_STRING_SIZE,
   SENT_FAILED_TRANSMIT_FUNC_ERROR,
   SENT_SUCCESS
 } NRF24_SEND_STRING_STATUS;

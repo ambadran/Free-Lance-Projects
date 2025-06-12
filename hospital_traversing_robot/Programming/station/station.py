@@ -4,8 +4,9 @@ Main Routine
 from micropython import const
 from machine import Pin, SPI, Timer
 from nrf24l01 import NRF24L01
-from time import sleep_ms, sleep_us
+from time import sleep_ms, sleep_us, ticks_ms, ticks_diff
 import _thread
+import errno
 
 
 class state:
@@ -21,6 +22,8 @@ class Station:
     CHANNEL = const(46)
     PIPES = (b"\xe1\xf0\xf0\xf0\xf0", b"\xd2\xf0\xf0\xf0\xf0")  # Addresses are in little-endian format. They correspond to big-endian
     RX_POLL_DELAY = const(15)
+
+    DEFAULT_COMMAND_ACK_TIMEOUT = 3000  # 2 sec
 
     def __init__(self, dev):
 
@@ -53,8 +56,11 @@ class Station:
         self.nrf.open_rx_pipe(1, self.PIPES[1])
         self.nrf.start_listening()
 
+        self.led_pin = Pin("LED", Pin.OUT)
+
         self.state = state.RECEIVER
         self.start_periodic_receive_timer()
+
 
     def start_periodic_receive_timer(self):
         '''
@@ -73,6 +79,7 @@ class Station:
         '''
         periodict check of any STC transmissions
         '''
+        self.led_pin.toggle()
         buf = self.receive()
         if buf:
             print(buf, end="")
@@ -103,7 +110,7 @@ class Station:
         except KeyboardInterrupt:
             pass
 
-    def send(self, string=""):
+    def send(self, string="", timeout: Optional[int]=None):
         '''
         sends enter
         '''
@@ -114,10 +121,20 @@ class Station:
 
         self.stop_periodic_receive_timer()
         response = ""
+        start = ticks_ms()
+        if timeout == None:
+            timeout = self.DEFAULT_COMMAND_ACK_TIMEOUT
         while "Command Passed" not in response and "Command Failed" not in response:
             buf = self.receive()
             if buf:
                 response += buf
+                start = ticks_ms()
+            if ticks_diff(ticks_ms(), start) > timeout:
+                print('\n', response, '\n')
+                self.start_periodic_receive_timer()
+
+                raise OSError(errno.ETIMEDOUT, "Didn't receive command acknowledgement from STC Microcontroller!")
+
             # sleep_us(self.RX_POLL_DELAY)
             sleep_ms(20)
             print(".", end='')

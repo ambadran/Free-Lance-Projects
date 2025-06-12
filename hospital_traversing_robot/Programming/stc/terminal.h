@@ -28,7 +28,7 @@ typedef enum {
 typedef struct {
   command_type_t command_type;
   int16_t i;
-  uint16_t j;
+  int32_t j; // needs to accomodate negative values for orientation setpoint and PWM 16-bit values
   command_modal_status_t command_modal_status;
 } command_t;
 

@@ -7,7 +7,7 @@ typedef enum {
   NORTH = 36, // right direction
   SOUTH = -36, // left direction
   EAST = 72, // back direction
-} directions_t;
+} direction_t;
 
 void orientation_init(void);
 void orientation_process(void);

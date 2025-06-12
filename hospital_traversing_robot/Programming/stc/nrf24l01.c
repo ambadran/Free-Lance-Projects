@@ -169,7 +169,8 @@ NRF24_SEND_STRING_STATUS nrf24_send_string(uint8_t* string) {
   // adjusting string to be payload_width size
   uint8_t str_size = strlen(string);
   if( str_size > current_payload_width) {
-    return SENT_FAILED_WRONG_STRING_SIZE;
+    printf("nrf24 str size above payload width!\n");
+    str_size = 31; // makes sure atleast part of the message is sent!
   }
   strcpy(str_to_send, string);
   for(int8_t i = (current_payload_width-str_size); i>0 ; i--) {

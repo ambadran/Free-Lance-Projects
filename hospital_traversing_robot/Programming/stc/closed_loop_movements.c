@@ -17,6 +17,7 @@ closed_loop_movement_func_t closed_loop_current_func = closed_loop_move_idle;
 
 // Internal variables
 static int8_t sign_multiple = 1;
+static direction_t yaw_setpoint = WEST;
 
 
 void closed_loop_reset_to_idle(void) {
@@ -26,41 +27,84 @@ void closed_loop_reset_to_idle(void) {
 
 void closed_loop_move_idle(void) {}
 
-void closed_loop_orient(int16_t yaw_setpoint) {
+void closed_loop_set_yaw_setpoint(int16_t yaw_setpoint_value) { yaw_setpoint = yaw_setpoint_value; }
+direction_t closed_loop_get_yaw_setpoint(void) { return yaw_setpoint; }
+void closed_loop_orient(void) {
+  switch(closed_loop_func_status) {
+    case CLOSED_LOOP_MOVEMENT_IDLE: {
+      /* initial setup */
+      // Step 1: get set value 
+      int16_t error_term = yaw_setpoint - orientation_get_yaw_deg();
+      if (error_term <= CLOSED_LOOP_MINIMUM_YAW_TOLERANCE && error_term >= -1*CLOSED_LOOP_MINIMUM_YAW_TOLERANCE) {
+        // check if already there
+        closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
+        report("Yaw Value already at setpoint\n");
+        break;
+      }
 
-  if(closed_loop_func_status == CLOSED_LOOP_MOVEMENT_IN_PROGRESS) {
-    /* setup done, performing closed loop check */
-    if((orientation_get_yaw_deg() - yaw_setpoint) <= CLOSED_LOOP_MINIMUM_YAW_TOLERANCE) {
-      // Target is met :D
-      closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
-      orientation_lock_yaw_measurement();
+      // Overshoot error term to open loop differential control function
+      if (error_term > 0) {
+        sign_multiple = 1;
+        differential_control_right(error_term + error_term*OVERSHOOT_MULTIPLE, DEFAULT_PWM_DUTY_CYCLE);
 
-    } else if (!differential_control_is_moving()) {
-      // Target was missed and overshoot of setpoint is achieved :(
-      closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED;
-      orientation_lock_yaw_measurement();
+      } else if (error_term < 0) {
+        sign_multiple = -1;
+        differential_control_left(-1*error_term + -1*error_term*OVERSHOOT_MULTIPLE, DEFAULT_PWM_DUTY_CYCLE);
+      }
+
+      // Unlock Yaw measurement
+      orientation_unlock_yaw_measurement();
+
+      // Now we just wait until desired setpoint is met
+      closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IN_PROGRESS;
+      break;
     }
 
-  } else {
-    /* initial setup */
-    // Step 1: get set value 
-    int16_t error_term = yaw_setpoint - orientation_get_yaw_deg();
+    case CLOSED_LOOP_MOVEMENT_IN_PROGRESS:
+      /* setup done, performing closed loop check */
+      if (sign_multiple*orientation_get_yaw_deg() < sign_multiple*yaw_setpoint) {
+        // still didn't reach setpoint
+        if (!differential_control_is_moving()) {
+          // Target was missed and overshoot of setpoint is achieved :(
+          closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED;
+          orientation_lock_yaw_measurement();
+          differential_control_stop();
+          report("CL Yaw ORIENT TIMOUT:(\n");
+        }
 
-    // Overshoot error term to open loop differential control function
-    if (error_term > 0) {
-      differential_control_right(error_term + error_term*OVERSHOOT_MULTIPLE, DEFAULT_PWM_DUTY_CYCLE);
+      } else if(orientation_get_yaw_deg() == yaw_setpoint) {
+        // Target is met :D
+        closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
+        orientation_lock_yaw_measurement();
+        differential_control_stop();
+        report("CL Yaw ORIENT SUCCESS :D\n");
 
-    } else if (error_term < 0) {
-      differential_control_left(error_term + error_term*OVERSHOOT_MULTIPLE, DEFAULT_PWM_DUTY_CYCLE);
+      } else if (orientation_get_yaw_deg() > sign_multiple*yaw_setpoint) {
+        // overshoot
+        if((orientation_get_yaw_deg()-(sign_multiple*yaw_setpoint)) <= CLOSED_LOOP_MINIMUM_YAW_TOLERANCE) {
+          // Overshoot within tolerance
+          closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
+          orientation_lock_yaw_measurement();
+          differential_control_stop();
+          report("CL Yaw ORIENT achieved ");
+          report("within tolerance\n");
 
-    }
+        } else {
+          // Target was missed and overshoot of setpoint is achieved :(
+          closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED;
+          orientation_lock_yaw_measurement();
+          differential_control_stop();
+          report("CL Yaw ORIENT OVERSHOOT :(\n");
 
-    // Unlock Yaw measurement
-    orientation_unlock_yaw_measurement();
+        }
+      } 
+      break;
 
-    // Now we just wait until desired setpoint is met
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IN_PROGRESS;
+    case CLOSED_LOOP_MOVEMENT_SUCCESS:
+    case CLOSED_LOOP_MOVEMENT_FAILED:
+      break;
   }
+
 }
 
 void closed_loop_exit_room(void) {
@@ -86,79 +130,6 @@ void closed_loop_enter_room(void) {
 }
 
 void closed_loop_corridor_north(void) {
-  switch(closed_loop_func_status) {
-    case CLOSED_LOOP_MOVEMENT_IDLE: {
-      /* initial setup */
-      // Step 1: get set value 
-      int16_t error_term = NORTH - orientation_get_yaw_deg();
-      if (error_term <= CLOSED_LOOP_MINIMUM_YAW_TOLERANCE) {
-        // check if already there
-        closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
-        report("CL ORIENT NORTH ALREADY!\n");
-        break;
-      }
-
-      // Overshoot error term to open loop differential control function
-      if (error_term > 0) {
-        sign_multiple = 1;
-        differential_control_right(error_term + error_term*OVERSHOOT_MULTIPLE, DEFAULT_PWM_DUTY_CYCLE);
-
-      } else if (error_term < 0) {
-        sign_multiple = -1;
-        differential_control_left(-1*error_term + -1*error_term*OVERSHOOT_MULTIPLE, DEFAULT_PWM_DUTY_CYCLE);
-      }
-
-      // Unlock Yaw measurement
-      orientation_unlock_yaw_measurement();
-
-      // Now we just wait until desired setpoint is met
-      closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IN_PROGRESS;
-      break;
-    }
-
-    case CLOSED_LOOP_MOVEMENT_IN_PROGRESS:
-      /* setup done, performing closed loop check */
-      if (orientation_get_yaw_deg()*sign_multiple < NORTH) {
-        // still didn't reach setpoint
-        if (!differential_control_is_moving()) {
-          // Target was missed and overshoot of setpoint is achieved :(
-          closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED;
-          orientation_lock_yaw_measurement();
-          differential_control_stop();
-          report("CL ORIENT NORTH TIMOUT:(\n");
-        }
-
-      } else if(orientation_get_yaw_deg() == NORTH) {
-        // Target is met :D
-        closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
-        orientation_lock_yaw_measurement();
-        differential_control_stop();
-        report("CL ORIENT NORTH SUCCESS :D\n");
-
-      } else if (orientation_get_yaw_deg()*sign_multiple > NORTH) {
-        // overshoot
-        if((orientation_get_yaw_deg()-NORTH) <= CLOSED_LOOP_MINIMUM_YAW_TOLERANCE) {
-          // Target is met :D
-          closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
-          orientation_lock_yaw_measurement();
-          differential_control_stop();
-          report("CL ORIENT NORTH within tolerance\n");
-
-        } else {
-          // Target was missed and overshoot of setpoint is achieved :(
-          closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED;
-          orientation_lock_yaw_measurement();
-          differential_control_stop();
-          report("CL ORIENT NORTH OVERSHOOT :(\n");
-
-        }
-      } 
-      break;
-
-    case CLOSED_LOOP_MOVEMENT_SUCCESS:
-    case CLOSED_LOOP_MOVEMENT_FAILED:
-      break;
-  }
 }
 
 void closed_loop_corridor_east(void) {

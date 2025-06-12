@@ -25,7 +25,9 @@ void closed_loop_move_idle(void);
 /* this function orients the robot to a specific angle using differential control and orientation yaw value
  * angle parameter is -180 to 180
 */
-void closed_loop_orient(int16_t angle);
+void closed_loop_set_yaw_setpoint(int16_t yaw_setpoint_value);
+direction_t closed_loop_get_yaw_setpoint(void);
+void closed_loop_orient(void);
 
 /* Actual closed loop function for each single movement!! :D */
 void closed_loop_exit_room(void);

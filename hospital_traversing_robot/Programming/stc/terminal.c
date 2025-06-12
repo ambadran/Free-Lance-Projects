@@ -76,7 +76,7 @@ LINE_STATUS terminal_execute_line(char* line) {
 
   uint8_t char_count = 0;
   char letter;
-  uint16_t int_value = 0;  // temporary int value that gets read from the terminal then assigned to another variable of any other c component
+  int16_t int_value = 0;  // temporary int value that gets read from the terminal then assigned to another variable of any other c component
 
   // Resetting the command
   memset(&command, 0, sizeof(command_t));
@@ -102,7 +102,7 @@ LINE_STATUS terminal_execute_line(char* line) {
     // small letter case is not a command, it's parameter
     if (!(letter >= 'a' && letter < 'z') && \
         (command.command_type != COMMAND_NOT_SET)) {
-        report("Can't have >1 command letter in one command!\n");
+        report("Error: >1 Command in 1 line!\n");
         return LINE_FAILED;
     }
 
@@ -183,7 +183,7 @@ LINE_STATUS terminal_execute_line(char* line) {
           report("Bad int Number Format\n");
           return LINE_FAILED;
         }
-        command.j = int_value;
+        command.j = (int32_t)int_value;
         break;
 
       default:
@@ -204,8 +204,14 @@ LINE_STATUS terminal_execute_line(char* line) {
     case COMMAND_MOVE_BACKWARD:
       if (command.i <= 0 || command.i > 100) {
 
-        report("Error: Parameter 'i' out of range. Forward/Backward cm value >0 and <100\n");
+        report("Error: 'i' out of range\n");
+        report("cm range: >0 && <100\n");
         return LINE_FAILED;
+
+      } else if (command.j < 0 || command.j > 65535) {
+        report("Error: 'j' out of range\n");
+        report("j is 16-bit PWM value");
+          return LINE_FAILED;
 
       } else if (command.j == 0) {
         //IMP: support for default PWM duty cycle 'j' value
@@ -224,8 +230,15 @@ LINE_STATUS terminal_execute_line(char* line) {
     case COMMAND_MOVE_LEFT: //TODO: should test for different i values
       if (command.i < -360 || command.i > 360 || command.i == 0) {
 
-        report("Error Parameter 'i' out of range. Right/Left degree value >-360 && <360 && !=0\n");
+        report("Error: 'i' out of range\n");
+        report("Range: >-360 && <360 && !=0\n");
         return LINE_FAILED;
+
+      } else if (command.j < 0 || command.j > 65535) {
+        report("Error: 'j' out of range\n");
+        report("j is 16-bit PWM value");
+        return LINE_FAILED;
+
 
       }  else if (command.j == 0) {
         //IMP: support for default PWM duty cycle 'j' value
@@ -242,7 +255,8 @@ LINE_STATUS terminal_execute_line(char* line) {
 
     case COMMAND_GPS:
       if(command.i >= GPS_NUM_DATA) {
-        report("Error: only %d data supported\n", GPS_NUM_DATA);
+        report("Error: 'i' out of range!\n");
+        report("Max GPS data: %d \n", GPS_NUM_DATA);
         return LINE_FAILED;
       }
 
@@ -255,28 +269,31 @@ LINE_STATUS terminal_execute_line(char* line) {
     case COMMAND_ULTRASONIC:
       if(command.i > 1 || command.i < -1) {
         report("Error: 'i' Out of range.\n");
-        report("i==-1 calls hcsr04_stop_cycle()\n");
-        report("i==0 returns latest distance and HCSR04 state\n");
-        report("i==1 calls hcsr04_start_cycle()\n");
+        report("i-1 calls hcsr04_stop_cycle()\n");
+        report("i0 returns distance & state\n");
+        report("i1 calls hcsr04_start_cycle()\n");
         return LINE_FAILED;
       }
       break;
 
     case COMMAND_CLOSED_LOOP_MOVE:
-      if(command.i > 1 || command.i < -1) {
+      if(command.i > 3 || command.i < -1) {
         report("Error: 'i' Out of range.\n");
-        report("i==-1 reset closed loop control to idle\n");
-        report("i==0 returns closed loop control status\n");
-        report("i==1 starts closed loop movement of 'j'\n");
-        return LINE_FAILED;
-
-      } else if (command.j > CLOSED_LOOP_FUNC_NUM) {
-        report("Error: 'j' Out of range.\n");
-        report("Closed loop functions Available:\n");
-        report("#TODO\n");
+        report("i-1 reset CL status to idle\n");
+        report("i0 returns CL status\n");
+        report("i1 starts CL movement of j\n");
+        report("i2 sets CL yaw setpoint of j\n");
+        report("i3 gets CL yaw setpoint\n");
         return LINE_FAILED;
 
       } else if (command.i == 1) {
+        if (command.j > CLOSED_LOOP_FUNC_NUM || command.j < 0) {
+          report("Error: 'j' Out of range.\n");
+          report("Closed loop functions:\n");
+          report("#TODO\n");
+          return LINE_FAILED;
+        }
+
         switch(closed_loop_func_status) {
           case CLOSED_LOOP_MOVEMENT_FAILED:
             report("CLOSED LOOP FUNCTION FAILED!!\n");
@@ -284,12 +301,23 @@ LINE_STATUS terminal_execute_line(char* line) {
             return LINE_FAILED;
 
           case CLOSED_LOOP_MOVEMENT_IN_PROGRESS:
-            report("CL Func ALREADY IN PROGRESS!!\n");
+            report("CL Func ALREADY IN PROGRESS!\n");
             return LINE_FAILED;
 
           case CLOSED_LOOP_MOVEMENT_SUCCESS:
             closed_loop_reset_to_idle();
             break;
+        }
+
+      } else if (command.i == 2) {
+        if (command.j > EAST || command.j < (-1*EAST)) {
+          report("Error: 'j' Out of range!\n");
+          report("j: %ld\n", command.j);
+          report("WEST value: %d\n", WEST);
+          report("NORTh value: %d\n", NORTH);
+          report("EAST value: %d\n", EAST);
+          report("SOUTH value: %d\n", SOUTH);
+          return LINE_FAILED;
         }
       }
       break;
@@ -297,15 +325,18 @@ LINE_STATUS terminal_execute_line(char* line) {
 
     case COMMAND_PATH_PLAN:
       //TODO: V.IMP add an option to draw from current position to wanted. for example if i==-1 then from whatever last saved current location to j value
-      if (command.i > LOCATION_COUNT || command.j > LOCATION_COUNT) {
-        report("Error: max location index is %d\n", LOCATION_COUNT-1);
+      if (command.i > LOCATION_COUNT || command.j > LOCATION_COUNT || command.i < 0 || command.j < 0) {
+        report("Error: location ind: 0-%d\n", LOCATION_COUNT-1);
         return LINE_FAILED;
       }
       break;
     
     case COMMAND_EXECUTE_PATH:
       if(command.i > 1 || command.i < -1) {
-        report("Error: 'i' out of range. \ni==-1 Stops Path Execution\ni==0 returns current Path Execution Status\ni==1 Starts Path Execution\n");
+        report("Error: 'i' out of range\n");
+        report("i-1 Stops Path Execution\n");
+        report("i0 Path Execution State\n");
+        report("i1 Starts Path Execution\n");
         return LINE_FAILED;
       }
       break;
@@ -335,23 +366,23 @@ LINE_STATUS terminal_execute_line(char* line) {
       break;
 
     case COMMAND_MOVE_FORWARD:
-      differential_control_set_movement((uint8_t)command.i, command.j, DIFFERENTIAL_MOVE_FORWARD);
-      report("Forward: %d duty: %u\n", command.i, command.j);
+      differential_control_set_movement((uint8_t)command.i, (uint16_t)command.j, DIFFERENTIAL_MOVE_FORWARD);
+      report("Forward: %d duty: %ld\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_BACKWARD:
-      differential_control_set_movement((uint8_t)command.i, command.j, DIFFERENTIAL_MOVE_BACKWARD);
-      report("Backward: %d duty: %u\n", command.i, command.j);
+      differential_control_set_movement((uint8_t)command.i, (uint16_t)command.j, DIFFERENTIAL_MOVE_BACKWARD);
+      report("Backward: %d duty: %ld\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_RIGHT:
-      differential_control_set_movement((uint8_t)command.i, command.j, DIFFERENTIAL_MOVE_RIGHT);
-      report("Right: %d duty: %u\n", command.i, command.j);
+      differential_control_set_movement((uint8_t)command.i, (uint16_t)command.j, DIFFERENTIAL_MOVE_RIGHT);
+      report("Right: %d duty: %ld\n", command.i, command.j);
       break;
 
     case COMMAND_MOVE_LEFT:
-      differential_control_set_movement((uint8_t)command.i, command.j, DIFFERENTIAL_MOVE_LEFT);
-      report("Left: %d duty: %u\n", command.i, command.j);
+      differential_control_set_movement((uint8_t)command.i, (uint16_t)command.j, DIFFERENTIAL_MOVE_LEFT);
+      report("Left: %d duty: %ld\n", command.i, command.j);
       break;
 
     case COMMAND_GPS:
@@ -472,6 +503,7 @@ LINE_STATUS terminal_execute_line(char* line) {
         case -1:
           // reset closed loop status
           closed_loop_reset_to_idle();
+          report("CL reset to IDLE\n");
           break;
 
         case 0:
@@ -487,7 +519,7 @@ LINE_STATUS terminal_execute_line(char* line) {
               break;
 
             case 1:
-              /* closed_loop_orient(); */
+              closed_loop_current_func = closed_loop_orient;
               break;
 
             case 2:
@@ -523,6 +555,16 @@ LINE_STATUS terminal_execute_line(char* line) {
               break;
           }
           break;
+
+        case 2:
+          closed_loop_set_yaw_setpoint((int16_t)command.j);
+          report("New CL Yaw setpoint: %ld\n", command.j);
+          break;
+
+        case 3:
+          report("CL Yaw setpoint: %d\n", closed_loop_get_yaw_setpoint());
+          break;
+
       }
       break;
 

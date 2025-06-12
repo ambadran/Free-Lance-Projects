@@ -49,7 +49,7 @@ static void protocol_execute_line(char* line) {
 
   if(line[0] == 0) {
 
-    printf("Enter Received..\n\n");
+    report("Enter Received..\n\n");
     
   } else {
 
