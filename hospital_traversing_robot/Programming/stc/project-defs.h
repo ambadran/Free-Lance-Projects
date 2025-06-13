@@ -151,7 +151,7 @@
 #define DEG_TOLERANCE 1                // Acceptable error in degrees
 #define MINIMUM_YAW_CHANGE 2               // Minimum detectable yaw change (degrees)
 #define STUCK_TIMEOUT_MS 100          // Max time without sufficient change
-#define OVERSHOOT_PERCENT 80           // 30% overshoot (integer percentage)
+#define OVERSHOOT_PERCENT 200           // 30% overshoot (integer percentage)
 
 /* Path Planning Settings */
 #define PATH_PLANNING_DEBUG

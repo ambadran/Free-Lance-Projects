@@ -12,12 +12,6 @@ typedef enum {
 } closed_loop_fail_status_t;
 extern closed_loop_fail_status_t closed_loop_fail_status;
 
-typedef enum {
-  CL_SUCCESS_NONE,
-  CL_SUCCESS_ALREADY_AT_SETPOINT,
-  CL_SUCCESS_FUNCTION_SUCCESSFUL
-} closed_loop_success_status_t;
-
 //TODO: make it static and make get func
 // should never be tampered with except inside closed loop functions
 // needs to be reseted manually if fault is detected, user is supposed to set physical orientation of robot to default value if fail

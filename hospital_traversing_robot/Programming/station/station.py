@@ -8,7 +8,6 @@ from time import sleep_ms, sleep_us, ticks_ms, ticks_diff
 import _thread
 import errno
 
-
 class state:
     RECEIVER = 0
     TRANSMITTER = 1
@@ -25,26 +24,13 @@ class Station:
 
     DEFAULT_COMMAND_ACK_TIMEOUT = 3000  # 2 sec
 
-    def __init__(self, dev):
+    def __init__(self):
 
-        if dev == 'pico':
-            # Pico pinout
-            self.SCK_PIN = const(18)
-            self.MOSI_PIN = const(19)
-            self.MISO_PIN = const(16)
-            self.CSN_PIN = const(20)
-            self.CE_PIN = const(21)
-
-        elif dev == 'zero':
-            # raspberry pi zero pinout
-            self.SCK_PIN = const(2)
-            self.MOSI_PIN = const(3)
-            self.MISO_PIN = const(4)
-            self.CSN_PIN = const(8)
-            self.CE_PIN = const(14)
-
-        else:
-            raise ValueError("unsupported platform")
+        self.SCK_PIN = const(18)
+        self.MOSI_PIN = const(19)
+        self.MISO_PIN = const(16)
+        self.CSN_PIN = const(20)
+        self.CE_PIN = const(21)
 
         self.spi = SPI(self.SPI_HARDWARE_INDEX, sck=Pin(self.SCK_PIN), mosi=Pin(self.MOSI_PIN), miso=Pin(self.MISO_PIN))
         self.csn = Pin(self.CSN_PIN, mode=Pin.OUT, value=1)
@@ -141,6 +127,27 @@ class Station:
         print('\n', response)
         self.start_periodic_receive_timer()
 
+    def get_device_time_ms(self) -> int:
+        '''
+        returns
+        '''
+        self.send("T")
+
+    def print_nrf_registers(self):
+        '''
+
+        '''
+        self.send("N")
+
+class DifferentialControl(Station):
+    '''
+    Abstraction to control the open loop differential control of the robot
+    '''
+    # def __init__(self, station: Station):
+    #     self.station = Station
+    def __init__(self):
+        pass
+
     def forward(self, distance: int, speed: int=None):
         '''
         distance is in cm
@@ -152,6 +159,7 @@ class Station:
         else:
             speed = int((speed/100)*65535)
             self.send(f"Fi{distance}j{speed}")
+        #TODO: wait until distance finished message from controller?
 
     def backward(self, distance: int, speed: int=None):
         '''
@@ -164,6 +172,7 @@ class Station:
         else:
             speed = int((speed/100)*65535)
             self.send(f"Bi{distance}j{speed}")
+        #TODO: wait until distance finished message?
 
     def right(self, distance: int, speed: int=None):
         '''
@@ -176,6 +185,7 @@ class Station:
         else:
             speed = int((speed/100)*65535)
             self.send(f"Ri{distance}j{speed}")
+        #TODO: wait until distance finished message from controller?
 
     def left(self, distance: int, speed: int=None):
         '''
@@ -188,14 +198,161 @@ class Station:
         else:
             speed = int((speed/100)*65535)
             self.send(f"Li{distance}j{speed}")
+        #TODO: wait until distance finished message from controller?
 
-    def print_nrf_registers(self):
-        '''
+class GPS(Station):
+    '''
+    Abstraction to get gps stuff from 
+    '''
+    # def __init__(self, station: Station):
+    #     self.station = Station
+    def __init__(self):
+        pass
 
-        '''
-        self.state = state.TRANSMITTER
-        self.nrf.print_registers()
-        self.state = state.RECEIVER
+    @property
+    def all(self):
+        self.send("G")  # same as Gi0
 
+    @property
+    def latitude(self):
+        self.send("Gi1")
 
+    @property
+    def longitude(self):
+        self.send("Gi2")
 
+    @property
+    def heading(self):
+        self.send("Gi3")
+
+    @property
+    def time(self):
+        self.send("Gi4")
+
+class IMU(Station):
+    """
+    Abstraction to read IMU data
+    """
+    # def __init__(self, station: Station):
+    #     self.station = Station
+    def __init__(self):
+        pass
+
+    @property
+    def orientation_all(self):
+        self.send("M")  # same as Mi0
+
+    @property
+    def raw_accel_values(self):
+        self.send("Mi1")
+
+    @property
+    def raw_gyro_values(self):
+        self.send("Mi2")
+
+    @property
+    def raw_mag_values(self):
+        self.send("Mi3")
+
+    @property
+    def accel_offset_values(self):
+        self.send("Mi4")
+
+    @property
+    def gyro_offset_values(self):
+        self.send("Mi5")
+
+    @property
+    def mag_offset_values(self):
+        self.send("Mi6")
+
+    @property
+    def orientation_roll(self):
+        self.send("Mi7")
+
+    @property
+    def orientation_pitch(self):
+        self.send("Mi8")
+
+    @property
+    def orientation_yaw(self):
+        self.send("Mi9")
+
+    def unlock_yaw_measurement(self):
+        self.send("Mi10")
+
+    def unlock_yaw_measurement(self):
+        self.send("Mi11")
+
+    def reset_yaw_value(self):
+        self.send("Mi12")
+
+    def mpu6050_internal_registers(self):
+        self.send("Mi13")
+
+    def HMC5883L_internal_registers(self):
+        self.send("Mi14")
+
+class Ultrasonic(Station):
+    '''
+    Abstraction to control and read Ultrasonic sensor
+    '''
+    # def __init__(self, station: Station):
+    #     self.station = Station
+    def __init__(self):
+        pass
+
+    def stop_measurment(self):
+        self.send("Ui-1")
+
+    @property
+    def distance_status(self):
+        self.send("Ui0")
+
+    def start_measurement(self):
+        self.send("Ui1")
+
+class ClosedLoopControl(Station):
+    '''
+    Construction to control closed loop control
+    '''
+    def __init__(self):
+        pass
+
+    def reset_idle(self):
+        self.send("Ci-1")
+
+    @property
+    def status(self):
+        self.send("Ci0")
+
+    def execute_closed_loop_orient(self):
+        self.send("Ci1j1")
+
+    @property
+    def yaw_setpoint(self):
+        self.send("Ci3")
+
+    @yaw_setpoint.setter
+    def set_yaw_setpoint(self, yaw_setpoint: int):
+        self.send(f"Ci2j{yaw_setpoint}")
+
+class PathPlaning(Station):
+    '''
+    Abstraction to path plan between two location
+    '''
+    def __init__(self):
+        pass
+
+    def plan(self, start_loc: int, end_loc: int):
+        self.send(f"Pi{start_loc}j{end_loc}")
+
+    def execute(self):
+        self.send("Ei1")
+
+    @property
+    def status(self):
+        self.send("Ei0")
+
+    def stop_executing(self):
+        self.send("Ei-1")
