@@ -147,8 +147,11 @@
 #define STARTING_YAW_VALUE WEST
 
 /* Closed loop Control Settings */
-#define OVERSHOOT_MULTIPLE 3
-#define CLOSED_LOOP_MINIMUM_YAW_TOLERANCE 2
+#define TOTAL_TIMEOUT_MS 20000         // Max time for entire operation (20 seconds)
+#define DEG_TOLERANCE 1                // Acceptable error in degrees
+#define MINIMUM_YAW_CHANGE 2               // Minimum detectable yaw change (degrees)
+#define STUCK_TIMEOUT_MS 100          // Max time without sufficient change
+#define OVERSHOOT_PERCENT 80           // 30% overshoot (integer percentage)
 
 /* Path Planning Settings */
 #define PATH_PLANNING_DEBUG

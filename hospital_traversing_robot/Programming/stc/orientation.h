@@ -2,6 +2,7 @@
 #define ORIENTAITON_H
 
 // These are tuned values as the gyroscope is not in the center of the robot :(
+//TODO: VERY IMP: fix the out of axis measurement, maybe apply multiple??!
 typedef enum {
   WEST = 0, // default direction
   NORTH = 36, // right direction
@@ -17,6 +18,7 @@ void orientation_sum_latest_gyro_to_yaw(void);
 void orientation_lock_yaw_measurement(void);
 void orientation_unlock_yaw_measurement(void);
 void orientation_set_gyro_yaw(int16_t yaw);
+int16_t normalize_angle(int16_t angle);
 
 int16_t get_accel_roll_deg(void);
 int16_t get_accel_pitch_deg(void);

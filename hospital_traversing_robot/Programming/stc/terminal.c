@@ -310,11 +310,11 @@ LINE_STATUS terminal_execute_line(char* line) {
         }
 
       } else if (command.i == 2) {
-        if (command.j > EAST || command.j < (-1*EAST)) {
+        if (command.j > 180 || command.j < (-180)) {
           report("Error: 'j' Out of range!\n");
           report("j: %ld\n", command.j);
           report("WEST value: %d\n", WEST);
-          report("NORTh value: %d\n", NORTH);
+          report("NORTH value: %d\n", NORTH);
           report("EAST value: %d\n", EAST);
           report("SOUTH value: %d\n", SOUTH);
           return LINE_FAILED;
