@@ -282,8 +282,8 @@ LINE_STATUS terminal_execute_line(char* line) {
         report("i-1 reset CL status to idle\n");
         report("i0 returns CL status\n");
         report("i1 starts CL movement of j\n");
-        report("i2 sets CL yaw setpoint of j\n");
-        report("i3 gets CL yaw setpoint\n");
+        report("i2 sets CL setpoint of j\n");
+        report("i3 gets CL setpoint\n");
         return LINE_FAILED;
 
       } else if (command.i == 1) {
@@ -515,7 +515,7 @@ LINE_STATUS terminal_execute_line(char* line) {
         case 1:
           switch(command.j) {
             case 0:
-              closed_loop_current_func = closed_loop_move_idle;
+              closed_loop_current_func = closed_loop_move;
               break;
 
             case 1:
@@ -557,12 +557,12 @@ LINE_STATUS terminal_execute_line(char* line) {
           break;
 
         case 2:
-          closed_loop_set_yaw_setpoint((int16_t)command.j);
-          report("New CL Yaw setpoint: %ld\n", command.j);
+          closed_loop_set_setpoint((int16_t)command.j);
+          report("New Closed loop Setpoint: %ld\n", command.j);
           break;
 
         case 3:
-          report("CL Yaw setpoint: %d\n", closed_loop_get_yaw_setpoint());
+          report("Closed loop setpoint: %d\n", closed_loop_get_setpoint());
           break;
 
       }

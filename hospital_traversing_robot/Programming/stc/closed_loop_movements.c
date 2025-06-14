@@ -17,7 +17,7 @@ closed_loop_func_status_t closed_loop_fail_status = CL_FAIL_NONE;
 closed_loop_movement_func_t closed_loop_current_func = closed_loop_move_idle;
 
 // Internal variables
-static int16_t yaw_setpoint = STARTING_YAW_VALUE;
+static int16_t setpoint = 0;
 static uint32_t operation_start_time = 0;
 static uint32_t last_input_check_time = 0;
 static int16_t last_input_value = 0;
@@ -32,8 +32,8 @@ void closed_loop_reset_to_idle(void) {
 
 void closed_loop_move_idle(void) {}
 
-void closed_loop_set_yaw_setpoint(int16_t yaw_setpoint_value) { yaw_setpoint = yaw_setpoint_value; }
-direction_t closed_loop_get_yaw_setpoint(void) { return yaw_setpoint; }
+void closed_loop_set_setpoint(int16_t setpoint_value) { setpoint = setpoint_value; }
+direction_t closed_loop_get_setpoint(void) { return setpoint; }
 
 /* Master closed loop control algorithm to change orientation
  *  - INPUT: orientation_get_yaw_deg
@@ -42,10 +42,10 @@ direction_t closed_loop_get_yaw_setpoint(void) { return yaw_setpoint; }
  * 1- sets open loop differential_control_left/right with overshooted values with default PWM
  * 2- Calls open loop differential_control_left/right in case of overshoot to correct error
  * 3- Fails if motors are already moving
- * 4- Fails if movement causes wrong yaw direction change relative to initial yaw
- * 5- Fails unless there is indeed a MINIMUM_YAW_CHANGE happenning every EXPECTED_YAW_CHANGE_TIME
+ * 4- Fails if movement causes wrong yaw direction change 
+ * 5- Fails unless there is indeed a MINIMUM_YAW_CHANGE happenning every STUCK_ORIENT_TIMEOUT_MS
  * 6- Fails the function in case of ABSOLUTE timeout from moment function began running
- * 7- Succeed if current current yaw value is within yaw setpoint value at IDLE
+ * 7- Succeed if current current yaw value is within yaw setpoint tolerance value 
  *
  * function will only run if closed_loop_current_func is set to closed_loop_orient 
  * AND if closed_loop_func_status is at IDLE. 
@@ -78,7 +78,7 @@ void closed_loop_orient(void) {
       uint32_t current_time = get_current_time();
 
       // Check total operation timeout
-      if ((current_time - operation_start_time) > TOTAL_TIMEOUT_MS) {
+      if ((current_time - operation_start_time) > TOTAL_ORIENT_TIMEOUT_MS) {
         differential_control_stop();
         orientation_lock_yaw_measurement();
         closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED;
@@ -88,7 +88,7 @@ void closed_loop_orient(void) {
       }
 
       // Calculate normalized error (-180 to 180)
-      int16_t error = normalize_angle(yaw_setpoint - current_yaw);
+      int16_t error = normalize_angle(setpoint - current_yaw);
 
       // Check if target reached
       if (abs(error) <= DEG_TOLERANCE) {
@@ -104,7 +104,7 @@ void closed_loop_orient(void) {
       if (differential_control_is_moving()) {
 
         // Only check movement every STUCK_TIMEOUT_MS
-        if ((current_time - last_input_check_time) >= STUCK_TIMEOUT_MS) {
+        if ((current_time - last_input_check_time) >= STUCK_ORIENT_TIMEOUT_MS) {
 
           int16_t yaw_delta = normalize_angle(current_yaw - last_input_value);
 
@@ -136,7 +136,7 @@ void closed_loop_orient(void) {
       // 1- movement didn't start yet, this is first time after IDLE
       // 2- movement overshooted for some reason, open loop with overshooted cm/deg finished and didn't catch setpoint
 
-        int16_t target_deg = error + (error*OVERSHOOT_PERCENT) / 100;
+        int16_t target_deg = error + (error*OVERSHOOT_ORIENT_PERCENT) / 100;
 
         if (target_deg > 0) {
           differential_control_right(target_deg, DEFAULT_PWM_DUTY_CYCLE);
@@ -160,6 +160,133 @@ void closed_loop_orient(void) {
     case CLOSED_LOOP_MOVEMENT_FAILED:
       break;
   }
+
+}
+
+/* Master closed loop control algorithm to change orientation
+ *  - INPUT: get_ultrasonic_distance_cm()
+ *  - OUTPUT: differential_control_forward OR differential_control_backward
+ *
+ * 1- sets open loop differential_control_forward with overshooted values with default PWM
+ * 2- Calls open loop differential_control_backward/forward in case of overshoot to correct error
+ * 3- Fails if motors are already moving
+ * 4- Fails if movement causes wrong distance change direction change 
+ * 5- Fails unless there is indeed a MINIMUM_DISTANCE_CHANGE happenning every STUCK_DISTANCE_TIMEOUT_MS
+ * 6- Fails the function in case of ABSOLUTE timeout from moment function began running
+ * 7- Succeed if current current distance value is within distance tolerance setpoint value 
+ *
+ * function will only run if closed_loop_current_func is set to closed_loop_orient 
+ * AND if closed_loop_func_status is at IDLE. 
+ * closed_loop_func_status is NOT RESET AUTOMATICALLY BY CODE after successful or failed execution.
+ * This should be done by the code that calls sets the function.
+ * LIKE IN terminal.c and path_planning.c, if status is SUCCESS, it will automatically move to IDLE
+ */
+void closed_loop_move(void) {
+  switch(closed_loop_func_status) {
+    case CLOSED_LOOP_MOVEMENT_IDLE: {
+
+      if (!differential_control_is_moving()) {
+        hcsr04_start_cycle();
+        operation_start_time = get_current_time();
+        closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IN_PROGRESS;
+
+      } else {
+        closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED;
+        closed_loop_fail_status = CL_FAIL_MOTOR_ALREADY_MOVING;
+        report("CL_FAIL_MOTOR_ALREADY_MOVING\n");
+      }
+
+      break;
+    }
+
+    case CLOSED_LOOP_MOVEMENT_IN_PROGRESS: {
+
+      int16_t current_distance = get_ultrasonic_distance_cm();
+      uint32_t current_time = get_current_time();
+
+      // Check total operation timeout
+      if ((current_time - operation_start_time) > TOTAL_MOVE_TIMEOUT_MS) {
+        differential_control_stop();
+        hcsr04_stop_cycle();
+        closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED;
+        closed_loop_fail_status = CL_FAIL_MOVEMENT_TIMEOUT;
+        report("CL_FAIL_MOVEMENT_TIMEOUT\n");
+        break;
+      }
+
+      // Calculate normalized error (-180 to 180)
+      int16_t error = setpoint - current_distance;
+      // Check if target reached
+      if (abs(error) <= CM_TOLERANCE) {
+          differential_control_stop();
+          hcsr04_stop_cycle();
+          closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
+          closed_loop_fail_status = CL_FAIL_NONE;
+          report("CLOSED_LOOP_MOVEMENT_SUCCESS\n");
+          break;
+      }
+
+      /* Movement monitoring logic */
+      if (differential_control_is_moving()) {
+
+        // Only check movement every STUCK_TIMEOUT_MS
+        if ((current_time - last_input_check_time) >= STUCK_DISTANCE_TIMEOUT_MS) {
+
+          int16_t distance_delta = current_distance - last_input_value;
+
+          // check for minimum movement detected
+          if (abs(distance_delta) < MINIMUM_DISTANCE_CHANGE) {
+            differential_control_stop();
+            hcsr04_stop_cycle();
+            closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED;
+            closed_loop_fail_status = CL_FAIL_MOTOR_RUNAWAY;
+            report("CL_FAIL_MOTOR_RUNAWAY\n");
+          }
+
+          // check movement is in correct direction
+          if((expected_direction == 1 && distance_delta < 0) || (expected_direction == -1 && distance_delta > 0)) {
+            differential_control_stop();
+            hcsr04_stop_cycle();
+            closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED;
+            closed_loop_fail_status = CL_FAIL_MOTOR_WRONG_MOVEMENT;
+            report("CL_FAIL_MOTOR_WRONG_MOVEMENT\n");
+          }
+
+          // Update for next check
+          last_input_value = current_distance;
+          last_input_check_time = current_time;
+        }
+
+      } else {
+      // Should be here only when:
+      // 1- movement didn't start yet, this is first time after IDLE
+      // 2- movement overshooted for some reason, open loop with overshooted cm/deg finished and didn't catch setpoint
+
+        int16_t target_distance = error + (error*OVERSHOOT_MOVE_PERCENT) / 100;
+
+        if (target_distance > 0) {
+          differential_control_right(target_distance, DEFAULT_PWM_DUTY_CYCLE);
+          expected_direction = 1; // Clockwise
+
+        } else {
+          differential_control_left(target_distance, DEFAULT_PWM_DUTY_CYCLE);
+          expected_direction = -1; // Anti-Clockwise
+        }
+
+        // Reset internal movement monitoring values
+        last_input_value = current_distance;
+        last_input_check_time = current_time;
+
+      }
+
+      break;
+    }
+
+    case CLOSED_LOOP_MOVEMENT_SUCCESS:
+    case CLOSED_LOOP_MOVEMENT_FAILED:
+      break;
+  }
+
 
 }
 

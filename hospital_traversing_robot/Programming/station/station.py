@@ -289,10 +289,16 @@ class ClosedLoopControl:
 
         return response
 
-    def get_yaw_setpoint(self) -> str:
+    def execute_closed_loop_move(self) -> str:
+        response = self.station.send("Ci1j0")
+        response += self.station.await_answer(self.CLOSED_LOOP_STATUS, self.CLOSED_LOOP_EXECUTE_MAX_TIMEOUT, f"Closed Loop Control didn't response after {self.CLOSED_LOOP_EXECUTE_MAX_TIMEOUT}ms of sending execution")
+
+        return response
+
+    def get_setpoint(self) -> str:
         return self.station.send("Ci3")
 
-    def set_yaw_setpoint(self, value: int) -> str:
+    def set_setpoint(self, value: int) -> str:
         return self.station.send(f"Ci2j{value}")
 
 class PathPlanning:
