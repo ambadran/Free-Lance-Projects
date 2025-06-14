@@ -22,14 +22,19 @@ class Station:
     PIPES = (b"\xe1\xf0\xf0\xf0\xf0", b"\xd2\xf0\xf0\xf0\xf0")
     RX_POLL_DELAY = const(15)
     DEFAULT_COMMAND_ACK_TIMEOUT = 3000  # 3 sec
+    DEFAULT_SCK_PIN = const(18)
+    DEFAULT_MOSI_PIN = const(19)
+    DEFAULT_MISO_PIN = const(16)
+    DEFAULT_CSN_PIN = const(20)
+    DEFAULT_CE_PIN = const(21)
 
     def __init__(self):
         # Pin definitions
-        self.SCK_PIN = const(18)
-        self.MOSI_PIN = const(19)
-        self.MISO_PIN = const(16)
-        self.CSN_PIN = const(20)
-        self.CE_PIN = const(21)
+        self.SCK_PIN = self.DEFAULT_SCK_PIN
+        self.MOSI_PIN = self.DEFAULT_MOSI_PIN
+        self.MISO_PIN = self.DEFAULT_MISO_PIN
+        self.CSN_PIN = self.DEFAULT_CSN_PIN
+        self.CE_PIN = self.DEFAULT_CE_PIN
         
         # Initialize SPI and radio
         self.spi = SPI(self.SPI_HARDWARE_INDEX, 
@@ -56,13 +61,19 @@ class Station:
         self.path_planning = PathPlanning(self)
 
         self.state = state.RECEIVER
-        self.start_periodic_receive_timer()
+        self.timer = None 
+        # to start from REPL
+        # self.timer = True, then call start_periodic_receive_timer() or any send() to start
+        # self.start_periodic_receive_timer()
 
     def start_periodic_receive_timer(self):
-        self.timer = Timer(period=500, mode=Timer.PERIODIC, callback=self.periodic_receive)
+        if self.timer:
+            self.timer = Timer(period=500, mode=Timer.PERIODIC, callback=self.periodic_receive)
 
     def stop_periodic_receive_timer(self):
-        self.timer.deinit()
+        if self.timer:
+            self.timer.deinit()
+        self.led_pin.off()
 
     def periodic_receive(self, t):
         self.led_pin.toggle()
@@ -75,12 +86,34 @@ class Station:
             buf = ""
             while self.nrf.any():
                 try:
-                    buf += self.nrf.recv().decode()
+                    buf += self.nrf.recv().decode().replace("\x00", "")
                 except UnicodeError:
                     pass  # Handle partial/invalid packets gracefully
             return buf
 
-    def send(self, string="", timeout: Optional[int]=None):
+    def await_answer(self, expected_answers: list[str], timeout: int, timeout_message: str) -> response:
+        self.stop_periodic_receive_timer()
+        expected_response_found = False
+        response = ""
+        start = ticks_ms()
+        start_dots = ticks_ms()
+        while not expected_response_found:
+            for expected_answer in expected_answers:
+                if expected_answer in response:
+                    expected_response_found = True
+            buf = self.receive()
+            if buf:
+                response += buf
+                start = ticks_ms()
+            if ticks_diff(ticks_ms(), start) > timeout:
+                self.start_periodic_receive_timer()
+
+                raise OSError(errno.ETIMEDOUT, timeout_message+f"\nReceived:\n{response}")
+        self.start_periodic_receive_timer()
+
+        return response
+
+    def send(self, string="") -> str:
         self.state = state.TRANSMITTER
         sleep_ms(20)
         self.nrf.stop_listening()
@@ -88,141 +121,193 @@ class Station:
         self.nrf.start_listening()
         self.state = state.RECEIVER
 
-        self.stop_periodic_receive_timer()
-        response = ""
-        timeout = timeout or self.DEFAULT_COMMAND_ACK_TIMEOUT
-        start = ticks_ms()
-        start_dots = ticks_ms()
-        while "Command Passed" not in response and "Command Failed" not in response:
-            buf = self.receive()
-            if buf:
-                response += buf
-                start = ticks_ms()
-            if ticks_diff(ticks_ms(), start) > timeout:
-                print('\n', response, '\n')
-                self.start_periodic_receive_timer()
+        response = self.await_answer(["Command Passed", "Command Failed"], self.DEFAULT_COMMAND_ACK_TIMEOUT, "Didn't receive command acknowledgement from STC Microcontroller!")
+        if "Command Failed" in response:
+            raise ValueError("Robot Command Failed\n", response)
+        return response
 
-                raise OSError(errno.ETIMEDOUT, "Didn't receive command acknowledgement from STC Microcontroller!")
-            if ticks_diff(ticks_ms(), start_dots) > 800:
-                print(".", end='')
+    def get_device_time_ms(self) -> str:
+        return self.send("T")
 
-        print('\n', response)
-        self.start_periodic_receive_timer()
-
-    def get_device_time_ms(self):
-        self.send("T")
-
-    def print_nrf_registers(self):
-        self.send("N")
+    def print_nrf_registers(self) -> str:
+        return self.send("N")
 
 # Controller Components (using composition)
 class DifferentialControl:
     def __init__(self, station):
         self.station = station
 
-    def forward(self, distance: int, speed: int = None):
+    def forward(self, distance: int, speed: int = None) -> str:
         cmd = f"Fi{distance}"
         if speed:
             speed_val = int((speed/100)*65535)
             cmd += f"j{speed_val}"
-        self.station.send(cmd)
 
-    def backward(self, distance: int, speed: int = None):
+        response = self.station.send(cmd)
+        timeout = int(distance*1000/2)  # very generous time to execute
+        response += self.station.await_answer(["Differential Control Finished"], timeout, "Didn't Receive Differential Control Finished Movement Acknowledgement")
+        return response
+
+    def backward(self, distance: int, speed: int = None) -> str:
         cmd = f"Bi{distance}"
         if speed:
             speed_val = int((speed/100)*65535)
             cmd += f"j{speed_val}"
-        self.station.send(cmd)
 
-    def right(self, distance: int, speed: int = None):
-        cmd = f"Ri{distance}"
+        response = self.station.send(cmd)
+        timeout = int(distance*1000/2)  # very generous time to execute
+        response += self.station.await_answer(["Differential Control Finished"], timeout, "Didn't Receive Differential Control Finished Movement Acknowledgement")
+        return response
+
+    def right(self, angle: int, speed: int = None) -> str:
+        cmd = f"Ri{angle}"
         if speed:
             speed_val = int((speed/100)*65535)
             cmd += f"j{speed_val}"
-        self.station.send(cmd)
 
-    def left(self, distance: int, speed: int = None):
-        cmd = f"Li{distance}"
+        response = self.station.send(cmd)
+        timeout = int(angle*1000/2)  # very generous time to execute
+        response += self.station.await_answer(["Differential Control Finished"], timeout, "Didn't Receive Differential Control Finished Movement Acknowledgement")
+        return response
+
+    def left(self, angle: int, speed: int = None) -> str:
+        cmd = f"Li{angle}"
         if speed:
             speed_val = int((speed/100)*65535)
             cmd += f"j{speed_val}"
-        self.station.send(cmd)
+
+        response = self.station.send(cmd)
+        timeout = int(angle*1000/2)  # very generous time to execute
+        response += self.station.await_answer(["Differential Control Finished"], timeout, "Didn't Receive Differential Control Finished Movement Acknowledgement")
+        return response
 
 class GPS:
     def __init__(self, station):
         self.station = station
 
-    def all(self):
-        self.station.send("G")
+    def all(self) -> str:
+        return self.station.send("G")
 
-    def latitude(self):
-        self.station.send("Gi1")
+    def latitude(self) -> str:
+        return self.station.send("Gi1")
 
-    def longitude(self):
-        self.station.send("Gi2")
+    def longitude(self) -> str:
+        return self.station.send("Gi2")
 
-    def heading(self):
-        self.station.send("Gi3")
+    def heading(self) -> str:
+        return self.station.send("Gi3")
 
-    def time(self):
-        self.station.send("Gi4")
+    def time(self) -> str:
+        return self.station.send("Gi4")
 
 class IMU:
     def __init__(self, station):
         self.station = station
 
-    def orientation_all(self):
-        self.station.send("M")
+    def orientation_all(self) -> str:
+        return self.station.send("M")
 
-    def raw_accel_values(self):
-        self.station.send("Mi1")
+    def raw_accel_values(self) -> str:
+        return self.station.send("Mi1")
 
-    # ... (other IMU methods follow same pattern)
+    def raw_gyro_values(self) -> str:
+        return self.station.send("Mi2")
+
+    def raw_mag_values(self) -> str:
+        return self.station.send("Mi3")
+
+    def accel_offset_values(self) -> str:
+        return self.station.send("Mi4")
+
+    def gyro_offset_values(self) -> str:
+        return self.station.send("Mi5")
+
+    def mag_offset_values(self) -> str:
+        return self.station.send("Mi6")
+
+    def orientation_roll(self) -> str:
+        return self.station.send("Mi7")
+
+    def orientation_pitch(self) -> str:
+        return self.station.send("Mi8")
+
+    def orientation_yaw(self) -> str:
+        return self.station.send("Mi9")
+
+    def unlock_yaw_measurement(self) -> str:
+        return self.station.send("Mi10")
+
+    def unlock_yaw_measurement(self) -> str:
+        return self.station.send("Mi11")
+
+    def reset_yaw_value(self) -> str:
+        return self.station.send("Mi12")
+
+    def mpu6050_internal_registers(self) -> str:
+        return self.station.send("Mi13")
+
+    def HMC5883L_internal_registers(self) -> str:
+        return self.station.send("Mi14")
 
 class Ultrasonic:
     def __init__(self, station):
         self.station = station
 
-    def stop_measurement(self):
-        self.station.send("Ui-1")
+    def stop_measurement(self) -> str:
+        return self.station.send("Ui-1")
 
-    def distance_status(self):
-        self.station.send("Ui0")
+    def distance_status(self) -> str:
+        return self.station.send("Ui0")
 
-    def start_measurement(self):
-        self.station.send("Ui1")
+    def start_measurement(self) -> str:
+        return self.station.send("Ui1")
 
 class ClosedLoopControl:
+    CLOSED_LOOP_EXECUTE_MAX_TIMEOUT = 10000
+    CLOSED_LOOP_STATUS = ["CLOSED_LOOP_MOVEMENT_IDLE",
+                           "CLOSED_LOOP_MOVEMENT_FAILED",
+                           "CLOSED_LOOP_MOVEMENT_IN_PROGRESS",
+                          "CLOSED_LOOP_MOVEMENT_SUCCESS",
+                                 "CL_FAIL_NONE",
+                                 "CL_FAIL_MOTOR_ALREADY_MOVING",
+                                 "CL_FAIL_MOTOR_RUNAWAY",
+                                 "CL_FAIL_MOTOR_WRONG_MOVEMENT",
+                                 "CL_FAIL_MOVEMENT_TIMEOUT" 
+                                ]
     def __init__(self, station):
         self.station = station
 
-    def reset_idle(self):
-        self.station.send("Ci-1")
+    def reset_idle(self) -> str:
+        return self.station.send("Ci-1")
 
-    def status(self):
-        self.station.send("Ci0")
+    def status(self) -> str:
+        return self.station.send("Ci0")
 
-    def execute_closed_loop_orient(self):
-        self.station.send("Ci1j1")
+    def execute_closed_loop_orient(self) -> str:
+        response = self.station.send("Ci1j1")
+        response += self.station.await_answer(self.CLOSED_LOOP_STATUS, self.CLOSED_LOOP_EXECUTE_MAX_TIMEOUT, f"Closed Loop Control didn't response after {self.CLOSED_LOOP_EXECUTE_MAX_TIMEOUT}ms of sending execution")
 
-    def yaw_setpoint(self):
-        self.station.send("Ci3")
+        return response
 
-    def yaw_setpoint(self, value: int):
-        self.station.send(f"Ci2j{value}")
+    def get_yaw_setpoint(self) -> str:
+        return self.station.send("Ci3")
+
+    def set_yaw_setpoint(self, value: int) -> str:
+        return self.station.send(f"Ci2j{value}")
 
 class PathPlanning:
     def __init__(self, station):
         self.station = station
 
-    def plan(self, start_loc: int, end_loc: int):
-        self.station.send(f"Pi{start_loc}j{end_loc}")
+    def plan(self, start_loc: int, end_loc: int) -> str:
+        return self.station.send(f"Pi{start_loc}j{end_loc}")
 
-    def execute(self):
-        self.station.send("Ei1")
+    def execute(self) -> str:
+        return self.station.send("Ei1")
 
-    def status(self):
-        self.station.send("Ei0")
+    def status(self) -> str:
+        return self.station.send("Ei0")
 
-    def stop_executing(self):
-        self.station.send("Ei-1")
+    def stop_executing(self) -> str:
+        return self.station.send("Ei-1")
+

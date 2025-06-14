@@ -149,8 +149,8 @@
 /* Closed loop Control Settings */
 #define TOTAL_TIMEOUT_MS 20000         // Max time for entire operation (20 seconds)
 #define DEG_TOLERANCE 1                // Acceptable error in degrees
-#define MINIMUM_YAW_CHANGE 2               // Minimum detectable yaw change (degrees)
-#define STUCK_TIMEOUT_MS 100          // Max time without sufficient change
+#define MINIMUM_YAW_CHANGE 1               // Minimum detectable yaw change (degrees)
+#define STUCK_TIMEOUT_MS 200          // Max time without sufficient change
 #define OVERSHOOT_PERCENT 200           // 30% overshoot (integer percentage)
 
 /* Path Planning Settings */

@@ -38,6 +38,7 @@ void closed_loop_move_idle(void);
 void closed_loop_set_yaw_setpoint(int16_t yaw_setpoint_value);
 direction_t closed_loop_get_yaw_setpoint(void);
 void closed_loop_orient(void);
+void closed_loop_move(void);
 
 /* Actual closed loop function for each single movement!! :D */
 void closed_loop_exit_room(void);
