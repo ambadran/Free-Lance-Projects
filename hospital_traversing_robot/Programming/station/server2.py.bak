@@ -50,7 +50,7 @@ class Server:
         '''
         self.station = network.WLAN(network.AP_IF)
         self.station.active(False)
-        time.sleep(2)
+        sleep(2)
         self.station.active(True)
 
     def init_access_point(self):
@@ -80,7 +80,7 @@ class Server:
             print(f"Socket init error: {e}")
             # Attempt to recover
             self.s.close()
-            time.sleep(1)
+            sleep(1)
             self.init_socket()
 
     def wait_for_client(self):
@@ -144,8 +144,8 @@ class Server:
             response = f"HTTP/1.1 {code}\r\n"
             response += f"Content-Type: {content_type}\r\n"
             response += "Connection: close\r\n\r\n"
+            response += content
             self.client.send(response.encode())
-            self.client.send(content.encode())
         except Exception as e:
             print(f"Response sending error: {e}")
 
@@ -190,15 +190,11 @@ class Server:
         '''
         try:
             # Parse query parameters
-            if '?' in self.request:
-                query_str = self.request.split('?', 1)[1].split(' ')[0]
-                params = {}
-                for pair in query_str.split('&'):
-                    if '=' in pair:
-                        key, value = pair.split('=', 1)
-                        params[key] = value
-            else:
-                params = {}
+            query_str = self.request.split('?', 1)[1].split(' ')[0]
+            params = {}
+            for pair in query_str.split('&'):
+                key, value = pair.split('=')
+                params[key] = value
                 
             # Get target and method from query
             target = params.get('target')
@@ -209,11 +205,10 @@ class Server:
                 return
                 
             # Look up response in dictionary
-            key = (target, method)
-            response = self.cmd_response_dict.get(key, None)
+            response = self.cmd_response_dict.get((target, method), None)
             
             if response is None:
-                self.send_response(404, f"Response not found for {target}.{method}")
+                self.send_response(404, "Response not found")
                 return
                 
             # Send JSON response
@@ -229,15 +224,8 @@ class Server:
         '''
         try:
             # Extract JSON body
-            if '\r\n\r\n' in self.request:
-                body = self.request.split('\r\n\r\n', 1)[1]
-            else:
-                body = ""
-                
-            try:
-                data = json.loads(body)
-            except ValueError:
-                data = {}
+            body = self.request.split('\r\n\r\n', 1)[1]
+            data = json.loads(body)
             
             # Validate required fields
             if 'target' not in data or 'method' not in data:
@@ -250,8 +238,7 @@ class Server:
             params = data.get('params', {})
             
             # Store in execution dictionary
-            key = (target, method)
-            self.exec_cmd_dict[key] = params
+            self.exec_cmd_dict[(target, method)] = params
             
             # Acknowledge receipt
             self.send_response(200, "Command received")

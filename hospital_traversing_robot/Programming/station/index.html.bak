@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Rover Control Center</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .section-title {
+            color: #3498db;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        input[type="number"], input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .response-box {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            min-height: 50px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #ccc;
+            margin-right: 5px;
+        }
+        .active {
+            background-color: #2ecc71;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hospital Rover Control Center</h1>
+
+    <!-- Connection Status -->
+    <div class="section">
+        <h2 class="section-title">Connection</h2>
+        <div class="control-group">
+            <span class="status-indicator" id="connection-status"></span>
+            <span id="connection-text">Disconnected</span>
+        </div>
+    </div>
+
+    <!-- Differential Control Section -->
+    <div class="section">
+        <h2 class="section-title">Differential Control</h2>
+        
+        <div class="control-group">
+            <h3>Movement</h3>
+            <input type="number" id="move-distance" placeholder="Distance (cm)" min="1">
+            <input type="number" id="move-speed" placeholder="Speed % (1-100)" min="1" max="100">
+            <button onclick="sendCommand('forward')">Forward</button>
+            <button onclick="sendCommand('backward')">Backward</button>
+            <button onclick="sendCommand('left')">Left</button>
+            <button onclick="sendCommand('right')">Right</button>
+        </div>
+        
+        <div class="response-box" id="differential-response"></div>
+    </div>
+
+    <!-- GPS Section -->
+    <div class="section">
+        <h2 class="section-title">GPS</h2>
+        
+        <div class="control-group">
+            <button onclick="sendCommand('gps-all')">Get All Data</button>
+            <button onclick="sendCommand('gps-latitude')">Latitude</button>
+            <button onclick="sendCommand('gps-longitude')">Longitude</button>
+            <button onclick="sendCommand('gps-heading')">Heading</button>
+            <button onclick="sendCommand('gps-time')">Time</button>
+        </div>
+        
+        <div class="response-box" id="gps-response"></div>
+    </div>
+
+    <!-- IMU Section -->
+    <div class="section">
+        <h2 class="section-title">IMU</h2>
+        
+        <div class="control-group">
+            <h3>Orientation</h3>
+            <button onclick="sendCommand('imu-orient-all')">All Orientation</button>
+            <button onclick="sendCommand('imu-roll')">Roll</button>
+            <button onclick="sendCommand('imu-pitch')">Pitch</button>
+            <button onclick="sendCommand('imu-yaw')">Yaw</button>
+            
+            <h3>Raw Values</h3>
+            <button onclick="sendCommand('imu-accel')">Accelerometer</button>
+            <button onclick="sendCommand('imu-gyro')">Gyroscope</button>
+            <button onclick="sendCommand('imu-mag')">Magnetometer</button>
+            
+            <h3>Calibration</h3>
+            <button onclick="sendCommand('imu-unlock-yaw')">Unlock Yaw</button>
+            <button onclick="sendCommand('imu-reset-yaw')">Reset Yaw</button>
+        </div>
+        
+        <div class="response-box" id="imu-response"></div>
+    </div>
+
+    <!-- Ultrasonic Section -->
+    <div class="section">
+        <h2 class="section-title">Ultrasonic Sensor</h2>
+        
+        <div class="control-group">
+            <button onclick="sendCommand('ultrasonic-start')">Start Measurement</button>
+            <button onclick="sendCommand('ultrasonic-stop')">Stop Measurement</button>
+            <button onclick="sendCommand('ultrasonic-status')">Get Status</button>
+        </div>
+        
+        <div class="response-box" id="ultrasonic-response"></div>
+    </div>
+
+    <!-- Closed Loop Control Section -->
+    <div class="section">
+        <h2 class="section-title">Closed Loop Control</h2>
+        
+        <div class="control-group">
+            <button onclick="sendCommand('clc-status')">Get Status</button>
+            <button onclick="sendCommand('clc-reset')">Reset</button>
+            <button onclick="sendCommand('clc-execute')">Execute Orientation</button>
+            
+            <h3>Yaw Setpoint</h3>
+            <input type="number" id="yaw-setpoint" placeholder="Degrees (0-360)" min="0" max="360">
+            <button onclick="sendCommand('clc-set-yaw')">Set Yaw</button>
+            <button onclick="sendCommand('clc-get-yaw')">Get Current Yaw</button>
+        </div>
+        
+        <div class="response-box" id="clc-response"></div>
+    </div>
+
+    <!-- Path Planning Section -->
+    <div class="section">
+        <h2 class="section-title">Path Planning</h2>
+        
+        <div class="control-group">
+            <input type="number" id="start-loc" placeholder="Start Location">
+            <input type="number" id="end-loc" placeholder="End Location">
+            <button onclick="sendCommand('path-plan')">Plan Path</button>
+            
+            <button onclick="sendCommand('path-execute')">Execute Path</button>
+            <button onclick="sendCommand('path-stop')">Stop Execution</button>
+            <button onclick="sendCommand('path-status')">Get Status</button>
+        </div>
+        
+        <div class="response-box" id="path-response"></div>
+    </div>
+
+    <!-- System Commands -->
+    <div class="section">
+        <h2 class="section-title">System Commands</h2>
+        
+        <div class="control-group">
+            <button onclick="sendCommand('get-time')">Get Device Time</button>
+            <button onclick="sendCommand('nrf-registers')">Show NRF Registers</button>
+        </div>
+        
+        <div class="response-box" id="system-response"></div>
+    </div>
+
+    <script>
+        // This will be implemented in the MicroPython web server code
+        function sendCommand(command) {
+            let responseBox;
+            let params = {};
+            
+            // Determine which response box to use
+            switch(command.split('-')[0]) {
+                case 'forward': case 'backward': case 'left': case 'right':
+                    const distance = document.getElementById('move-distance').value;
+                    const speed = document.getElementById('move-speed').value;
+                    if (distance) params.distance = distance;
+                    if (speed) params.speed = speed;
+                    responseBox = document.getElementById('differential-response');
+                    break;
+                case 'clc':
+                    if (command === 'clc-set-yaw') {
+                        params.yaw = document.getElementById('yaw-setpoint').value;
+                    }
+                    responseBox = document.getElementById('clc-response');
+                    break;
+                case 'path':
+                    if (command === 'path-plan') {
+                        params.start = document.getElementById('start-loc').value;
+                        params.end = document.getElementById('end-loc').value;
+                    }
+                    responseBox = document.getElementById('path-response');
+                    break;
+                case 'gps':
+                    responseBox = document.getElementById('gps-response');
+                    break;
+                case 'imu':
+                    responseBox = document.getElementById('imu-response');
+                    break;
+                case 'ultrasonic':
+                    responseBox = document.getElementById('ultrasonic-response');
+                    break;
+                default:
+                    responseBox = document.getElementById('system-response');
+            }
+            
+            // Simulate response - to be replaced with actual fetch call
+            responseBox.textContent = `Sending command: ${command}\nWith parameters: ${JSON.stringify(params)}`;
+            
+            // In actual implementation:
+            // fetch(`/command?cmd=${command}&${new URLSearchParams(params)}`)
+            //     .then(response => response.text())
+            //     .then(data => {
+            //         responseBox.textContent = data;
+            //     })
+            //     .catch(error => {
+            //         responseBox.textContent = `Error: ${error}`;
+            //     });
+        }
+        
+        // Simulate connection status - to be replaced with actual check
+        setTimeout(() => {
+            document.getElementById('connection-status').classList.add('active');
+            document.getElementById('connection-text').textContent = 'Connected';
+        }, 1000);
+    </script>
+</body>
+</html>

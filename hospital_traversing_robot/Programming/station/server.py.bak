@@ -1,0 +1,189 @@
+"""
+Server hosted by micropython device to control Robot
+"""
+from micropython import const
+import network
+import socket
+import json
+
+class HTML_REQUEST:
+    GET_WEB = 0
+    POST_EXECUTE_COMMAND = 1
+    GET_RESPONSE = 2
+
+class Server:
+    # Access Point Parameters
+    SSID = "Smart Incubator Controller"
+    PASSWORD = "12345678"
+
+    JAVASCRIPT_TO_PYTHON = {'on': 1, 'off': 0}
+    DEFAULT_WEB_NAME = 'index.html'
+    def __init__(self):
+        '''
+        initiate server
+        '''
+        self.reset()
+        #TODO: implement try except block to avoid redefining socket
+        self.init_access_point()
+        self.init_socket()
+
+        self.cmd_response_dict = {
+
+                }
+
+        self.exec_cmd_dict = {
+
+                }
+
+        self.IDENTIFY_HTML_REQUEST = {
+                'GET /': HTML_REQUEST.GET_WEB,
+                #TODO: link the post html request command execute to HTML_REQUEST.POST_EXECUTE_COMMAND
+                #TODO: link the get html request response to HTML_REQUEST.GET_RESPONSE
+                } 
+
+        self.HANDLE_HTML_REQUEST = {
+                HTML_REQUEST.GET_WEB: self.handle_get_web
+                HTML_REQUEST.GET_RESPONSE: self.handle_get_command_response
+                HTML_REQUEST.POST_EXECUTE_COMMAND: self.handle_post_exec_command
+                }
+ 
+
+    def reset(self):
+        '''
+        returns station object on reset.
+        just deactivate and activate again 
+        '''
+        self.station = network.WLAN(network.AP_IF)
+        self.station.config(ssid=self.SSID, password=self.PASSWORD)
+
+        self.station.active(False)
+        sleep(2)
+        self.station.active(True)
+
+    def init_access_point(self):
+        '''
+        set up the Access Point
+        '''
+        self.station.config(ssid=self.SSID, password=self.PASSWORD)
+
+        while not self.station.active():
+            print(f"Station Initializing.. ", end=' \r')
+
+        self.led.on()
+        print('Access Point Active!')
+        print(self.station.ifconfig())
+
+    def init_socket(self):
+        '''
+        initiate socket connection
+        '''
+        try:
+            self.station.config(ssid=self.SSID, password=self.PASSWORD)
+            sleep_ms(500)
+
+            self.addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
+            self.s = socket.socket()
+            self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.s.bind(self.addr)
+            self.s.listen(1)  # Reduce the backlog to minimize memory usage
+            print('Listening on', self.addr)
+        except OSError as e:
+            print(f"Caught: {e}")
+
+    def wait_for_client(self):
+        '''
+        Await client to connect then return new socket object used to 
+        communicate with the connected client. 
+        This socket is distinct from the listening socket (s) 
+        and is used for sending and receiving data with the specific client that connected.
+        '''
+        # try:
+        self.station.config(ssid=self.SSID, password=self.PASSWORD)
+        sleep_ms(500)
+
+        self.client, addr = self.s.accept()
+        # print('Got a connection from {str(addr)}', end=' \r')
+        print(f"Got a connection from {str(addr)}")
+        # except Exception as e:
+        #     print(f"Caught: {e}")
+
+    def identify_html_request(self) -> HTML_REQUEST:
+        '''
+        return what HTML request is given. 
+        Every HTML request must be mapped to a function that handles it.
+        '''
+        # try:
+        self.request = self.client.recv(1024).decode()
+        
+        tmp = self.request.split(' ')
+
+        if len(tmp) > 1:
+            tmp = tmp[0] + ' ' + tmp[1]
+        else:
+            tmp = tmp[0]
+
+        return self.IDENTIFY_HTML_REQUEST.get(tmp, None)
+        # except Exception as e:
+        #     print(f"Caught in identify html: {e}")
+        #     print(f"on Request {self.request}")
+
+    def handle_html_request(self, html_request: HTML_REQUEST):
+        '''
+        handles the identified html request
+        '''
+        try:
+            if html_request is not None:
+                self.HANDLE_HTML_REQUEST[html_request]()
+        
+            else:
+                self.handle_unkonwn_request()
+                print(f"Got unkonwn Request:\n{self.request}")
+
+        except Exception as e:
+            print(f"Error in handle web get request: {e}")
+
+        finally:
+            self.client.close()
+
+    def handle_get_web(self):
+        '''
+        Handles GET_WEB HTML GET Request
+        '''
+        web_name = self.request.split(' ')
+        web_name = web_name[1]
+        if web_name == '/':
+            # default web
+            web_name = self.DEFAULT_WEB_NAME
+
+        else:
+            web_name = web_name[1:]
+
+        with open(web_name, 'r') as f:
+            web_page = f.read()
+
+        self.client.send('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n')
+        # self.client.send('HTTP/1.1 200 OK\n')
+        # self.client.send('Content-Type: text/html\n')
+        # self.client.send('Connection: close\n\n')
+        self.client.sendall(web_page)
+
+    def handle_get_command_response(self):
+        '''
+        Handles GET_RESPONSE HTML GET Request
+        '''
+        pass #TODO:
+
+    def handle_post_exec_command(self):
+        '''
+        Handles POST_EXECUTE_COMMAND HTML GET Request
+        '''
+        pass #TODO:
+
+    def handle_unkonwn_request(self):
+        '''
+        Handles unknown request
+        '''
+        self.client.send('HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n')
+        self.client.send('HTTP/1.1 404 Not Found\r\n\r\nFile Not Found')
+
+

@@ -132,6 +132,56 @@ class Station:
     def print_nrf_registers(self) -> str:
         return self.send("N")
 
+    def process(self, exec_dict):
+        """
+        Process commands from the execution dictionary
+        Returns a response dictionary with the same keys as the processed commands
+        """
+        response_dict = {}
+        
+        # Iterate through all commands in the execution dictionary
+        for key, params in exec_dict.items():
+            target = key[0]
+            method_name = key[1]
+            
+            try:
+                # Get the target component
+                component = getattr(self, target, None)
+                if component is None:
+                    response_dict[key] = f"Error: Component '{target}' not found"
+                    continue
+                
+                # Get the method to call
+                method = getattr(component, method_name, None)
+                if method is None:
+                    response_dict[key] = f"Error: Method '{method_name}' not found in {target}"
+                    continue
+                
+                # Call the method with parameters if available
+                if params:
+                    # Convert parameters to appropriate types
+                    converted_params = {}
+                    for param, value in params.items():
+                        try:
+                            # Try to convert to integer if possible
+                            converted_params[param] = int(value) if value.isdigit() else value
+                        except:
+                            converted_params[param] = value
+                    
+                    # Call method with converted parameters
+                    response = method(**converted_params)
+                else:
+                    # Call method without parameters
+                    response = method()
+                
+                # Store the response
+                response_dict[key] = response
+                
+            except Exception as e:
+                response_dict[key] = f"Error executing {target}.{method_name}: {str(e)}"
+        
+        return response_dict
+
 # Controller Components (using composition)
 class DifferentialControl:
     def __init__(self, station):
@@ -295,11 +345,12 @@ class ClosedLoopControl:
 
         return response
 
+    def set_setpoint(self, value: int) -> str:
+        return self.station.send(f"Ci2j{value}")
+
     def get_setpoint(self) -> str:
         return self.station.send("Ci3")
 
-    def set_setpoint(self, value: int) -> str:
-        return self.station.send(f"Ci2j{value}")
 
 class PathPlanning:
     def __init__(self, station):
