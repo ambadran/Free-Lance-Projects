@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Rover Control Center</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .section-title {
+            color: #3498db;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        input[type="number"], input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+            width: 100px;
+        }
+        .response-box {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            min-height: 50px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #ccc;
+            margin-right: 5px;
+        }
+        .active {
+            background-color: #2ecc71;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hospital Rover Control Center</h1>
+
+    <!-- Connection Status -->
+    <div class="section">
+        <h2 class="section-title">Connection</h2>
+        <div class="control-group">
+            <span class="status-indicator" id="connection-status"></span>
+            <span id="connection-text">Disconnected</span>
+        </div>
+    </div>
+
+    <!-- Differential Control Section -->
+    <div class="section">
+        <h2 class="section-title">Differential Control</h2>
+        
+        <div class="control-group">
+            <h3>Movement</h3>
+            <input type="number" id="move-distance" placeholder="Distance (cm)" min="1">
+            <input type="number" id="move-speed" placeholder="Speed % (1-100)" min="1" max="100">
+            <button onclick="executeCommand('differential-forward')">Forward</button>
+            <button onclick="executeCommand('differential-backward')">Backward</button>
+            <button onclick="executeCommand('differential-left')">Left</button>
+            <button onclick="executeCommand('differential-right')">Right</button>
+        </div>
+        
+        <div class="response-box" id="differential-response"></div>
+    </div>
+
+    <!-- GPS Section -->
+    <div class="section">
+        <h2 class="section-title">GPS</h2>
+        
+        <div class="control-group">
+            <button onclick="executeCommand('gps-all')">Get All Data</button>
+            <button onclick="executeCommand('gps-latitude')">Latitude</button>
+            <button onclick="executeCommand('gps-longitude')">Longitude</button>
+            <button onclick="executeCommand('gps-heading')">Heading</button>
+            <button onclick="executeCommand('gps-time')">Time</button>
+        </div>
+        
+        <div class="response-box" id="gps-response"></div>
+    </div>
+
+    <!-- IMU Section -->
+    <div class="section">
+        <h2 class="section-title">IMU</h2>
+        
+        <div class="control-group">
+            <h3>Orientation</h3>
+            <button onclick="executeCommand('imu-orient-all')">All Orientation</button>
+            <button onclick="executeCommand('imu-roll')">Roll</button>
+            <button onclick="executeCommand('imu-pitch')">Pitch</button>
+            <button onclick="executeCommand('imu-yaw')">Yaw</button>
+            
+            <h3>Raw Values</h3>
+            <button onclick="executeCommand('imu-accel')">Accelerometer</button>
+            <button onclick="executeCommand('imu-gyro')">Gyroscope</button>
+            <button onclick="executeCommand('imu-mag')">Magnetometer</button>
+            
+            <h3>Calibration</h3>
+            <button onclick="executeCommand('imu-unlock-yaw')">Unlock Yaw</button>
+            <button onclick="executeCommand('imu-reset-yaw')">Reset Yaw</button>
+        </div>
+        
+        <div class="response-box" id="imu-response"></div>
+    </div>
+
+    <!-- Ultrasonic Section -->
+    <div class="section">
+        <h2 class="section-title">Ultrasonic Sensor</h2>
+        
+        <div class="control-group">
+            <button onclick="executeCommand('ultrasonic-start')">Start Measurement</button>
+            <button onclick="executeCommand('ultrasonic-stop')">Stop Measurement</button>
+            <button onclick="executeCommand('ultrasonic-status')">Get Status</button>
+        </div>
+        
+        <div class="response-box" id="ultrasonic-response"></div>
+    </div>
+
+    <!-- Closed Loop Control Section -->
+    <div class="section">
+        <h2 class="section-title">Closed Loop Control</h2>
+        
+        <div class="control-group">
+            <button onclick="executeCommand('clc-status')">Get Status</button>
+            <button onclick="executeCommand('clc-reset')">Reset</button>
+            <button onclick="executeCommand('clc-execute-orient')">Execute Orientation</button>
+            <button onclick="executeCommand('clc-execute-move')">Execute Movement</button>
+            
+            <h3>Setpoint Control</h3>
+            <input type="number" id="clc-setpoint" placeholder="Degrees (0-360)" min="0" max="360">
+            <button onclick="executeCommand('clc-set-setpoint')">Set Setpoint</button>
+            <button onclick="executeCommand('clc-get-setpoint')">Get Setpoint</button>
+        </div>
+        
+        <div class="response-box" id="clc-response"></div>
+    </div>
+
+    <!-- Path Planning Section -->
+    <div class="section">
+        <h2 class="section-title">Path Planning</h2>
+        
+        <div class="control-group">
+            <input type="number" id="path-start" placeholder="Start Location">
+            <input type="number" id="path-end" placeholder="End Location">
+            <button onclick="executeCommand('path-plan')">Plan Path</button>
+            
+            <button onclick="executeCommand('path-execute')">Execute Path</button>
+            <button onclick="executeCommand('path-stop')">Stop Execution</button>
+            <button onclick="executeCommand('path-status')">Get Status</button>
+        </div>
+        
+        <div class="response-box" id="path-response"></div>
+    </div>
+
+    <!-- System Commands -->
+    <div class="section">
+        <h2 class="section-title">System Commands</h2>
+        
+        <div class="control-group">
+            <button onclick="executeCommand('get-time')">Get Device Time</button>
+            <button onclick="executeCommand('nrf-registers')">Show NRF Registers</button>
+        </div>
+        
+        <div class="response-box" id="system-response"></div>
+    </div>
+
+    <script>
+        // Command to endpoint mapping
+        const commandEndpoints = {
+            // Differential Control
+            'differential-forward': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                params: ['move-distance', 'move-speed'],
+                target: 'differential',
+                method: 'forward'
+            },
+            'differential-backward': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                params: ['move-distance', 'move-speed'],
+                target: 'differential',
+                method: 'backward'
+            },
+            'differential-left': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                params: ['move-distance', 'move-speed'],
+                target: 'differential',
+                method: 'left'
+            },
+            'differential-right': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                params: ['move-distance', 'move-speed'],
+                target: 'differential',
+                method: 'right'
+            },
+            
+            // GPS
+            'gps-all': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'gps',
+                method: 'all'
+            },
+            'gps-latitude': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'gps',
+                method: 'latitude'
+            },
+            'gps-longitude': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'gps',
+                method: 'longitude'
+            },
+            'gps-heading': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'gps',
+                method: 'heading'
+            },
+            'gps-time': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'gps',
+                method: 'time'
+            },
+            
+            // IMU
+            'imu-orient-all': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'imu',
+                method: 'orientation_all'
+            },
+            'imu-roll': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'imu',
+                method: 'orientation_roll'
+            },
+            'imu-pitch': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'imu',
+                method: 'orientation_pitch'
+            },
+            'imu-yaw': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'imu',
+                method: 'orientation_yaw'
+            },
+            'imu-accel': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'imu',
+                method: 'raw_accel_values'
+            },
+            'imu-gyro': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'imu',
+                method: 'raw_gyro_values'
+            },
+            'imu-mag': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'imu',
+                method: 'raw_mag_values'
+            },
+            'imu-unlock-yaw': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'imu',
+                method: 'unlock_yaw_measurement'
+            },
+            'imu-reset-yaw': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'imu',
+                method: 'reset_yaw_value'
+            },
+            
+            // Ultrasonic
+            'ultrasonic-start': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'ultrasonic',
+                method: 'start_measurement'
+            },
+            'ultrasonic-stop': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'ultrasonic',
+                method: 'stop_measurement'
+            },
+            'ultrasonic-status': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'ultrasonic',
+                method: 'distance_status'
+            },
+            
+            // Closed Loop Control
+            'clc-status': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'closed_loop',
+                method: 'status'
+            },
+            'clc-reset': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'closed_loop',
+                method: 'reset_idle'
+            },
+            'clc-execute-orient': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'closed_loop',
+                method: 'execute_closed_loop_orient'
+            },
+            'clc-execute-move': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'closed_loop',
+                method: 'execute_closed_loop_move'
+            },
+            'clc-set-setpoint': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                params: ['clc-setpoint'],
+                target: 'closed_loop',
+                method: 'set_setpoint'
+            },
+            'clc-get-setpoint': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'closed_loop',
+                method: 'get_setpoint'
+            },
+            
+            // Path Planning
+            'path-plan': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                params: ['path-start', 'path-end'],
+                target: 'path_planning',
+                method: 'plan'
+            },
+            'path-execute': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'path_planning',
+                method: 'execute'
+            },
+            'path-stop': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'path_planning',
+                method: 'stop_executing'
+            },
+            'path-status': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'path_planning',
+                method: 'status'
+            },
+            
+            // System
+            'get-time': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'station',
+                method: 'get_device_time_ms'
+            },
+            'nrf-registers': { 
+                post: '/execute_command', 
+                get: '/get_response',
+                target: 'station',
+                method: 'print_nrf_registers'
+            }
+        };
+
+ // Global variable to track pending requests
+let pendingRequest = null;
+
+async function executeCommand(commandId) {
+    const command = commandEndpoints[commandId];
+    if (!command) return;
+
+    const responseBox = document.getElementById(`${command.target}-response`);
+    if (!responseBox) return;
+
+    // Get parameters if any
+    let params = {};
+    if (command.params) {
+        command.params.forEach(paramId => {
+            const elem = document.getElementById(paramId);
+            if (elem) {
+                params[paramId] = elem.value;
+            }
+        });
+    }
+
+    // Prepare the POST data
+    const postData = {
+        target: command.target,
+        method: command.method,
+        params: Object.keys(params).length > 0 ? params : undefined
+    };
+
+    try {
+        // Disable buttons during request
+        disableButtons(true);
+        responseBox.textContent = "Executing command...";
+        
+        // Cancel any pending request
+        if (pendingRequest) {
+            pendingRequest.abort();
+        }
+        
+        // Create new AbortController for this request
+        pendingRequest = new AbortController();
+        
+        // Send POST request to execute command
+        const postResponse = await fetch('/execute_command', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(postData),
+            signal: pendingRequest.signal
+        });
+
+        if (!postResponse.ok) {
+            throw new Error(`POST failed: ${postResponse.status}`);
+        }
+
+        // Get the response after execution
+        const getResponse = await fetch(`/get_response?target=${command.target}&method=${command.method}`, {
+            signal: pendingRequest.signal
+        });
+        
+        if (!getResponse.ok) {
+            throw new Error(`GET failed: ${getResponse.status}`);
+        }
+
+        const data = await getResponse.json();
+        responseBox.textContent = data.response || "Command executed successfully";
+    } catch (error) {
+        if (error.name !== 'AbortError') {
+            console.error('Command error:', error);
+            responseBox.textContent = `Error: ${error.message}`;
+        }
+    } finally {
+        disableButtons(false);
+        pendingRequest = null;
+    }
+}
+
+function disableButtons(disable) {
+    document.querySelectorAll('button').forEach(btn => {
+        btn.disabled = disable;
+    });
+}
+
+// Initialize connection status
+function updateConnectionStatus() {
+    const statusIndicator = document.getElementById('connection-status');
+    const statusText = document.getElementById('connection-text');
+    
+    statusIndicator.classList.add('active');
+    statusText.textContent = 'Connected';
+}
+
+// Set up connection status
+setTimeout(updateConnectionStatus, 1000);   </script>
+</body>
+</html>

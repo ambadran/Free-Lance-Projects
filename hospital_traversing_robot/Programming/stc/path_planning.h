@@ -68,7 +68,7 @@ void print_path(void);
 /* A function pointer type for a closed-loop movement from one location to the next
  * Mapping Returns the movement function to go from 'from' to 'to', or NULL if invalid
  */
-closed_loop_movement_func_t get_single_move_func(location_t from, location_t to);
+adv_movement_func_index_t get_single_move_func(location_t from, location_t to);
 
 // Executes the entire path: calls each segment's movement function in turn
 // path_nodes[] is the array filled by find_path_nohead(), terminated by next == -1

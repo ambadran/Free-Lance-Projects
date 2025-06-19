@@ -135,71 +135,71 @@ static const int successor_counts[LOCATION_COUNT] = {
 static const struct {
     location_t from;
     location_t to;
-    closed_loop_movement_func_t fn;
+    adv_movement_func_index_t adv_movement_func_map_result;
 } single_move_func_map[] = {
   // Enter room
-  {ROOM0, ROOM_FRONT0, closed_loop_exit_room},
-  {ROOM1, ROOM_FRONT1, closed_loop_exit_room},
-  {ROOM2, ROOM_FRONT2, closed_loop_exit_room},
-  {ROOM3, ROOM_FRONT3, closed_loop_exit_room},
-  {ROOM4, ROOM_FRONT4, closed_loop_exit_room},
-  {ROOM5, ROOM_FRONT5, closed_loop_exit_room},
-  {ROOM6, ROOM_FRONT6, closed_loop_exit_room},
-  {ROOM7, ROOM_FRONT7, closed_loop_exit_room},
-  {ROOM8, ROOM_FRONT8, closed_loop_exit_room},
+  {ROOM0, ROOM_FRONT0, ADV_MOVE_FUNC_EXIT_ROOM},
+  {ROOM1, ROOM_FRONT1, ADV_MOVE_FUNC_EXIT_ROOM},
+  {ROOM2, ROOM_FRONT2, ADV_MOVE_FUNC_EXIT_ROOM},
+  {ROOM3, ROOM_FRONT3, ADV_MOVE_FUNC_EXIT_ROOM},
+  {ROOM4, ROOM_FRONT4, ADV_MOVE_FUNC_EXIT_ROOM},
+  {ROOM5, ROOM_FRONT5, ADV_MOVE_FUNC_EXIT_ROOM},
+  {ROOM6, ROOM_FRONT6, ADV_MOVE_FUNC_EXIT_ROOM},
+  {ROOM7, ROOM_FRONT7, ADV_MOVE_FUNC_EXIT_ROOM},
+  {ROOM8, ROOM_FRONT8, ADV_MOVE_FUNC_EXIT_ROOM},
   // Exit room
-  {ROOM_FRONT0, ROOM0, closed_loop_enter_room},
-  {ROOM_FRONT1, ROOM1, closed_loop_enter_room},
-  {ROOM_FRONT2, ROOM2, closed_loop_enter_room},
-  {ROOM_FRONT3, ROOM3, closed_loop_enter_room},
-  {ROOM_FRONT4, ROOM4, closed_loop_enter_room},
-  {ROOM_FRONT5, ROOM5, closed_loop_enter_room},
-  {ROOM_FRONT6, ROOM6, closed_loop_enter_room},
-  {ROOM_FRONT7, ROOM7, closed_loop_enter_room},
-  {ROOM_FRONT8, ROOM8, closed_loop_enter_room},
+  {ROOM_FRONT0, ROOM0, ADV_MOVE_FUNC_ENTER_ROOM},
+  {ROOM_FRONT1, ROOM1, ADV_MOVE_FUNC_ENTER_ROOM},
+  {ROOM_FRONT2, ROOM2, ADV_MOVE_FUNC_ENTER_ROOM},
+  {ROOM_FRONT3, ROOM3, ADV_MOVE_FUNC_ENTER_ROOM},
+  {ROOM_FRONT4, ROOM4, ADV_MOVE_FUNC_ENTER_ROOM},
+  {ROOM_FRONT5, ROOM5, ADV_MOVE_FUNC_ENTER_ROOM},
+  {ROOM_FRONT6, ROOM6, ADV_MOVE_FUNC_ENTER_ROOM},
+  {ROOM_FRONT7, ROOM7, ADV_MOVE_FUNC_ENTER_ROOM},
+  {ROOM_FRONT8, ROOM8, ADV_MOVE_FUNC_ENTER_ROOM},
 
   // Corridor Movements First Floor
-  {ROOM_FRONT0, ROOM_FRONT1, closed_loop_corridor_east},
-  {ROOM_FRONT1, ROOM_FRONT2, closed_loop_corridor_east},
-  {ROOM_FRONT1, ROOM_FRONT0, closed_loop_corridor_west},
-  {ROOM_FRONT2, ROOM_FRONT1, closed_loop_corridor_west},
-  {ROOM_FRONT2, STAIR0_FLOOR0_FRONT, closed_loop_corridor_south},
+  {ROOM_FRONT0, ROOM_FRONT1, ADV_MOVE_FUNC_CORRIDOR_EAST},
+  {ROOM_FRONT1, ROOM_FRONT2, ADV_MOVE_FUNC_CORRIDOR_EAST},
+  {ROOM_FRONT1, ROOM_FRONT0, ADV_MOVE_FUNC_CORRIDOR_WEST},
+  {ROOM_FRONT2, ROOM_FRONT1, ADV_MOVE_FUNC_CORRIDOR_WEST},
+  {ROOM_FRONT2, STAIR0_FLOOR0_FRONT, ADV_MOVE_FUNC_CORRIDOR_SOUTH},
 
   // Corridor Movements Second Floor
-  {STAIR0_FLOOR1_FRONT, ROOM_FRONT3, closed_loop_corridor_north},
-  {ROOM_FRONT3, ROOM_FRONT4, closed_loop_corridor_east},
-  {ROOM_FRONT4, ROOM_FRONT5, closed_loop_corridor_east},
-  {ROOM_FRONT4, ROOM_FRONT3, closed_loop_corridor_west},
-  {ROOM_FRONT5, ROOM_FRONT4, closed_loop_corridor_west},
-  {ROOM_FRONT5, STAIR1_FLOOR1_FRONT, closed_loop_corridor_south},
+  {STAIR0_FLOOR1_FRONT, ROOM_FRONT3, ADV_MOVE_FUNC_CORRIDOR_NORTH},
+  {ROOM_FRONT3, ROOM_FRONT4, ADV_MOVE_FUNC_CORRIDOR_EAST},
+  {ROOM_FRONT4, ROOM_FRONT5, ADV_MOVE_FUNC_CORRIDOR_EAST},
+  {ROOM_FRONT4, ROOM_FRONT3, ADV_MOVE_FUNC_CORRIDOR_WEST},
+  {ROOM_FRONT5, ROOM_FRONT4, ADV_MOVE_FUNC_CORRIDOR_WEST},
+  {ROOM_FRONT5, STAIR1_FLOOR1_FRONT, ADV_MOVE_FUNC_CORRIDOR_SOUTH},
 
   // Corridor Movements Third Floor
-  {STAIR1_FLOOR2_FRONT, ROOM_FRONT6, closed_loop_corridor_north},
-  {ROOM_FRONT6, ROOM_FRONT7, closed_loop_corridor_east},
-  {ROOM_FRONT7, ROOM_FRONT8, closed_loop_corridor_east},
-  {ROOM_FRONT7, ROOM_FRONT6, closed_loop_corridor_west},
-  {ROOM_FRONT8, ROOM_FRONT7, closed_loop_corridor_west},
-  {ROOM_FRONT8, STAIR2_FLOOR2_FRONT, closed_loop_corridor_south},
+  {STAIR1_FLOOR2_FRONT, ROOM_FRONT6, ADV_MOVE_FUNC_CORRIDOR_NORTH},
+  {ROOM_FRONT6, ROOM_FRONT7, ADV_MOVE_FUNC_CORRIDOR_EAST},
+  {ROOM_FRONT7, ROOM_FRONT8, ADV_MOVE_FUNC_CORRIDOR_EAST},
+  {ROOM_FRONT7, ROOM_FRONT6, ADV_MOVE_FUNC_CORRIDOR_WEST},
+  {ROOM_FRONT8, ROOM_FRONT7, ADV_MOVE_FUNC_CORRIDOR_WEST},
+  {ROOM_FRONT8, STAIR2_FLOOR2_FRONT, ADV_MOVE_FUNC_CORRIDOR_SOUTH},
 
   // Stairs!
-  {STAIR0_FLOOR0_FRONT, STAIR0_FLOOR1_FRONT, closed_loop_stairs_up},
-  {STAIR0_FLOOR1_FRONT, STAIR0_FLOOR0_FRONT, closed_loop_stairs_down},
-  {STAIR1_FLOOR1_FRONT, STAIR1_FLOOR2_FRONT, closed_loop_stairs_up},
-  {STAIR1_FLOOR2_FRONT, STAIR1_FLOOR1_FRONT, closed_loop_stairs_down},
-  {STAIR2_FLOOR2_FRONT, STAIR2_FLOOR3_FRONT, closed_loop_stairs_up},
-  {STAIR2_FLOOR3_FRONT, STAIR2_FLOOR2_FRONT, closed_loop_stairs_down},
+  {STAIR0_FLOOR0_FRONT, STAIR0_FLOOR1_FRONT, ADV_MOVE_FUNC_STAIRS_UP},
+  {STAIR0_FLOOR1_FRONT, STAIR0_FLOOR0_FRONT, ADV_MOVE_FUNC_STAIRS_DOWN},
+  {STAIR1_FLOOR1_FRONT, STAIR1_FLOOR2_FRONT, ADV_MOVE_FUNC_STAIRS_UP},
+  {STAIR1_FLOOR2_FRONT, STAIR1_FLOOR1_FRONT, ADV_MOVE_FUNC_STAIRS_DOWN},
+  {STAIR2_FLOOR2_FRONT, STAIR2_FLOOR3_FRONT, ADV_MOVE_FUNC_STAIRS_UP},
+  {STAIR2_FLOOR3_FRONT, STAIR2_FLOOR2_FRONT, ADV_MOVE_FUNC_STAIRS_DOWN},
 
   // Termination entry
-  { LOCATION_COUNT, LOCATION_COUNT, NULL }
+  { LOCATION_COUNT, LOCATION_COUNT, ADV_MOVE_FUNC_NONE }
 };
 
-closed_loop_movement_func_t get_single_move_func(location_t from, location_t to) {
-  for (int i = 0; single_move_func_map[i].fn != NULL; i++) {
+adv_movement_func_index_t get_single_move_func(location_t from, location_t to) {
+  for (int i = 0; single_move_func_map[i].adv_movement_func_map_result != ADV_MOVE_FUNC_NONE; i++) {
     if (single_move_func_map[i].from == from && single_move_func_map[i].to == to) {
-      return single_move_func_map[i].fn;
+      return single_move_func_map[i].adv_movement_func_map_result;
     }
   }
-  return NULL;
+  return ADV_MOVE_FUNC_NONE;
 }
 
 /*
@@ -358,7 +358,9 @@ void execute_path_process(void) {
         int next_idx = path_nodes[idx].next;
         next = path_nodes[next_idx].loc;
 
-        closed_loop_current_func = get_single_move_func(cur, next);
+        /* closed_loop_current_func = get_single_move_func(cur, next); */
+        adv_movement_func_index = get_single_move_func(cur, next);
+        //TODO: continue implementing path planning execute with new adv_movement_func_index
         if (closed_loop_current_func == NULL) { 
           execute_path_status = PATH_EXECUTE_INVALID_MOVE_WANTED;
           closed_loop_current_func = closed_loop_move_idle;

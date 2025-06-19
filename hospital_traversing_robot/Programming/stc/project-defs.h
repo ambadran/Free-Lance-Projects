@@ -158,8 +158,15 @@
 #define OVERSHOOT_ORIENT_PERCENT 200           // 200% overshoot (integer percentage)
 #define OVERSHOOT_MOVE_PERCENT 50           // 50% overshoot (integer percentage)
 
+/* Advanced Movements Settings */
+#define ADV_MOVEMENT_DEBUG
+#define EXIT_ROOM_DISTANCE 20
+#define ENTER_ROOM_DISTANCE 20
+#define CORRIDOR_MOVEMENT_DISTANCE 18
+#define RAMP_ANGLE 30
+
 /* Path Planning Settings */
-#define PATH_PLANNING_DEBUG
+/* #define PATH_PLANNING_DEBUG */
 
 // Others 
 /* #define GPIO_HAS_INT_WK */
@@ -190,6 +197,7 @@
 #include "hmc5883l.h"
 #include "orientation.h"
 #include "closed_loop_movements.h"
+#include "adv_movement.h"
 #include "path_planning.h"
 #include "terminal.h"
 #include "protocol.h"

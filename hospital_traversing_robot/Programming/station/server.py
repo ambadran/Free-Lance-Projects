@@ -1,267 +1,98 @@
-"""
-Server hosted by micropython device to control Robot
-"""
-from micropython import const
-import network
-import socket
+# server.py
+from microdot import Microdot, send_file
+import time
 import json
-import ure
-
-class HTML_REQUEST:
-    GET_WEB = 0
-    POST_EXECUTE_COMMAND = 1
-    GET_RESPONSE = 2
+import uasyncio as asyncio # For async operations if needed later
+import network # Import network module
 
 class Server:
-    # Access Point Parameters
-    SSID = "Hospital Rover Controller"
+    SSID = "Hospital Rover Control"
     PASSWORD = "12345678"
 
-    DEFAULT_WEB_NAME = 'index.html'
-    MAX_REQUEST_SIZE = 2048  # Limit request size to prevent memory issues
-    
-    def __init__(self):
-        '''
-        initiate server
-        '''
-        self.reset()
-        self.init_access_point()
-        self.init_socket()
+    def __init__(self, commands_to_execute, command_responses, data_lock):
+        self.app = Microdot()
+        self.commands_to_execute = commands_to_execute
+        self.command_responses = command_responses
+        self.data_lock = data_lock
+        self.app_id = "hospital-rover-control" # A unique identifier for your app
 
-        self.cmd_response_dict = {}
-        self.exec_cmd_dict = {}
+        # Configure WiFi as Access Point
+        self.station = network.WLAN(network.AP_IF) # Renamed from 'ap' to 'station' to match user's methods
+        self.reset() # Call reset method
+        self.init_access_point() # Call init_access_point method
 
-        self.IDENTIFY_HTML_REQUEST = {
-            'GET /': HTML_REQUEST.GET_WEB,
-            'POST /execute_command': HTML_REQUEST.POST_EXECUTE_COMMAND,
-            'GET /get_response': HTML_REQUEST.GET_RESPONSE
-        }
+        print('AP IP address:', self.station.ifconfig()[0])
 
-        self.HANDLE_HTML_REQUEST = {
-            HTML_REQUEST.GET_WEB: self.handle_get_web,
-            HTML_REQUEST.GET_RESPONSE: self.handle_get_command_response,
-            HTML_REQUEST.POST_EXECUTE_COMMAND: self.handle_post_exec_command
-        }
+        self._setup_routes()
+        print("Server: Microdot app initialized and routes set up.")
 
     def reset(self):
-        '''
-        returns station object on reset.
-        just deactivate and activate again 
-        '''
-        self.station = network.WLAN(network.AP_IF)
+        """Resets the Access Point interface."""
         self.station.active(False)
         time.sleep(2)
         self.station.active(True)
+        print("Server: Access Point reset.")
 
     def init_access_point(self):
-        '''
-        set up the Access Point
-        '''
-        self.station.config(ssid=self.SSID, password=self.PASSWORD)
-
+        """Initializes the Access Point configuration."""
+        self.station.config(essid=self.SSID, password=self.PASSWORD)
         while not self.station.active():
-            print("Access Point Initializing.. ", end=' \r')
+            print("Server: Access Point Initializing.. ", end=' \r')
+            time.sleep(0.5)
+        print('Server: Access Point Active!')
+        print(f"Server: AP SSID: {self.SSID}, IP: {self.station.ifconfig()[0]}")
 
-        print('Access Point Active!')
-        print(self.station.ifconfig())
 
-    def init_socket(self):
-        '''
-        initiate socket connection
-        '''
-        try:
-            self.addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
-            self.s = socket.socket()
-            self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.s.bind(self.addr)
-            self.s.listen(1)
-            print('Listening on', self.addr)
-        except OSError as e:
-            print(f"Socket init error: {e}")
-            # Attempt to recover
-            self.s.close()
-            time.sleep(1)
-            self.init_socket()
+    def _setup_routes(self):
+        @self.app.route('/')
+        async def index(request):
+            print("Server: Received request for index.html")
+            return send_file('index.html')
 
-    def wait_for_client(self):
-        '''
-        Await client connection
-        '''
-        try:
-            self.client, addr = self.s.accept()
-            print(f"Connection from {addr}")
-        except OSError as e:
-            print(f"Client accept error: {e}")
-
-    def identify_html_request(self):
-        '''
-        Identify the type of HTML request
-        '''
-        try:
-            # Read only the first part of the request
-            self.request = self.client.recv(self.MAX_REQUEST_SIZE).decode()
-            if not self.request:
-                return None
-                
-            # Extract request method and path
-            first_line = self.request.split('\r\n')[0]
-            method, path, _ = first_line.split(' ', 2)
+        @self.app.route('/command', methods=['POST'])
+        async def handle_command(request):
+            print(f"Server: Received command request: {request.json}")
+            command_data = request.json
             
-            # Match to known request types
-            key = f"{method} {path}"
-            return self.IDENTIFY_HTML_REQUEST.get(key, None)
-            
-        except Exception as e:
-            print(f"Request identification error: {e}")
-            print(f"Request: {self.request}")
-            return None
+            target = command_data.get('target')
+            method = command_data.get('method')
+            params = command_data.get('params', {})
 
-    def handle_html_request(self, html_request):
-        '''
-        handles the identified html request
-        '''
-        try:
-            if html_request is not None:
-                self.HANDLE_HTML_REQUEST[html_request]()
-            else:
-                self.handle_unknown_request()
-                
-        except Exception as e:
-            print(f"Request handling error: {e}")
-            self.send_response(500, "Internal Server Error")
-            
-        finally:
-            try:
-                self.client.close()
-            except:
-                pass
-
-    def send_response(self, code, content, content_type="text/html"):
-        '''
-        Send HTTP response with status code and content
-        '''
-        try:
-            response = f"HTTP/1.1 {code}\r\n"
-            response += f"Content-Type: {content_type}\r\n"
-            response += "Connection: close\r\n\r\n"
-            self.client.send(response.encode())
-            self.client.send(content.encode())
-        except Exception as e:
-            print(f"Response sending error: {e}")
-
-    def handle_get_web(self):
-        '''
-        Handles GET_WEB HTML GET Request
-        '''
-        try:
-            # Extract requested file path
-            path = self.request.split(' ')[1]
-            if path == '/':
-                path = self.DEFAULT_WEB_NAME
-            else:
-                # Remove leading slash
-                path = path[1:]
-            
-            # Security: Only allow known files
-            if path not in [self.DEFAULT_WEB_NAME, "style.css", "script.js"]:
-                self.send_response(404, "File Not Found")
-                return
-                
-            # Try to open and send file
-            with open(path, 'r') as f:
-                content = f.read()
-            
-            # Determine content type
-            content_type = "text/html"
-            if path.endswith(".css"):
-                content_type = "text/css"
-            elif path.endswith(".js"):
-                content_type = "application/javascript"
-                
-            self.send_response(200, content, content_type)
-            
-        except Exception as e:
-            print(f"Web serving error: {e}")
-            self.send_response(500, "Internal Server Error")
-
-    def handle_get_command_response(self):
-        '''
-        Handles GET_RESPONSE HTML GET Request
-        '''
-        try:
-            # Parse query parameters
-            if '?' in self.request:
-                query_str = self.request.split('?', 1)[1].split(' ')[0]
-                params = {}
-                for pair in query_str.split('&'):
-                    if '=' in pair:
-                        key, value = pair.split('=', 1)
-                        params[key] = value
-            else:
-                params = {}
-                
-            # Get target and method from query
-            target = params.get('target')
-            method = params.get('method')
-            
             if not target or not method:
-                self.send_response(400, "Missing target or method")
-                return
-                
-            # Look up response in dictionary
-            key = (target, method)
-            response = self.cmd_response_dict.get(key, None)
-            
-            if response is None:
-                self.send_response(404, f"Response not found for {target}.{method}")
-                return
-                
-            # Send JSON response
-            self.send_response(200, json.dumps({"response": response}), "application/json")
-            
-        except Exception as e:
-            print(f"Response retrieval error: {e}")
-            self.send_response(500, "Internal Server Error")
+                print("Server Error: Missing target or method in command.")
+                return {'status': 'error', 'message': 'Missing target or method'}, 400
 
-    def handle_post_exec_command(self):
-        '''
-        Handles POST_EXECUTE_COMMAND HTML POST Request
-        '''
+            command_key = (target, method)
+            
+            with self.data_lock:
+                self.commands_to_execute[command_key] = params
+                # Clear previous response for this command if it exists
+                if command_key in self.command_responses:
+                    del self.command_responses[command_key]
+                print(f"Server: Command '{command_key}' added to execution queue.")
+            
+            return {'status': 'success', 'message': 'Command queued for execution.'}
+
+        @self.app.route('/status')
+        async def get_status(request):
+            # This endpoint will return all current responses
+            with self.data_lock:
+                responses_copy = self.command_responses.copy()
+                self.command_responses.clear() # Clear responses after sending to client
+            
+            # Convert tuple keys to string keys for JSON serialization
+            serializable_responses = {str(k): v for k, v in responses_copy.items()}
+            
+            print(f"Server: Sending status update: {serializable_responses}")
+            return json.dumps({'responses': serializable_responses})
+
+    def run(self):
+        print("Server: Starting Microdot server...")
         try:
-            # Extract JSON body
-            if '\r\n\r\n' in self.request:
-                body = self.request.split('\r\n\r\n', 1)[1]
-            else:
-                body = ""
-                
-            try:
-                data = json.loads(body)
-            except ValueError:
-                data = {}
-            
-            # Validate required fields
-            if 'target' not in data or 'method' not in data:
-                self.send_response(400, "Missing target or method")
-                return
-                
-            # Extract parameters
-            target = data['target']
-            method = data['method']
-            params = data.get('params', {})
-            
-            # Store in execution dictionary
-            key = (target, method)
-            self.exec_cmd_dict[key] = params
-            
-            # Acknowledge receipt
-            self.send_response(200, "Command received")
-            
+            self.app.run(port=80, debug=True)
         except Exception as e:
-            print(f"Command execution error: {e}")
-            self.send_response(500, "Internal Server Error")
+            print(f"Server Error: {e}")
+        finally:
+            self.app.shutdown()
+            print("Server: Microdot server shut down.")
 
-    def handle_unknown_request(self):
-        '''
-        Handles unknown request
-        '''
-        self.send_response(404, "404 Not Found")

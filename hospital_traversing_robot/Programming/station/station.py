@@ -58,6 +58,7 @@ class Station:
         self.imu = IMU(self)
         self.ultrasonic = Ultrasonic(self)
         self.closed_loop = ClosedLoopControl(self)
+        self.adv_movement = AdvancedMovement(self)
         self.path_planning = PathPlanning(self)
 
         self.state = state.RECEIVER
@@ -335,13 +336,13 @@ class ClosedLoopControl:
 
     def execute_closed_loop_orient(self) -> str:
         response = self.station.send("Ci1j1")
-        response += self.station.await_answer(self.CLOSED_LOOP_STATUS, self.CLOSED_LOOP_EXECUTE_MAX_TIMEOUT, f"Closed Loop Control didn't response after {self.CLOSED_LOOP_EXECUTE_MAX_TIMEOUT}ms of sending execution")
+        response += self.station.await_answer(self.CLOSED_LOOP_STATUS, self.CLOSED_LOOP_EXECUTE_MAX_TIMEOUT, f"Closed Loop Control didn't respond after {self.CLOSED_LOOP_EXECUTE_MAX_TIMEOUT}ms of sending execution")
 
         return response
 
     def execute_closed_loop_move(self) -> str:
         response = self.station.send("Ci1j0")
-        response += self.station.await_answer(self.CLOSED_LOOP_STATUS, self.CLOSED_LOOP_EXECUTE_MAX_TIMEOUT, f"Closed Loop Control didn't response after {self.CLOSED_LOOP_EXECUTE_MAX_TIMEOUT}ms of sending execution")
+        response += self.station.await_answer(self.CLOSED_LOOP_STATUS, self.CLOSED_LOOP_EXECUTE_MAX_TIMEOUT, f"Closed Loop Control didn't respond after {self.CLOSED_LOOP_EXECUTE_MAX_TIMEOUT}ms of sending execution")
 
         return response
 
@@ -350,6 +351,50 @@ class ClosedLoopControl:
 
     def get_setpoint(self) -> str:
         return self.station.send("Ci3")
+
+class AdvancedMovement:
+    ADVANCED_MOVEMENT_TIMEOUT = 20000
+    ADVANCED_MOVEMENT_STATUS = []
+    def __init__(self, station):
+        self.station = station
+
+    def reset_idle(self) -> str:
+        return self.station.send("Ai-1")
+
+    def status(self) -> str:
+        return self.station.send("Ai0")
+
+    def exit_room(self) -> str:
+        response = self.station.send("Ai1j0")
+        response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+
+    def enter_room(self) -> str:
+        response = self.station.send("Ai1j1")
+        response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+
+    def corridor_north(self) -> str:
+        response = self.station.send("Ai1j2")
+        response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+
+    def corridor_east(self) -> str:
+        response = self.station.send("Ai1j3")
+        response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+
+    def corridor_west(self) -> str:
+        response = self.station.send("Ai1j4")
+        response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+
+    def corridor_south(self) -> str:
+        response = self.station.send("Ai1j5")
+        response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+
+    def stairs_up(self) -> str:
+        response = self.station.send("Ai1j6")
+        response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+
+    def stairs_down(self) -> str:
+        response = self.station.send("Ai1j7")
+        response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
 
 
 class PathPlanning:

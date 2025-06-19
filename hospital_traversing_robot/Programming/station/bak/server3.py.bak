@@ -1,0 +1,276 @@
+"""
+Server hosted by micropython device to control Robot
+"""
+from micropython import const
+import network
+import socket
+import json
+import time
+import ure
+
+class HTML_REQUEST:
+    GET_WEB = 0
+    POST_EXECUTE_COMMAND = 1
+    GET_RESPONSE = 2
+
+class Server:
+    # Access Point Parameters
+    SSID = "Hospital Rover Controller"
+    PASSWORD = "12345678"
+
+    DEFAULT_WEB_NAME = 'index.html'
+    MAX_REQUEST_SIZE = 2048  # Limit request size to prevent memory issues
+    
+    def __init__(self):
+        '''
+        initiate server
+        '''
+        self.reset()
+        self.init_access_point()
+        self.init_socket()
+
+        self.cmd_response_dict = {}
+        self.exec_cmd_dict = {}
+
+        self.IDENTIFY_HTML_REQUEST = {
+            'GET /': HTML_REQUEST.GET_WEB,
+            'POST /execute_command': HTML_REQUEST.POST_EXECUTE_COMMAND,
+            'GET /get_response': HTML_REQUEST.GET_RESPONSE
+        }
+
+        self.HANDLE_HTML_REQUEST = {
+            HTML_REQUEST.GET_WEB: self.handle_get_web,
+            HTML_REQUEST.GET_REcloseSPONSE: self.handle_get_command_response,
+            HTML_REQUEST.POST_EXECUTE_COMMAND: self.handle_post_exec_command
+        }
+
+    def reset(self):
+        '''
+        returns station object on reset.
+        just deactivate and activate again 
+        '''
+        self.station = network.WLAN(network.AP_IF)
+        self.station.active(False)
+        time.sleep(2)
+        self.station.active(True)
+
+    def init_access_point(self):
+        '''
+        set up the Access Point
+        '''
+        self.station.config(ssid=self.SSID, password=self.PASSWORD)
+
+        while not self.station.active():
+            print("Access Point Initializing.. ", end=' \r')
+
+        print('Access Point Active!')
+        print(self.station.ifconfig())
+
+    def init_socket(self):
+        '''
+        initiate socket connection
+        '''
+        try:
+            self.addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
+            self.s = socket.socket()
+            self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.s.bind(self.addr)
+            self.s.listen(1)
+            print('Listening on', self.addr)
+        except OSError as e:
+            print(f"Socket init error: {e}")
+            # Attempt to recover
+            self.s.close()
+            time.sleep(1)
+            self.init_socket()
+
+    def wait_for_client(self):
+        '''
+        Await client connection
+        '''
+        try:
+            self.client, addr = self.s.accept()
+            print(f"Connection from {addr}")
+        except OSError as e:
+            print(f"Client accept error: {e}")
+
+    def identify_html_request(self):
+        '''
+        Identify the type of HTML request
+        '''
+        try:
+            # Read only the first part of the request
+            print("Got here")
+            self.request = self.client.recv(self.MAX_REQUEST_SIZE).decode()
+            if not self.request:
+                print("Raw Request was None")
+                return None
+                
+            # Extract request method and path
+            first_line = self.request.split('\r\n')[0]
+            method, path, _ = first_line.split(' ', 2)
+            
+            # Match to known request types
+            key = f"{method} {path}"
+            print(f"Got Raw HTML Request: {key}")
+            return self.IDENTIFY_HTML_REQUEST.get(key, None)
+            
+        except Exception as e:
+            print(f"Request identification error: {e}")
+            print(f"Request: {self.request}")
+            return None
+
+    def handle_html_request(self, html_request):
+        '''
+        handles the identified html request
+        '''
+        try:
+            if html_request is not None:
+                self.HANDLE_HTML_REQUEST[html_request]()
+            else:
+                self.handle_unknown_request()
+                
+        except Exception as e:
+            print(f"Request handling error: {e}")
+            self.send_response(500, "Internal Server Error")
+            self.client.close()
+            
+    def send_response(self, code, content, content_type="text/html", keep_alive=True):
+        '''
+        Send HTTP response with status code and content
+        '''
+        try:
+            response = f"HTTP/1.1 {code}\r\n"
+            response += f"Content-Type: {content_type}\r\n"
+            if keep_alive:
+                response += "Connection: keep-alive\r\n"
+            else:
+                response += "Connection: close\r\n"
+            response += "\r\n"
+
+            if content:
+                response += content
+
+            self.client.send(response.encode())
+
+        except Exception as e:
+            print(f"Response sending error: {e}")
+
+    def handle_get_web(self):
+        '''
+        Handles GET_WEB HTML GET Request
+        '''
+        try:
+            # Extract requested file path
+            path = self.request.split(' ')[1]
+            if path == '/':
+                path = self.DEFAULT_WEB_NAME
+            else:
+                # Remove leading slash
+                path = path[1:]
+            
+            # Security: Only allow known files
+            if path not in [self.DEFAULT_WEB_NAME, "style.css", "script.js"]:
+                self.send_response(404, "File Not Found")
+                return
+                
+            # Try to open and send file
+            with open(path, 'r') as f:
+                content = f.read()
+            
+            # Determine content type
+            content_type = "text/html"
+            if path.endswith(".css"):
+                content_type = "text/css"
+            elif path.endswith(".js"):
+                content_type = "application/javascript"
+                
+            self.send_response(200, content, content_type)
+            
+        except Exception as e:
+            print(f"Web serving error: {e}")
+            self.send_response(500, "Internal Server Error")
+
+    def handle_get_command_response(self):
+        '''
+        Handles GET_RESPONSE HTML GET Request
+        '''
+        try:
+            # Parse query parameters
+            if '?' in self.request:
+                query_str = self.request.split('?', 1)[1].split(' ')[0]
+                params = {}
+                for pair in query_str.split('&'):
+                    if '=' in pair:
+                        key, value = pair.split('=', 1)
+                        params[key] = value
+            else:
+                params = {}
+                
+            # Get target and method from query
+            target = params.get('target')
+            method = params.get('method')
+            
+            if not target or not method:
+                self.send_response(400, "Missing target or method")
+                return
+                
+            # Look up response in dictionary
+            key = (target, method)
+            response = self.cmd_response_dict.get(key, None)
+            print(f"Command Response: {response}")
+            
+            if response is None:
+                self.send_response(404, f"Response not found for {target}.{method}")
+                return
+                
+            # Send JSON response
+            self.send_response(200, json.dumps({"response": response}), "application/json")
+            
+        except Exception as e:
+            print(f"Response retrieval error: {e}")
+            self.send_response(500, "Internal Server Error")
+
+    def handle_post_exec_command(self):
+        '''
+        Handles POST_EXECUTE_COMMAND HTML POST Request
+        '''
+        try:
+            # Extract JSON body
+            if '\r\n\r\n' in self.request:
+                body = self.request.split('\r\n\r\n', 1)[1]
+            else:
+                body = ""
+                
+            try:
+                data = json.loads(body)
+            except ValueError:
+                data = {}
+            
+            # Validate required fields
+            if 'target' not in data or 'method' not in data:
+                self.send_response(400, "Missing target or method")
+                return
+                
+            # Extract parameters
+            target = data['target']
+            method = data['method']
+            params = data.get('params', {})
+            
+            # Store in execution dictionary
+            key = (target, method)
+            print(f"Extracted command: {key}")
+            self.exec_cmd_dict[key] = params
+            
+            # Acknowledge receipt
+            self.send_response(200, "Command received")
+            
+        except Exception as e:
+            print(f"Command execution error: {e}")
+            self.send_response(500, "Internal Server Error")
+
+    def handle_unknown_request(self):
+        '''
+        Handles unknown request
+        '''
+        self.send_response(404, "404 Not Found")

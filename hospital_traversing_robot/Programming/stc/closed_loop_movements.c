@@ -12,7 +12,7 @@ const char* CLOSED_LOOP_STATUS_TO_STRING[] = {
 
 /* Current closed loop control status */
 volatile closed_loop_func_status_t closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IDLE;
-closed_loop_func_status_t closed_loop_fail_status = CL_FAIL_NONE;
+closed_loop_fail_status_t closed_loop_fail_status = CL_FAIL_NONE;
 /* Current running closed loop function */
 closed_loop_movement_func_t closed_loop_current_func = closed_loop_move_idle;
 
@@ -181,13 +181,120 @@ void closed_loop_orient(void) {
  * This should be done by the code that calls sets the function.
  * LIKE IN terminal.c and path_planning.c, if status is SUCCESS, it will automatically move to IDLE
  */
+/* void closed_loop_move(void) { */
+/*   switch(closed_loop_func_status) { */
+/*     case CLOSED_LOOP_MOVEMENT_IDLE: { */
+
+/*       if (!differential_control_is_moving()) { */
+/*         hcsr04_start_cycle(); */
+/*         operation_start_time = get_current_time(); */
+/*         closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IN_PROGRESS; */
+
+/*       } else { */
+/*         closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED; */
+/*         closed_loop_fail_status = CL_FAIL_MOTOR_ALREADY_MOVING; */
+/*         report("CL_FAIL_MOTOR_ALREADY_MOVING\n"); */
+/*       } */
+
+/*       break; */
+/*     } */
+
+/*     case CLOSED_LOOP_MOVEMENT_IN_PROGRESS: { */
+
+/*       int16_t current_distance = get_ultrasonic_distance_cm(); */
+/*       uint32_t current_time = get_current_time(); */
+
+/*       // Check total operation timeout */
+/*       if ((current_time - operation_start_time) > TOTAL_MOVE_TIMEOUT_MS) { */
+/*         differential_control_stop(); */
+/*         hcsr04_stop_cycle(); */
+/*         closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED; */
+/*         closed_loop_fail_status = CL_FAIL_MOVEMENT_TIMEOUT; */
+/*         report("CL_FAIL_MOVEMENT_TIMEOUT\n"); */
+/*         break; */
+/*       } */
+
+/*       // Calculate normalized error (-180 to 180) */
+/*       int16_t error = setpoint - current_distance; */
+/*       // Check if target reached */
+/*       if (abs(error) <= CM_TOLERANCE) { */
+/*           differential_control_stop(); */
+/*           hcsr04_stop_cycle(); */
+/*           closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS; */
+/*           closed_loop_fail_status = CL_FAIL_NONE; */
+/*           report("CLOSED_LOOP_MOVEMENT_SUCCESS\n"); */
+/*           break; */
+/*       } */
+
+/*       /1* Movement monitoring logic *1/ */
+/*       if (differential_control_is_moving()) { */
+
+/*         // Only check movement every STUCK_TIMEOUT_MS */
+/*         if ((current_time - last_input_check_time) >= STUCK_DISTANCE_TIMEOUT_MS) { */
+
+/*           int16_t distance_delta = current_distance - last_input_value; */
+
+/*           // check for minimum movement detected */
+/*           if (abs(distance_delta) < MINIMUM_DISTANCE_CHANGE) { */
+/*             differential_control_stop(); */
+/*             hcsr04_stop_cycle(); */
+/*             closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED; */
+/*             closed_loop_fail_status = CL_FAIL_MOTOR_RUNAWAY; */
+/*             report("CL_FAIL_MOTOR_RUNAWAY\n"); */
+/*           } */
+
+/*           // check movement is in correct direction */
+/*           if((expected_direction == 1 && distance_delta < 0) || (expected_direction == -1 && distance_delta > 0)) { */
+/*             differential_control_stop(); */
+/*             hcsr04_stop_cycle(); */
+/*             closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED; */
+/*             closed_loop_fail_status = CL_FAIL_MOTOR_WRONG_MOVEMENT; */
+/*             report("CL_FAIL_MOTOR_WRONG_MOVEMENT\n"); */
+/*           } */
+
+/*           // Update for next check */
+/*           last_input_value = current_distance; */
+/*           last_input_check_time = current_time; */
+/*         } */
+
+/*       } else { */
+/*       // Should be here only when: */
+/*       // 1- movement didn't start yet, this is first time after IDLE */
+/*       // 2- movement overshooted for some reason, open loop with overshooted cm/deg finished and didn't catch setpoint */
+
+/*         int16_t target_distance = error + (error*OVERSHOOT_MOVE_PERCENT) / 100; */
+
+/*         if (target_distance > 0) { */
+/*           differential_control_right(target_distance, DEFAULT_PWM_DUTY_CYCLE); */
+/*           expected_direction = 1; // Clockwise */
+
+/*         } else { */
+/*           differential_control_left(target_distance, DEFAULT_PWM_DUTY_CYCLE); */
+/*           expected_direction = -1; // Anti-Clockwise */
+/*         } */
+
+/*         // Reset internal movement monitoring values */
+/*         last_input_value = current_distance; */
+/*         last_input_check_time = current_time; */
+
+/*       } */
+
+/*       break; */
+/*     } */
+
+/*     case CLOSED_LOOP_MOVEMENT_SUCCESS: */
+/*     case CLOSED_LOOP_MOVEMENT_FAILED: */
+/*       break; */
+/*   } */
+
+
+/* } */
 void closed_loop_move(void) {
   switch(closed_loop_func_status) {
     case CLOSED_LOOP_MOVEMENT_IDLE: {
 
       if (!differential_control_is_moving()) {
-        hcsr04_start_cycle();
-        operation_start_time = get_current_time();
+        differential_control_forward(setpoint, DEFAULT_PWM_DUTY_CYCLE);
         closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IN_PROGRESS;
 
       } else {
@@ -199,88 +306,14 @@ void closed_loop_move(void) {
       break;
     }
 
-    case CLOSED_LOOP_MOVEMENT_IN_PROGRESS: {
-
-      int16_t current_distance = get_ultrasonic_distance_cm();
-      uint32_t current_time = get_current_time();
-
-      // Check total operation timeout
-      if ((current_time - operation_start_time) > TOTAL_MOVE_TIMEOUT_MS) {
-        differential_control_stop();
-        hcsr04_stop_cycle();
-        closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED;
-        closed_loop_fail_status = CL_FAIL_MOVEMENT_TIMEOUT;
-        report("CL_FAIL_MOVEMENT_TIMEOUT\n");
-        break;
-      }
-
-      // Calculate normalized error (-180 to 180)
-      int16_t error = setpoint - current_distance;
-      // Check if target reached
-      if (abs(error) <= CM_TOLERANCE) {
-          differential_control_stop();
-          hcsr04_stop_cycle();
-          closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
-          closed_loop_fail_status = CL_FAIL_NONE;
-          report("CLOSED_LOOP_MOVEMENT_SUCCESS\n");
-          break;
-      }
-
-      /* Movement monitoring logic */
-      if (differential_control_is_moving()) {
-
-        // Only check movement every STUCK_TIMEOUT_MS
-        if ((current_time - last_input_check_time) >= STUCK_DISTANCE_TIMEOUT_MS) {
-
-          int16_t distance_delta = current_distance - last_input_value;
-
-          // check for minimum movement detected
-          if (abs(distance_delta) < MINIMUM_DISTANCE_CHANGE) {
-            differential_control_stop();
-            hcsr04_stop_cycle();
-            closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED;
-            closed_loop_fail_status = CL_FAIL_MOTOR_RUNAWAY;
-            report("CL_FAIL_MOTOR_RUNAWAY\n");
-          }
-
-          // check movement is in correct direction
-          if((expected_direction == 1 && distance_delta < 0) || (expected_direction == -1 && distance_delta > 0)) {
-            differential_control_stop();
-            hcsr04_stop_cycle();
-            closed_loop_func_status = CLOSED_LOOP_MOVEMENT_FAILED;
-            closed_loop_fail_status = CL_FAIL_MOTOR_WRONG_MOVEMENT;
-            report("CL_FAIL_MOTOR_WRONG_MOVEMENT\n");
-          }
-
-          // Update for next check
-          last_input_value = current_distance;
-          last_input_check_time = current_time;
-        }
-
-      } else {
-      // Should be here only when:
-      // 1- movement didn't start yet, this is first time after IDLE
-      // 2- movement overshooted for some reason, open loop with overshooted cm/deg finished and didn't catch setpoint
-
-        int16_t target_distance = error + (error*OVERSHOOT_MOVE_PERCENT) / 100;
-
-        if (target_distance > 0) {
-          differential_control_right(target_distance, DEFAULT_PWM_DUTY_CYCLE);
-          expected_direction = 1; // Clockwise
-
-        } else {
-          differential_control_left(target_distance, DEFAULT_PWM_DUTY_CYCLE);
-          expected_direction = -1; // Anti-Clockwise
-        }
-
-        // Reset internal movement monitoring values
-        last_input_value = current_distance;
-        last_input_check_time = current_time;
-
+    case CLOSED_LOOP_MOVEMENT_IN_PROGRESS: 
+      if(!differential_control_is_moving()) {
+        closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
+        closed_loop_fail_status = CL_FAIL_NONE;
+        report("CLOSED_LOOP_MOVEMENT_SUCCESS\n");
       }
 
       break;
-    }
 
     case CLOSED_LOOP_MOVEMENT_SUCCESS:
     case CLOSED_LOOP_MOVEMENT_FAILED:
@@ -290,84 +323,8 @@ void closed_loop_move(void) {
 
 }
 
-void closed_loop_exit_room(void) {
-  if (temp_counter) {
-    temp_counter = 0;
-    printf("executing exit room\n");
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IN_PROGRESS;
-  } else {
-    temp_counter = 1;
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
-  }
+
+
+void closed_loop_up_ramp(void) {
+
 }
-
-void closed_loop_enter_room(void) {
-  if (temp_counter) {
-    temp_counter = 0;
-    printf("executing entry room\n");
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IN_PROGRESS;
-  } else {
-    temp_counter = 1; // for next function in find next function in path execution
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
-  }
-}
-
-void closed_loop_corridor_north(void) {
-}
-
-void closed_loop_corridor_east(void) {
-  if (temp_counter) {
-    temp_counter = 0;
-    printf("executing east\n");
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IN_PROGRESS;
-  } else {
-    temp_counter = 1;
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
-  }
-}
-
-void closed_loop_corridor_west(void) {
-  if (temp_counter) {
-    temp_counter = 0;
-    printf("executing west\n");
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IN_PROGRESS;
-  } else {
-    temp_counter = 1;
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
-  }
-}
-
-void closed_loop_corridor_south(void) {
-  if (temp_counter) {
-    temp_counter = 0;
-    printf("executing south\n");
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IN_PROGRESS;
-  } else {
-    temp_counter = 1;
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
-  }
-}
-
-void closed_loop_stairs_up(void) {
-  if (temp_counter) {
-    temp_counter = 0;
-    printf("executing stairs up\n");
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IN_PROGRESS;
-  } else {
-    temp_counter = 1;
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
-  }
-}
-
-void closed_loop_stairs_down(void) {
-  if (temp_counter) {
-    temp_counter = 0;
-    printf("executing stairs down\n");
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_IN_PROGRESS;
-  } else {
-    temp_counter = 1;
-    closed_loop_func_status = CLOSED_LOOP_MOVEMENT_SUCCESS;
-  }
-}
-
-

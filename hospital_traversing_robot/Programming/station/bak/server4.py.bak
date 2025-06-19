@@ -1,0 +1,233 @@
+# Updated server.py
+"""
+Server hosted by micropython device to control Robot
+"""
+import network
+import socket
+import json
+import time
+
+class HTML_REQUEST:
+    GET_WEB = 0
+    POST_EXECUTE_COMMAND = 1
+    GET_RESPONSE = 2
+
+class Server:
+    # Access Point Parameters
+    SSID = "Hospital Rover Controller"
+    PASSWORD = "12345678"
+    DEFAULT_WEB_NAME = 'index.html'
+    MAX_REQUEST_SIZE = 4096  # Increased buffer size
+    CONNECTION_TIMEOUT = 5  # seconds
+    
+    def __init__(self):
+        self.reset()
+        self.init_access_point()
+        self.init_socket()
+        self.cmd_response_dict = {}
+        self.exec_cmd_dict = {}
+        self.request_count = 0
+
+        self.IDENTIFY_HTML_REQUEST = {
+            'GET /': HTML_REQUEST.GET_WEB,
+            'POST /execute_command': HTML_REQUEST.POST_EXECUTE_COMMAND,
+            'GET /get_response': HTML_REQUEST.GET_RESPONSE
+        }
+
+        self.HANDLE_HTML_REQUEST = {
+            HTML_REQUEST.GET_WEB: self.handle_get_web,
+            HTML_REQUEST.GET_RESPONSE: self.handle_get_command_response,
+            HTML_REQUEST.POST_EXECUTE_COMMAND: self.handle_post_exec_command
+        }
+
+    def reset(self):
+        self.station = network.WLAN(network.AP_IF)
+        self.station.active(False)
+        time.sleep(2)
+        self.station.active(True)
+
+    def init_access_point(self):
+        self.station.config(ssid=self.SSID, password=self.PASSWORD)
+        while not self.station.active():
+            print("Access Point Initializing.. ", end=' \r')
+            time.sleep(0.5)
+        print('Access Point Active!')
+        print(self.station.ifconfig())
+
+    def init_socket(self):
+        try:
+            self.addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
+            self.s = socket.socket()
+            self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.s.bind(self.addr)
+            self.s.listen(1)
+            print('Listening on', self.addr)
+        except OSError as e:
+            print(f"Socket init error: {e}")
+            self.s.close()
+            time.sleep(1)
+            self.init_socket()
+
+    def wait_for_client(self):
+        try:
+            print("Awaiting Client Connection..")
+            self.client, addr = self.s.accept()
+            print(f"Connection from {addr}")
+            # Set timeout for client operations
+            # self.client.settimeout(self.CONNECTION_TIMEOUT)
+        except OSError as e:
+            print(f"Client accept error: {e}")
+
+    def identify_html_request(self):
+        try:
+            # Read request with timeout handling
+            self.request = self.client.recv(self.MAX_REQUEST_SIZE).decode()
+            if not self.request:
+                print("Request is None")
+                return None
+                
+            first_line = self.request.split('\r\n', 1)[0]
+            parts = first_line.split(' ', 2)
+            if len(parts) < 2:
+                return None
+                
+            method, path = parts[0], parts[1]
+            key = f"{method} {path.split('?', 1)[0]}"  # Ignore query params for identification
+            
+            print(f"Got HTML Request: {key}")
+            return self.IDENTIFY_HTML_REQUEST.get(key, None)
+        except Exception as e:
+            print(f"Request identification error: {e}")
+            return None
+
+    def handle_html_request(self, html_request):
+        try:
+            if html_request is not None:
+                self.HANDLE_HTML_REQUEST[html_request]()
+
+            else:
+                print(f"Got unkonwn Request:\n{self.request}")
+                self.handle_unknown_request()
+
+        except Exception as e:
+            print(f"Request handling error: {e}")
+            self.send_response(500, "Internal Server Error")
+
+        finally:
+            # Close connection but allow client to reconnect
+            try:
+                self.client.close()
+            except:
+                pass
+
+    def send_response(self, code, content, content_type="text/html"):
+        try:
+            response = f"HTTP/1.1 {code}\r\n"
+            response += f"Content-Type: {content_type}\r\n\r\n"
+            # response += "Connection: close\r\n\r\n"  # Explicitly close connection
+            self.client.send(response.encode())
+            if content:
+                self.client.send(content.encode())
+        except Exception as e:
+            print(f"Response sending error: {e}")
+
+    def handle_get_web(self):
+        try:
+            path = self.request.split(' ')[1]
+            if path == '/':
+                path = self.DEFAULT_WEB_NAME
+            else:
+                path = path[1:]  # Remove leading slash
+            
+            # Security: Only serve known files
+            if path not in [self.DEFAULT_WEB_NAME, "style.css", "script.js"]:
+                self.send_response(404, "File Not Found")
+                return
+            
+            # Try to open and send file
+            with open(path, 'r') as f:
+                content = f.read()
+            
+            content_type = "text/html"
+            if path.endswith(".css"):
+                content_type = "text/css"
+            elif path.endswith(".js"):
+                content_type = "application/javascript"
+                
+            self.send_response(200, content, content_type)
+
+        except Exception as e:
+            print(f"Web serving error: {e}")
+            self.send_response(500, "Internal Server Error")
+
+    def handle_get_command_response(self):
+        try:
+            # Parse query parameters
+            path = self.request.split(' ', 2)[1]
+            if '?' in path:
+                query_str = path.split('?', 1)[1]
+                params = {}
+                for pair in query_str.split('&'):
+                    if '=' in pair:
+                        key, value = pair.split('=', 1)
+                        params[key] = value
+                target = params.get('target')
+                method = params.get('method')
+            else:
+                target, method = None, None
+            
+            if not target or not method:
+                self.send_response(400, "Missing target or method")
+                return
+                
+            # Look up response in dictionary
+            key = (target, method)
+            response = self.cmd_response_dict.get(key, None)
+            
+            if response is None:
+                self.send_response(404, f"Response not found for {target}.{method}")
+                return
+                
+            # Send JSON response
+            self.send_response(200, json.dumps({"response": response}), "application/json")
+        except Exception as e:
+            print(f"Response retrieval error: {e}")
+            self.send_response(500, "Internal Server Error")
+
+    def handle_post_exec_command(self):
+        try:
+            # Extract JSON body
+            if '\r\n\r\n' in self.request:
+                body = self.request.split('\r\n\r\n', 1)[1]
+            else:
+                body = "{}"
+                
+            try:
+                data = json.loads(body)
+            except ValueError:
+                data = {}
+            
+            # Validate required fields
+            if 'target' not in data or 'method' not in data:
+                self.send_response(400, "Missing target or method")
+                return
+                
+            # Extract parameters
+            target = data['target']
+            method = data['method']
+            params = data.get('params', {})
+            
+            # Store in execution dictionary
+            key = (target, method)
+            self.exec_cmd_dict[key] = params
+            
+            # Acknowledge receipt
+            self.send_response(200, "Command received")
+        except Exception as e:
+            print(f"Command execution error: {e}")
+            self.send_response(500, "Internal Server Error")
+
+    def handle_unknown_request(self):
+        self.send_response(404, "404 Not Found")
+
+

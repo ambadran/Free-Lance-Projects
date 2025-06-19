@@ -3,504 +3,496 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hospital Rover Control Center</title>
+    <title>Hospital Rover Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
         }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 30px;
+        .container {
+            max-width: 960px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
-        .section {
-            background-color: white;
+        .section-header {
+            background-color: #e2e8f0;
+            padding: 0.75rem 1rem;
             border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: #2d3748;
         }
-        .section-title {
-            color: #3498db;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-        .control-group {
-            margin-bottom: 15px;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-            margin-bottom: 10px;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        button:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-        }
-        input[type="number"], input[type="text"] {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-right: 10px;
-            width: 100px;
+        .input-group label {
+            font-weight: 500;
+            color: #4a5568;
         }
         .response-box {
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px;
-            margin-top: 10px;
-            min-height: 50px;
+            background-color: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 0.75rem;
+            min-height: 4rem;
+            white-space: pre-wrap; /* Preserve whitespace and break lines */
+            word-break: break-all; /* Break long words */
+            overflow-wrap: break-word; /* Ensure lines break */
             font-family: monospace;
-            white-space: pre-wrap;
+            font-size: 0.9em;
+            color: #2d3748;
         }
-        .status-indicator {
-            display: inline-block;
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            background-color: #ccc;
-            margin-right: 5px;
+        .loading-indicator {
+            display: none;
+            margin-top: 0.5rem;
+            font-size: 0.85em;
+            color: #4299e1;
         }
-        .active {
-            background-color: #2ecc71;
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
         }
     </style>
 </head>
-<body>
-    <h1>Hospital Rover Control Center</h1>
+<body class="p-4">
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Hospital Rover Control</h1>
 
-    <!-- Connection Status -->
-    <div class="section">
-        <h2 class="section-title">Connection</h2>
-        <div class="control-group">
-            <span class="status-indicator" id="connection-status"></span>
-            <span id="connection-text">Disconnected</span>
+        <!-- General Command Section -->
+        <div class="mb-8 p-6 bg-blue-50 rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4 text-blue-800">General Command</h2>
+            <div class="flex flex-col md:flex-row items-end space-y-4 md:space-y-0 md:space-x-4 mb-4">
+                <div class="flex-grow w-full">
+                    <label for="generalCommandInput" class="block text-sm mb-1">Enter Raw Command:</label>
+                    <input type="text" id="generalCommandInput" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <button onclick="sendCommand('general', 'raw', {command: document.getElementById('generalCommandInput').value})" 
+                        class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300">
+                    Send Command
+                </button>
+            </div>
+            <div class="input-group">
+                <label class="block text-sm mb-1">Response:</label>
+                <div id="generalResponse" class="response-box"></div>
+                <div id="generalLoading" class="loading-indicator">Waiting for response...</div>
+            </div>
         </div>
-    </div>
 
-    <!-- Differential Control Section -->
-    <div class="section">
-        <h2 class="section-title">Differential Control</h2>
-        
-        <div class="control-group">
-            <h3>Movement</h3>
-            <input type="number" id="move-distance" placeholder="Distance (cm)" min="1">
-            <input type="number" id="move-speed" placeholder="Speed % (1-100)" min="1" max="100">
-            <button onclick="executeCommand('differential-forward')">Forward</button>
-            <button onclick="executeCommand('differential-backward')">Backward</button>
-            <button onclick="executeCommand('differential-left')">Left</button>
-            <button onclick="executeCommand('differential-right')">Right</button>
-        </div>
-        
-        <div class="response-box" id="differential-response"></div>
-    </div>
+        <!-- Robot Component Sections -->
 
-    <!-- GPS Section -->
-    <div class="section">
-        <h2 class="section-title">GPS</h2>
-        
-        <div class="control-group">
-            <button onclick="executeCommand('gps-all')">Get All Data</button>
-            <button onclick="executeCommand('gps-latitude')">Latitude</button>
-            <button onclick="executeCommand('gps-longitude')">Longitude</button>
-            <button onclick="executeCommand('gps-heading')">Heading</button>
-            <button onclick="executeCommand('gps-time')">Time</button>
+        <!-- DifferentialControl Section -->
+        <div class="mb-8 p-6 bg-green-50 rounded-lg shadow-md">
+            <h2 class="section-header">Differential Control</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Forward -->
+                <div class="input-group">
+                    <label for="forwardDistance" class="block text-sm mb-1">Distance (cm):</label>
+                    <input type="number" id="forwardDistance" value="10" class="w-full p-2 border border-gray-300 rounded-md">
+                    <label for="forwardSpeed" class="block text-sm mt-2 mb-1">Speed (0-100%):</label>
+                    <input type="number" id="forwardSpeed" value="50" min="0" max="100" class="w-full p-2 border border-gray-300 rounded-md">
+                    <button onclick="sendCommand('differential', 'forward', {distance: document.getElementById('forwardDistance').value, speed: document.getElementById('forwardSpeed').value})"
+                            class="mt-3 w-full px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition duration-300">
+                        Forward
+                    </button>
+                    <div id="differential_forwardLoading" class="loading-indicator">Waiting for response...</div>
+                </div>
+                <!-- Backward -->
+                <div class="input-group">
+                    <label for="backwardDistance" class="block text-sm mb-1">Distance (cm):</label>
+                    <input type="number" id="backwardDistance" value="10" class="w-full p-2 border border-gray-300 rounded-md">
+                    <label for="backwardSpeed" class="block text-sm mt-2 mb-1">Speed (0-100%):</label>
+                    <input type="number" id="backwardSpeed" value="50" min="0" max="100" class="w-full p-2 border border-gray-300 rounded-md">
+                    <button onclick="sendCommand('differential', 'backward', {distance: document.getElementById('backwardDistance').value, speed: document.getElementById('backwardSpeed').value})"
+                            class="mt-3 w-full px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition duration-300">
+                        Backward
+                    </button>
+                    <div id="differential_backwardLoading" class="loading-indicator">Waiting for response...</div>
+                </div>
+                <!-- Right -->
+                <div class="input-group">
+                    <label for="rightAngle" class="block text-sm mb-1">Angle (degrees):</label>
+                    <input type="number" id="rightAngle" value="90" class="w-full p-2 border border-gray-300 rounded-md">
+                    <label for="rightSpeed" class="block text-sm mt-2 mb-1">Speed (0-100%):</label>
+                    <input type="number" id="rightSpeed" value="50" min="0" max="100" class="w-full p-2 border border-gray-300 rounded-md">
+                    <button onclick="sendCommand('differential', 'right', {angle: document.getElementById('rightAngle').value, speed: document.getElementById('rightSpeed').value})"
+                            class="mt-3 w-full px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition duration-300">
+                        Turn Right
+                    </button>
+                    <div id="differential_rightLoading" class="loading-indicator">Waiting for response...</div>
+                </div>
+                <!-- Left -->
+                <div class="input-group">
+                    <label for="leftAngle" class="block text-sm mb-1">Angle (degrees):</label>
+                    <input type="number" id="leftAngle" value="90" class="w-full p-2 border border-gray-300 rounded-md">
+                    <label for="leftSpeed" class="block text-sm mt-2 mb-1">Speed (0-100%):</label>
+                    <input type="number" id="leftSpeed" value="50" min="0" max="100" class="w-full p-2 border border-gray-300 rounded-md">
+                    <button onclick="sendCommand('differential', 'left', {angle: document.getElementById('leftAngle').value, speed: document.getElementById('leftSpeed').value})"
+                            class="mt-3 w-full px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition duration-300">
+                        Turn Left
+                    </button>
+                    <div id="differential_leftLoading" class="loading-indicator">Waiting for response...</div>
+                </div>
+            </div>
+            <div class="input-group mt-6">
+                <label class="block text-sm mb-1">Responses:</label>
+                <div id="differentialResponse" class="response-box"></div>
+            </div>
         </div>
-        
-        <div class="response-box" id="gps-response"></div>
-    </div>
 
-    <!-- IMU Section -->
-    <div class="section">
-        <h2 class="section-title">IMU</h2>
-        
-        <div class="control-group">
-            <h3>Orientation</h3>
-            <button onclick="executeCommand('imu-orient-all')">All Orientation</button>
-            <button onclick="executeCommand('imu-roll')">Roll</button>
-            <button onclick="executeCommand('imu-pitch')">Pitch</button>
-            <button onclick="executeCommand('imu-yaw')">Yaw</button>
-            
-            <h3>Raw Values</h3>
-            <button onclick="executeCommand('imu-accel')">Accelerometer</button>
-            <button onclick="executeCommand('imu-gyro')">Gyroscope</button>
-            <button onclick="executeCommand('imu-mag')">Magnetometer</button>
-            
-            <h3>Calibration</h3>
-            <button onclick="executeCommand('imu-unlock-yaw')">Unlock Yaw</button>
-            <button onclick="executeCommand('imu-reset-yaw')">Reset Yaw</button>
+        <!-- GPS Section -->
+        <div class="mb-8 p-6 bg-yellow-50 rounded-lg shadow-md">
+            <h2 class="section-header">GPS</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <button onclick="sendCommand('gps', 'all')" 
+                        class="px-4 py-2 bg-yellow-600 text-white font-semibold rounded-md hover:bg-yellow-700 transition duration-300">
+                    Get All GPS Data
+                </button>
+                <button onclick="sendCommand('gps', 'latitude')" 
+                        class="px-4 py-2 bg-yellow-600 text-white font-semibold rounded-md hover:bg-yellow-700 transition duration-300">
+                    Get Latitude
+                </button>
+                <button onclick="sendCommand('gps', 'longitude')" 
+                        class="px-4 py-2 bg-yellow-600 text-white font-semibold rounded-md hover:bg-yellow-700 transition duration-300">
+                    Get Longitude
+                </button>
+                <button onclick="sendCommand('gps', 'heading')" 
+                        class="px-4 py-2 bg-yellow-600 text-white font-semibold rounded-md hover:bg-yellow-700 transition duration-300">
+                    Get Heading
+                </button>
+                <button onclick="sendCommand('gps', 'time')" 
+                        class="px-4 py-2 bg-yellow-600 text-white font-semibold rounded-md hover:bg-yellow-700 transition duration-300">
+                    Get Time
+                </button>
+            </div>
+            <div class="input-group mt-6">
+                <label class="block text-sm mb-1">Responses:</label>
+                <div id="gpsResponse" class="response-box"></div>
+            </div>
         </div>
-        
-        <div class="response-box" id="imu-response"></div>
-    </div>
 
-    <!-- Ultrasonic Section -->
-    <div class="section">
-        <h2 class="section-title">Ultrasonic Sensor</h2>
-        
-        <div class="control-group">
-            <button onclick="executeCommand('ultrasonic-start')">Start Measurement</button>
-            <button onclick="executeCommand('ultrasonic-stop')">Stop Measurement</button>
-            <button onclick="executeCommand('ultrasonic-status')">Get Status</button>
+        <!-- IMU Section -->
+        <div class="mb-8 p-6 bg-purple-50 rounded-lg shadow-md">
+            <h2 class="section-header">IMU</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <button onclick="sendCommand('imu', 'orientation_all')" 
+                        class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition duration-300">
+                    Get All Orientation
+                </button>
+                <button onclick="sendCommand('imu', 'raw_accel_values')" 
+                        class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition duration-300">
+                    Raw Accel
+                </button>
+                <button onclick="sendCommand('imu', 'raw_gyro_values')" 
+                        class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition duration-300">
+                    Raw Gyro
+                </button>
+                <button onclick="sendCommand('imu', 'raw_mag_values')" 
+                        class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition duration-300">
+                    Raw Mag
+                </button>
+                <button onclick="sendCommand('imu', 'accel_offset_values')" 
+                        class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition duration-300">
+                    Accel Offset
+                </button>
+                <button onclick="sendCommand('imu', 'gyro_offset_values')" 
+                        class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition duration-300">
+                    Gyro Offset
+                </button>
+                <button onclick="sendCommand('imu', 'mag_offset_values')" 
+                        class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition duration-300">
+                    Mag Offset
+                </button>
+                <button onclick="sendCommand('imu', 'orientation_roll')" 
+                        class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition duration-300">
+                    Roll
+                </button>
+                <button onclick="sendCommand('imu', 'orientation_pitch')" 
+                        class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition duration-300">
+                    Pitch
+                </button>
+                <button onclick="sendCommand('imu', 'orientation_yaw')" 
+                        class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition duration-300">
+                    Yaw
+                </button>
+                <button onclick="sendCommand('imu', 'unlock_yaw_measurement')" 
+                        class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition duration-300">
+                    Unlock Yaw
+                </button>
+                <button onclick="sendCommand('imu', 'reset_yaw_value')" 
+                        class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition duration-300">
+                    Reset Yaw
+                </button>
+                <button onclick="sendCommand('imu', 'mpu6050_internal_registers')" 
+                        class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition duration-300">
+                    MPU6050 Regs
+                </button>
+                <button onclick="sendCommand('imu', 'HMC5883L_internal_registers')" 
+                        class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition duration-300">
+                    HMC5883L Regs
+                </button>
+            </div>
+            <div class="input-group mt-6">
+                <label class="block text-sm mb-1">Responses:</label>
+                <div id="imuResponse" class="response-box"></div>
+            </div>
         </div>
-        
-        <div class="response-box" id="ultrasonic-response"></div>
-    </div>
 
-    <!-- Closed Loop Control Section -->
-    <div class="section">
-        <h2 class="section-title">Closed Loop Control</h2>
-        
-        <div class="control-group">
-            <button onclick="executeCommand('clc-status')">Get Status</button>
-            <button onclick="executeCommand('clc-reset')">Reset</button>
-            <button onclick="executeCommand('clc-execute-orient')">Execute Orientation</button>
-            <button onclick="executeCommand('clc-execute-move')">Execute Movement</button>
-            
-            <h3>Setpoint Control</h3>
-            <input type="number" id="clc-setpoint" placeholder="Degrees (0-360)" min="0" max="360">
-            <button onclick="executeCommand('clc-set-setpoint')">Set Setpoint</button>
-            <button onclick="executeCommand('clc-get-setpoint')">Get Setpoint</button>
+        <!-- Ultrasonic Section -->
+        <div class="mb-8 p-6 bg-pink-50 rounded-lg shadow-md">
+            <h2 class="section-header">Ultrasonic</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <button onclick="sendCommand('ultrasonic', 'stop_measurement')" 
+                        class="px-4 py-2 bg-pink-600 text-white font-semibold rounded-md hover:bg-pink-700 transition duration-300">
+                    Stop Measurement
+                </button>
+                <button onclick="sendCommand('ultrasonic', 'distance_status')" 
+                        class="px-4 py-2 bg-pink-600 text-white font-semibold rounded-md hover:bg-pink-700 transition duration-300">
+                    Distance Status
+                </button>
+                <button onclick="sendCommand('ultrasonic', 'start_measurement')" 
+                        class="px-4 py-2 bg-pink-600 text-white font-semibold rounded-md hover:bg-pink-700 transition duration-300">
+                    Start Measurement
+                </button>
+            </div>
+            <div class="input-group mt-6">
+                <label class="block text-sm mb-1">Responses:</label>
+                <div id="ultrasonicResponse" class="response-box"></div>
+            </div>
         </div>
-        
-        <div class="response-box" id="clc-response"></div>
-    </div>
 
-    <!-- Path Planning Section -->
-    <div class="section">
-        <h2 class="section-title">Path Planning</h2>
-        
-        <div class="control-group">
-            <input type="number" id="path-start" placeholder="Start Location">
-            <input type="number" id="path-end" placeholder="End Location">
-            <button onclick="executeCommand('path-plan')">Plan Path</button>
-            
-            <button onclick="executeCommand('path-execute')">Execute Path</button>
-            <button onclick="executeCommand('path-stop')">Stop Execution</button>
-            <button onclick="executeCommand('path-status')">Get Status</button>
+        <!-- ClosedLoopControl Section -->
+        <div class="mb-8 p-6 bg-indigo-50 rounded-lg shadow-md">
+            <h2 class="section-header">Closed Loop Control</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <button onclick="sendCommand('closed_loop', 'reset_idle')" 
+                        class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition duration-300">
+                    Reset Idle
+                </button>
+                <button onclick="sendCommand('closed_loop', 'status')" 
+                        class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition duration-300">
+                    Get Status
+                </button>
+                <button onclick="sendCommand('closed_loop', 'execute_closed_loop_orient')" 
+                        class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition duration-300">
+                    Execute Orient
+                </button>
+                <button onclick="sendCommand('closed_loop', 'execute_closed_loop_move')" 
+                        class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition duration-300">
+                    Execute Move
+                </button>
+                <div class="input-group">
+                    <label for="setpointValue" class="block text-sm mb-1">Setpoint Value:</label>
+                    <input type="number" id="setpointValue" value="0" class="w-full p-2 border border-gray-300 rounded-md">
+                    <button onclick="sendCommand('closed_loop', 'set_setpoint', {value: document.getElementById('setpointValue').value})"
+                            class="mt-3 w-full px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition duration-300">
+                        Set Setpoint
+                    </button>
+                </div>
+                <button onclick="sendCommand('closed_loop', 'get_setpoint')" 
+                        class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition duration-300">
+                    Get Setpoint
+                </button>
+            </div>
+            <div class="input-group mt-6">
+                <label class="block text-sm mb-1">Responses:</label>
+                <div id="closed_loopResponse" class="response-box"></div>
+            </div>
         </div>
-        
-        <div class="response-box" id="path-response"></div>
-    </div>
 
-    <!-- System Commands -->
-    <div class="section">
-        <h2 class="section-title">System Commands</h2>
-        
-        <div class="control-group">
-            <button onclick="executeCommand('get-time')">Get Device Time</button>
-            <button onclick="executeCommand('nrf-registers')">Show NRF Registers</button>
+        <!-- PathPlanning Section -->
+        <div class="mb-8 p-6 bg-red-50 rounded-lg shadow-md">
+            <h2 class="section-header">Path Planning</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="input-group">
+                    <label for="pathStartLoc" class="block text-sm mb-1">Start Location:</label>
+                    <input type="number" id="pathStartLoc" value="0" class="w-full p-2 border border-gray-300 rounded-md">
+                    <label for="pathEndLoc" class="block text-sm mt-2 mb-1">End Location:</label>
+                    <input type="number" id="pathEndLoc" value="10" class="w-full p-2 border border-gray-300 rounded-md">
+                    <button onclick="sendCommand('path_planning', 'plan', {start_loc: document.getElementById('pathStartLoc').value, end_loc: document.getElementById('pathEndLoc').value})"
+                            class="mt-3 w-full px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 transition duration-300">
+                        Plan Path
+                    </button>
+                </div>
+                <button onclick="sendCommand('path_planning', 'execute')" 
+                        class="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 transition duration-300">
+                    Execute Path
+                </button>
+                <button onclick="sendCommand('path_planning', 'status')" 
+                        class="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 transition duration-300">
+                    Get Status
+                </button>
+                <button onclick="sendCommand('path_planning', 'stop_executing')" 
+                        class="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 transition duration-300">
+                    Stop Executing
+                </button>
+            </div>
+            <div class="input-group mt-6">
+                <label class="block text-sm mb-1">Responses:</label>
+                <div id="path_planningResponse" class="response-box"></div>
+            </div>
         </div>
-        
-        <div class="response-box" id="system-response"></div>
     </div>
 
     <script>
-        function disableButtonsDuringRequest(disable = true) {
-            document.querySelectorAll('button').forEach(btn => {
-                btn.disabled = disable;
-            });
-        }
+        // Store ongoing commands and their associated loading indicators and response boxes
+        const ongoingCommands = {};
+        const responseBoxes = {}; // To store references to each section's main response box
 
-        // Command to endpoint mapping
-        const commandEndpoints = {
-            // Differential Control
-            'differential-forward': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                params: ['move-distance', 'move-speed'],
-                target: 'differential',
-                method: 'forward'
-            },
-            'differential-backward': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                params: ['move-distance', 'move-speed'],
-                target: 'differential',
-                method: 'backward'
-            },
-            'differential-left': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                params: ['move-distance', 'move-speed'],
-                target: 'differential',
-                method: 'left'
-            },
-            'differential-right': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                params: ['move-distance', 'move-speed'],
-                target: 'differential',
-                method: 'right'
-            },
-            
-            // GPS
-            'gps-all': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'gps',
-                method: 'all'
-            },
-            'gps-latitude': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'gps',
-                method: 'latitude'
-            },
-            'gps-longitude': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'gps',
-                method: 'longitude'
-            },
-            'gps-heading': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'gps',
-                method: 'heading'
-            },
-            'gps-time': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'gps',
-                method: 'time'
-            },
-            
-            // IMU
-            'imu-orient-all': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'imu',
-                method: 'orientation_all'
-            },
-            'imu-roll': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'imu',
-                method: 'orientation_roll'
-            },
-            'imu-pitch': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'imu',
-                method: 'orientation_pitch'
-            },
-            'imu-yaw': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'imu',
-                method: 'orientation_yaw'
-            },
-            'imu-accel': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'imu',
-                method: 'raw_accel_values'
-            },
-            'imu-gyro': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'imu',
-                method: 'raw_gyro_values'
-            },
-            'imu-mag': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'imu',
-                method: 'raw_mag_values'
-            },
-            'imu-unlock-yaw': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'imu',
-                method: 'unlock_yaw_measurement'
-            },
-            'imu-reset-yaw': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'imu',
-                method: 'reset_yaw_value'
-            },
-            
-            // Ultrasonic
-            'ultrasonic-start': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'ultrasonic',
-                method: 'start_measurement'
-            },
-            'ultrasonic-stop': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'ultrasonic',
-                method: 'stop_measurement'
-            },
-            'ultrasonic-status': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'ultrasonic',
-                method: 'distance_status'
-            },
-            
-            // Closed Loop Control
-            'clc-status': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'closed_loop',
-                method: 'status'
-            },
-            'clc-reset': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'closed_loop',
-                method: 'reset_idle'
-            },
-            'clc-execute-orient': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'closed_loop',
-                method: 'execute_closed_loop_orient'
-            },
-            'clc-execute-move': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'closed_loop',
-                method: 'execute_closed_loop_move'
-            },
-            'clc-set-setpoint': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                params: ['clc-setpoint'],
-                target: 'closed_loop',
-                method: 'set_setpoint'
-            },
-            'clc-get-setpoint': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'closed_loop',
-                method: 'get_setpoint'
-            },
-            
-            // Path Planning
-            'path-plan': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                params: ['path-start', 'path-end'],
-                target: 'path_planning',
-                method: 'plan'
-            },
-            'path-execute': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'path_planning',
-                method: 'execute'
-            },
-            'path-stop': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'path_planning',
-                method: 'stop_executing'
-            },
-            'path-status': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'path_planning',
-                method: 'status'
-            },
-            
-            // System
-            'get-time': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'station',
-                method: 'get_device_time_ms'
-            },
-            'nrf-registers': { 
-                post: '/execute_command', 
-                get: '/get_response',
-                target: 'station',
-                method: 'print_nrf_registers'
+        // Initialize response box references
+        document.addEventListener('DOMContentLoaded', () => {
+            responseBoxes['general'] = document.getElementById('generalResponse');
+            responseBoxes['differential'] = document.getElementById('differentialResponse');
+            responseBoxes['gps'] = document.getElementById('gpsResponse');
+            responseBoxes['imu'] = document.getElementById('imuResponse');
+            responseBoxes['ultrasonic'] = document.getElementById('ultrasonicResponse');
+            responseBoxes['closed_loop'] = document.getElementById('closed_loopResponse');
+            responseBoxes['path_planning'] = document.getElementById('path_planningResponse');
+        });
+
+        async function sendCommand(target, method, params = {}) {
+            const commandKey = `${target}_${method}`; // Unique key for the command
+
+            // Show loading indicator
+            const loadingIndicator = document.getElementById(`${commandKey}Loading`);
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'block';
+                loadingIndicator.classList.add('blink');
+            } else if (target === 'general') {
+                // Special handling for general command's loading indicator
+                const generalLoading = document.getElementById('generalLoading');
+                generalLoading.style.display = 'block';
+                generalLoading.classList.add('blink');
             }
-        };
-
-        // Function to execute a command
-        async function executeCommand(commandId) {
-            const command = commandEndpoints[commandId];
-            if (!command) return;
-
-            // Determine which response box to use
-            const responseBox = document.getElementById(`${command.target}-response`);
-            if (!responseBox) return;
-
-            // Get parameters if any
-            let params = {};
-            if (command.params) {
-                command.params.forEach(paramId => {
-                    const elem = document.getElementById(paramId);
-                    if (elem) {
-                        params[paramId] = elem.value;
-                    }
-                });
+            
+            // Clear previous response in the specific response box if it exists
+            const specificResponseBox = document.getElementById(`${commandKey}Response`);
+            if (specificResponseBox) {
+                specificResponseBox.textContent = '';
+            } else if (target === 'general') {
+                document.getElementById('generalResponse').textContent = '';
             }
 
-            // Prepare the POST data
-            const postData = {
-                target: command.target,
-                method: command.method,
-                params: params
-            };
+
+            ongoingCommands[commandKey] = true; // Mark command as ongoing
 
             try {
-                // Send POST request to execute command
-                disableButtonsDuringRequest(true);  // Disable all buttons
-                responseBox.textContent = "Executing command...";
-                const postResponse = await fetch(command.post, {
+                const response = await fetch('/command', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(postData),
+                    body: JSON.stringify({ target, method, params })
                 });
 
-                if (!postResponse.ok) {
-                    throw new Error('POST request failed');
+                const data = await response.json();
+                console.log('Command send response:', data);
+
+                if (data.status === 'error') {
+                     // Update the relevant response box with the error
+                    const sectionResponseBox = responseBoxes[target];
+                    if (sectionResponseBox) {
+                        sectionResponseBox.textContent += `Error sending ${method} command: ${data.message}\n`;
+                    } else if (target === 'general') {
+                        document.getElementById('generalResponse').textContent += `Error sending command: ${data.message}\n`;
+                    }
+                    // Hide loading indicator even on send error
+                    if (loadingIndicator) {
+                        loadingIndicator.style.display = 'none';
+                        loadingIndicator.classList.remove('blink');
+                    } else if (target === 'general') {
+                        document.getElementById('generalLoading').style.display = 'none';
+                        generalLoading.classList.remove('blink');
+                    }
+                    delete ongoingCommands[commandKey]; // Remove from ongoing
                 }
 
-                // Get the response after execution
-                const getResponse = await fetch(`${command.get}?target=${command.target}&method=${command.method}`);
-                if (!getResponse.ok) {
-                    throw new Error('GET request failed');
-                }
-
-                const data = await getResponse.json();
-                responseBox.textContent = data.response || "No response received";
             } catch (error) {
-                console.error('Error executing command:', error);
-                responseBox.textContent = `Error: ${error.message}`;
-            } finally {
-                disableButtonsDuringRequest(false);  // Re-enable buttons
+                console.error('Error sending command:', error);
+                // Update the relevant response box with the error
+                const sectionResponseBox = responseBoxes[target];
+                if (sectionResponseBox) {
+                    sectionResponseBox.textContent += `Network error for ${method} command: ${error.message}\n`;
+                } else if (target === 'general') {
+                    document.getElementById('generalResponse').textContent += `Network error for command: ${error.message}\n`;
+                }
+                // Hide loading indicator on network error
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'none';
+                    loadingIndicator.classList.remove('blink');
+                } else if (target === 'general') {
+                    document.getElementById('generalLoading').style.display = 'none';
+                    generalLoading.classList.remove('blink');
+                }
+                delete ongoingCommands[commandKey]; // Remove from ongoing
             }
         }
 
-        // Simulate connection status
-        setTimeout(() => {
-            document.getElementById('connection-status').classList.add('active');
-            document.getElementById('connection-text').textContent = 'Connected';
-        }, 1000);
+        async function fetchResponses() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+                const responses = JSON.parse(data.responses); // Parse the inner JSON string
+
+                for (const key in responses) {
+                    const responseValue = responses[key];
+                    // Correctly parse the tuple string back into target and method
+                    // Example: "('differential', 'forward')" -> ["differential", "forward"]
+                    const [target, method] = key.replace(/[\(\)']/g, '').split(', ').map(s => s.trim().replace(/^['"]|['"]$/g, ''));
+                    const commandKey = `${target}_${method}`;
+
+                    // Update the correct response box
+                    const sectionResponseBox = responseBoxes[target];
+                    if (sectionResponseBox) {
+                        sectionResponseBox.textContent = `Response for ${method}:\n${responseValue}`;
+                        // For general command, append to its specific response box
+                        if (target === 'general' && method === 'raw') {
+                            document.getElementById('generalResponse').textContent = `Response for raw command:\n${responseValue}`;
+                        }
+                    } else if (target === 'general' && method === 'raw') {
+                        document.getElementById('generalResponse').textContent = `Response for raw command:\n${responseValue}`;
+                    }
+
+                    // Hide loading indicator and remove from ongoing commands
+                    const loadingIndicator = document.getElementById(`${commandKey}Loading`);
+                    if (loadingIndicator) {
+                        loadingIndicator.style.display = 'none';
+                        loadingIndicator.classList.remove('blink');
+                    } else if (target === 'general') {
+                        document.getElementById('generalLoading').style.display = 'none';
+                        document.getElementById('generalLoading').classList.remove('blink');
+                    }
+                    delete ongoingCommands[commandKey];
+                }
+
+            } catch (error) {
+                console.error('Error fetching responses:', error);
+            }
+        }
+
+        // Poll for responses every 500ms
+        setInterval(fetchResponses, 500);
+
+        // Periodically check for ongoing commands that might have timed out or failed silently
+        // And ensure their loading indicators are still visible
+        setInterval(() => {
+            for (const key in ongoingCommands) {
+                if (ongoingCommands[key]) {
+                    const [target, method] = key.split('_');
+                    const loadingIndicator = document.getElementById(`${key}Loading`);
+                    if (loadingIndicator) {
+                        loadingIndicator.style.display = 'block';
+                        loadingIndicator.classList.add('blink');
+                    } else if (target === 'general') {
+                        document.getElementById('generalLoading').style.display = 'block';
+                        document.getElementById('generalLoading').classList.add('blink');
+                    }
+                }
+            }
+        }, 1000); // Check every second
     </script>
 </body>
 </html>

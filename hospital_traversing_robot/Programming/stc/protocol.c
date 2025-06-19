@@ -88,6 +88,7 @@ void protocol_main_loop(void) {
     differential_control_process();
     orientation_process();
     closed_loop_current_func();
+    adv_move_process();
     execute_path_process();
   }
 }

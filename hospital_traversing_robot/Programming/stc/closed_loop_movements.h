@@ -1,7 +1,7 @@
 #ifndef CLOSED_LOOP_MOVEMENTS_H
 #define CLOSED_LOOP_MOVEMENTS_H
 
-#define CLOSED_LOOP_FUNC_NUM 11
+#define CLOSED_LOOP_FUNC_NUM 3
 
 typedef enum {
   CL_FAIL_NONE,
@@ -39,15 +39,6 @@ void closed_loop_set_setpoint(int16_t yaw_setpoint_value);
 direction_t closed_loop_get_setpoint(void);
 void closed_loop_orient(void);
 void closed_loop_move(void);
-
-/* Actual closed loop function for each single movement!! :D */
-void closed_loop_exit_room(void);
-void closed_loop_enter_room(void);
-void closed_loop_corridor_north(void);
-void closed_loop_corridor_east(void);
-void closed_loop_corridor_west(void);
-void closed_loop_corridor_south(void);
-void closed_loop_stairs_up(void);
-void closed_loop_stairs_down(void);
+void closed_loop_up_ramp(void);
 
 #endif

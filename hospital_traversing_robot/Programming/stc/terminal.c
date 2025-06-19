@@ -110,16 +110,6 @@ LINE_STATUS terminal_execute_line(char* line) {
     /* [ Step 2: Identify and Initiate command_t variable] */
     switch(letter) {
 
-      case 'A':
-        // testing reading int argument
-        if (!read_int(line, &char_count, &int_value)) {
-          report("Bad integer Number Format\n");
-          return LINE_FAILED;
-
-        } 
-        command.command_type = COMMAND_TEST_INT_READING;
-        break;
-
       case 'N':
         command.command_type = COMMAND_GET_NRF24_REGISTERS;
         break;
@@ -158,6 +148,10 @@ LINE_STATUS terminal_execute_line(char* line) {
 
       case 'C':
         command.command_type = COMMAND_CLOSED_LOOP_MOVE;
+        break;
+
+      case 'A':
+        command.command_type = COMMAND_ADVANCED_MOVEMENT;
         break;
 
       case 'P':
@@ -306,6 +300,7 @@ LINE_STATUS terminal_execute_line(char* line) {
 
           case CLOSED_LOOP_MOVEMENT_SUCCESS:
             closed_loop_reset_to_idle();
+            report("Resetting CL status to idle\n");
             break;
         }
 
@@ -322,6 +317,43 @@ LINE_STATUS terminal_execute_line(char* line) {
       }
       break;
 
+    case COMMAND_ADVANCED_MOVEMENT:
+      if(command.i > 1 || command.i < -1) {
+        report("Error: 'i' Out of range.\n");
+        report("i-1 adv move status to idle\n");
+        report("i0 returns adv move status\n");
+        report("i1 starts adv move of ind j\n");
+        return LINE_FAILED;
+
+      } else if (command.i == 1) {
+        if (command.j > ADV_MOVE_FUNC_NUM || command.j < 0) {
+          report("Error: 'j' Out of range.\n");
+          report("Advanced Movement functions:\n");
+          report("#TODO\n");
+          return LINE_FAILED;
+        }
+        switch(adv_move_func_status) {
+          case ADV_MOVE_FAILED:
+            report("ADV MOVE FUNCTION FAILED!!\n");
+            report("Must Ai-1 to reset status!\n");
+            return LINE_FAILED;
+
+          case ADV_MOVE_START:
+          case ADV_MOVE_IN_PROGRESS:
+            report("Adv Move ALREADY IN PROGRESS!\n");
+            return LINE_FAILED;
+
+          case ADV_MOVE_IDLE:
+            break;
+
+          case ADV_MOVE_SUCCESS:
+            adv_move_func_status = ADV_MOVE_IDLE;
+            report("Resetting adv move to idle\n");
+            break;
+        }
+      }
+
+      break;
 
     case COMMAND_PATH_PLAN:
       //TODO: V.IMP add an option to draw from current position to wanted. for example if i==-1 then from whatever last saved current location to j value
@@ -515,43 +547,13 @@ LINE_STATUS terminal_execute_line(char* line) {
         case 1:
           switch(command.j) {
             case 0:
+              report("Exec Closed loop Move\n");
               closed_loop_current_func = closed_loop_move;
               break;
 
             case 1:
+              report("Exec Closed loop orient\n");
               closed_loop_current_func = closed_loop_orient;
-              break;
-
-            case 2:
-              closed_loop_current_func = closed_loop_exit_room;
-              break;
-
-            case 3:
-              closed_loop_current_func = closed_loop_enter_room;
-              break;
-
-            case 4:
-              closed_loop_current_func = closed_loop_corridor_north;
-              break;
-
-            case 5:
-              closed_loop_current_func = closed_loop_corridor_east;
-              break;
-
-            case 6:
-              closed_loop_current_func = closed_loop_corridor_west;
-              break;
-
-            case 7:
-              closed_loop_current_func = closed_loop_corridor_south;
-              break;
-
-            case 8:
-              closed_loop_current_func = closed_loop_stairs_up;
-              break;
-
-            case 9:
-              closed_loop_current_func = closed_loop_stairs_down;
               break;
           }
           break;
@@ -565,6 +567,59 @@ LINE_STATUS terminal_execute_line(char* line) {
           report("Closed loop setpoint: %d\n", closed_loop_get_setpoint());
           break;
 
+      }
+      break;
+
+    case COMMAND_ADVANCED_MOVEMENT:
+      switch(command.i) {
+        case -1:
+          // reset closed loop status
+          adv_move_func_status = ADV_MOVE_IDLE;
+          report("Adv Move reset to IDLE\n");
+          break;
+
+        case 0:
+          // return current closed loop status
+          report("Adv Move control status: ");
+          report("%s\n", ADV_MOVE_STATUS_TO_STRING[adv_move_func_status]);
+          break;
+
+        case 1:
+          adv_move_func_status = ADV_MOVE_START;
+          switch(command.j) {
+            case 0:
+              report("Exec Adv Move exit room\n");
+              break;
+
+            case 1:
+              report("Exec Adv Move enter room\n");
+              break;
+
+            case 2:
+              report("Exec Adv Move north\n");
+              break;
+
+            case 3:
+              report("Exec Adv Move east\n");
+              break;
+
+            case 4:
+              report("Exec Adv Move west\n");
+              break;
+
+            case 5:
+              report("Exec Adv Move south\n");
+              break;
+
+            case 6:
+              report("Exec Adv Move stairs up\n");
+              break;
+
+            case 7:
+              report("Exec Adv Move stairs down\n");
+              break;
+          }
+          break;
       }
       break;
 
