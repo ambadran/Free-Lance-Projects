@@ -128,9 +128,9 @@
 
 /* Differential Control Settings */
 #define CM_TO_MOVEMENT_MS 15  // 1cm is moved in CM_TO_MOVEMENT_MS
-#define DEGREE_TO_MOVEMENT_MS 9 // 1 degree is moved in DEGREE_TO_MOVEMENT_MS
+#define DEGREE_TO_MOVEMENT_MS 3 // 1 degree is moved in DEGREE_TO_MOVEMENT_MS
 #define PWM_MOTOR_FREQ 10000
-#define DEFAULT_PWM_DUTY_CYCLE 40000  // The range is (0-2^16)
+#define DEFAULT_PWM_DUTY_CYCLE 50000  // The range is (0-2^16)
 
 /* Orientation HAL settings */
 #define COMP_FILTER_DT 30
@@ -145,6 +145,7 @@
 #define orientation_get_yaw_deg get_gyro_yaw_deg
 // very important if no absolute yaw measurement procedure is implemented
 #define STARTING_YAW_VALUE WEST
+#define YAW_MULTIPLE_COMPENSATE 2.5
 
 /* Closed loop Control Settings */
 #define TOTAL_ORIENT_TIMEOUT_MS 10000         // Max time for entire operation (10 seconds)
@@ -155,14 +156,14 @@
 #define MINIMUM_DISTANCE_CHANGE 1               // Minimum detectable yaw change (degrees)
 #define STUCK_ORIENT_TIMEOUT_MS 200          // Max time without sufficient change
 #define STUCK_DISTANCE_TIMEOUT_MS 200          // Max time without sufficient change
-#define OVERSHOOT_ORIENT_PERCENT 200           // 200% overshoot (integer percentage)
+#define OVERSHOOT_ORIENT_PERCENT 250           // 200% overshoot (integer percentage)
 #define OVERSHOOT_MOVE_PERCENT 50           // 50% overshoot (integer percentage)
 
 /* Advanced Movements Settings */
-#define ADV_MOVEMENT_DEBUG
-#define EXIT_ROOM_DISTANCE 20
-#define ENTER_ROOM_DISTANCE 20
-#define CORRIDOR_MOVEMENT_DISTANCE 18
+/* #define ADV_MOVEMENT_DEBUG */
+#define EXIT_ROOM_DISTANCE 10
+#define ENTER_ROOM_DISTANCE 10
+#define CORRIDOR_MOVEMENT_DISTANCE 10
 #define RAMP_ANGLE 30
 
 /* Path Planning Settings */

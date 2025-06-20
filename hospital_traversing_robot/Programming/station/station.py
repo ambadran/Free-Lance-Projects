@@ -133,6 +133,19 @@ class Station:
     def print_nrf_registers(self) -> str:
         return self.send("N")
 
+    def exit_room(self):
+        self.differential.forward(10)
+        sleep_ms(1000)
+        self.differential.left(90)
+        sleep_ms(1000)
+        self.differential.forward(10)
+        sleep_ms(1000)
+        self.differential.left(90)
+        sleep_ms(1000)
+        self.differential.forward(10)
+        sleep_ms(1000)
+        self.differential.left(180)
+
     def process(self, exec_dict):
         """
         Process commands from the execution dictionary
@@ -196,7 +209,7 @@ class DifferentialControl:
 
         response = self.station.send(cmd)
         timeout = int(distance*1000/2)  # very generous time to execute
-        response += self.station.await_answer(["Differential Control Finished"], timeout, "Didn't Receive Differential Control Finished Movement Acknowledgement")
+        # response += self.station.await_answer(["Differential Control Finished"], timeout, "Didn't Receive Differential Control Finished Movement Acknowledgement")
         return response
 
     def backward(self, distance: int, speed: int = None) -> str:
@@ -207,7 +220,7 @@ class DifferentialControl:
 
         response = self.station.send(cmd)
         timeout = int(distance*1000/2)  # very generous time to execute
-        response += self.station.await_answer(["Differential Control Finished"], timeout, "Didn't Receive Differential Control Finished Movement Acknowledgement")
+        # response += self.station.await_answer(["Differential Control Finished"], timeout, "Didn't Receive Differential Control Finished Movement Acknowledgement")
         return response
 
     def right(self, angle: int, speed: int = None) -> str:
@@ -218,7 +231,7 @@ class DifferentialControl:
 
         response = self.station.send(cmd)
         timeout = int(angle*1000/2)  # very generous time to execute
-        response += self.station.await_answer(["Differential Control Finished"], timeout, "Didn't Receive Differential Control Finished Movement Acknowledgement")
+        # response += self.station.await_answer(["Differential Control Finished"], timeout, "Didn't Receive Differential Control Finished Movement Acknowledgement")
         return response
 
     def left(self, angle: int, speed: int = None) -> str:
@@ -229,7 +242,7 @@ class DifferentialControl:
 
         response = self.station.send(cmd)
         timeout = int(angle*1000/2)  # very generous time to execute
-        response += self.station.await_answer(["Differential Control Finished"], timeout, "Didn't Receive Differential Control Finished Movement Acknowledgement")
+        # response += self.station.await_answer(["Differential Control Finished"], timeout, "Didn't Receive Differential Control Finished Movement Acknowledgement")
         return response
 
 class GPS:
@@ -288,7 +301,7 @@ class IMU:
     def unlock_yaw_measurement(self) -> str:
         return self.station.send("Mi10")
 
-    def unlock_yaw_measurement(self) -> str:
+    def lock_yaw_measurement(self) -> str:
         return self.station.send("Mi11")
 
     def reset_yaw_value(self) -> str:
@@ -353,8 +366,17 @@ class ClosedLoopControl:
         return self.station.send("Ci3")
 
 class AdvancedMovement:
-    ADVANCED_MOVEMENT_TIMEOUT = 20000
-    ADVANCED_MOVEMENT_STATUS = []
+    ADVANCED_MOVEMENT_TIMEOUT = 10000
+    ADVANCED_MOVEMENT_STATUS = [
+          "ADV_MOVE_FAIL_NONE",
+          "ADV_MOVE_FAIL_CL_IN_PROGRESS",
+          "ADV_MOVE_FAIL_CL_FAILED",
+          "ADV_MOVE_IDLE",
+          "ADV_MOVE_START",
+          "ADV_MOVE_FAILED",
+          "ADV_MOVE_IN_PROGRESS",
+          "ADV_MOVE_SUCCESS"]
+
     def __init__(self, station):
         self.station = station
 
@@ -367,37 +389,56 @@ class AdvancedMovement:
     def exit_room(self) -> str:
         response = self.station.send("Ai1j0")
         response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+        return response
 
     def enter_room(self) -> str:
         response = self.station.send("Ai1j1")
         response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+        return response
 
     def corridor_north(self) -> str:
         response = self.station.send("Ai1j2")
         response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+        return response
 
     def corridor_east(self) -> str:
         response = self.station.send("Ai1j3")
         response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+        return response
 
     def corridor_west(self) -> str:
         response = self.station.send("Ai1j4")
         response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+        return response
 
     def corridor_south(self) -> str:
         response = self.station.send("Ai1j5")
         response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+        return response
 
     def stairs_up(self) -> str:
         response = self.station.send("Ai1j6")
         response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+        return response
 
     def stairs_down(self) -> str:
         response = self.station.send("Ai1j7")
         response += self.station.await_answer(self.ADVANCED_MOVEMENT_STATUS, self.ADVANCED_MOVEMENT_TIMEOUT, f"Advanced Movement didn't respond after {self.ADVANCED_MOVEMENT_TIMEOUT}ms of sending execute command")
+        return response
 
 
 class PathPlanning:
+    PATHPLANNING_TIMEOUT = 20000
+    PATHPLANNING_STATUS = [
+      "PATH_EXECUTE_IDLE",
+      "PATH_EXECUTE_MOVEMENT_FAILED",
+      # "PATH_EXECUTE_ADV_MOVE_ALREADY_RUNNING",
+      "PATH_EXECUTE_ADV_MOVE_ALREADY_R",
+      "PATH_EXECUTE_STARTING",
+      "PATH_EXECUTE_INVALID_MOVE_WANTED",
+      "PATH_EXECUTE_GETTING_NEXT_MOVEMENT",
+      "PATH_EXECUTE_MOVEMENT_IN_PROGRESS",
+      "PATH_EXECUTE_SUCCESSFUL"]
     def __init__(self, station):
         self.station = station
 
@@ -405,7 +446,9 @@ class PathPlanning:
         return self.station.send(f"Pi{start_loc}j{end_loc}")
 
     def execute(self) -> str:
-        return self.station.send("Ei1")
+        response = self.station.send("Ei1")
+        response += self.station.await_answer(self.PATHPLANNING_STATUS, self.PATHPLANNING_TIMEOUT, f"path planning didn't response after {self.PATHPLANNING_TIMEOUT}ms of sending execute command")
+        return response
 
     def status(self) -> str:
         return self.station.send("Ei0")

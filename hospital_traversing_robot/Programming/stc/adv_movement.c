@@ -2,9 +2,20 @@
 
 const char* ADV_MOVE_STATUS_TO_STRING[] = {
   "ADV_MOVE_IDLE",
+  "ADV_MOVE_START",
   "ADV_MOVE_FAILED",
   "ADV_MOVE_IN_PROGRESS",
   "ADV_MOVE_SUCCESS" 
+};
+const char* ADV_MOVE_FUNC_TO_STRING[] = {
+  "ADV_MOVE_FUNC_EXIT_ROOM",
+  "ADV_MOVE_FUNC_ENTER_ROOM",
+  "ADV_MOVE_FUNC_CORRIDOR_NORTH",
+  "ADV_MOVE_FUNC_CORRIDOR_SOUTH",
+  "ADV_MOVE_FUNC_CORRIDOR_EAST",
+  "ADV_MOVE_FUNC_CORRIDOR_WEST",
+  "ADV_MOVE_FUNC_STAIRS_UP",
+ "ADV_MOVE_FUNC_STAIRS_DOWN" 
 };
 
 /* Current advanced movement status */
@@ -92,15 +103,13 @@ void adv_move_process(void) {
         case CLOSED_LOOP_MOVEMENT_IN_PROGRESS:
           adv_move_func_status = ADV_MOVE_FAILED;
           adv_move_fail_status = ADV_MOVE_FAIL_CL_IN_PROGRESS;
-          report("Failed: CL in progress\n");
-          report("Ai-1 to reset status!\n");
+          report("ADV_MOVE_FAIL_CL_IN_PROGRESS\n");
           break;
 
         case CLOSED_LOOP_MOVEMENT_FAILED:
           adv_move_func_status = ADV_MOVE_FAILED;
           adv_move_fail_status = ADV_MOVE_FAIL_CL_FAILED;
-          report("Failed CL status");
-          report("Ai-1 & Ci-1 to reset status!\n");
+          report("ADV_MOVE_FAIL_CL_FAILED\n");
           break;
       }
       break;
@@ -112,9 +121,8 @@ void adv_move_process(void) {
           // move on to next
           closed_loop_current_func = adv_move_cl_func_setpoint_sequence_map[adv_movement_func_index].adv_move_cl_func_sequence[adv_move_index];
           closed_loop_set_setpoint(adv_move_cl_func_setpoint_sequence_map[adv_movement_func_index].adv_move_cl_setpoint_sequence[adv_move_index]);
-#ifdef ADV_MOVEMENT_DEBUG
-          printf("Assigned func ind %d, setpoint: %d\n", adv_movement_func_index, adv_move_cl_func_setpoint_sequence_map[adv_movement_func_index].adv_move_cl_setpoint_sequence[adv_move_index]);
-#endif
+
+          report("Exec a CL @ setpoint: %d\n", adv_move_cl_func_setpoint_sequence_map[adv_movement_func_index].adv_move_cl_setpoint_sequence[adv_move_index]);
 
           // Incrementing index
           adv_move_index++;
@@ -129,9 +137,7 @@ void adv_move_process(void) {
           // check if it's finished
           if(adv_move_cl_func_setpoint_sequence_map[adv_movement_func_index].adv_move_cl_func_sequence[adv_move_index]== NULL) {
             adv_move_func_status = ADV_MOVE_SUCCESS;
-#ifdef ADV_MOVEMENT_DEBUG
-            printf("Advanced Movement finished successfully!!\n");
-#endif
+            report("ADV_MOVE_SUCCESS\n");
 
           } else {
             closed_loop_reset_to_idle();
@@ -142,8 +148,7 @@ void adv_move_process(void) {
         case CLOSED_LOOP_MOVEMENT_FAILED:
           adv_move_func_status = ADV_MOVE_FAILED;
           adv_move_fail_status = ADV_MOVE_FAIL_CL_FAILED;
-          report("Failed CL status");
-          report("Ai-1 & Ci-1 to reset status!\n");
+          report("ADV_MOVE_FAIL_CL_FAILED\n");
           break;
       }
       break;

@@ -23,12 +23,12 @@ static location_t next = INVALID_LOCATION;
 const char* EXECUTE_PATH_STATUS_TO_STRING[PATH_EXECUTE_STATUS_COUNT] = {
   "PATH_EXECUTE_IDLE",
   "PATH_EXECUTE_MOVEMENT_FAILED",
-  "PATH_EXECUTE_CL_MOVE_ALREADY_RUNNING",
+  "PATH_EXECUTE_ADV_MOVE_ALREADY_RUNNING",
   "PATH_EXECUTE_STARTING",
   "PATH_EXECUTE_INVALID_MOVE_WANTED",
   "PATH_EXECUTE_GETTING_NEXT_MOVEMENT",
   "PATH_EXECUTE_MOVEMENT_IN_PROGRESS",
-  "PATH_EXECUTE_FINISHED_SUCCESSFULLY"
+ "PATH_EXECUTE_SUCCESSFUL" 
 };
 
 /* This is a mapping from the location_t indexes to the string names
@@ -311,7 +311,7 @@ void execute_path_process(void) {
 
     case PATH_EXECUTE_MOVEMENT_FAILED:
     case PATH_EXECUTE_INVALID_MOVE_WANTED:
-    case PATH_EXECUTE_CL_MOVE_ALREADY_RUNNING:
+    case PATH_EXECUTE_ADV_MOVE_ALREADY_RUNNING:
       report("Path Execution Failed: ");
       report("%s\n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
       // resetting internal variables
@@ -325,24 +325,24 @@ void execute_path_process(void) {
 #ifdef PATH_PLANNING_DEBUG
       printf("Path Execution Status: %s \n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
 #endif
-      switch(closed_loop_func_status) {
-        case CLOSED_LOOP_MOVEMENT_IDLE:
-        case CLOSED_LOOP_MOVEMENT_SUCCESS:
+      switch(adv_move_func_status) {
+        case ADV_MOVE_IDLE:
+        case ADV_MOVE_SUCCESS:
           execute_path_status = PATH_EXECUTE_GETTING_NEXT_MOVEMENT;
           break;
 
-        case CLOSED_LOOP_MOVEMENT_IN_PROGRESS:
-          execute_path_status = PATH_EXECUTE_CL_MOVE_ALREADY_RUNNING;
+        case ADV_MOVE_IN_PROGRESS:
+          execute_path_status = PATH_EXECUTE_ADV_MOVE_ALREADY_RUNNING;
           report("Failed: ");
           report("%s\n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
           break;
 
-        case CLOSED_LOOP_MOVEMENT_FAILED:
+        case ADV_MOVE_FAILED:
         default:
           execute_path_status = PATH_EXECUTE_MOVEMENT_FAILED;
-          report("CL status: ");
-          report("%s\n", CLOSED_LOOP_STATUS_TO_STRING[closed_loop_func_status]);
-          report("Ci-1 to reset CL status!\n");
+          report("Adv move status: ");
+          report("%s\n", ADV_MOVE_STATUS_TO_STRING[adv_move_func_status]);
+          report("Ai-1 to reset status!\n");
           break;
 
       }
@@ -358,12 +358,13 @@ void execute_path_process(void) {
         int next_idx = path_nodes[idx].next;
         next = path_nodes[next_idx].loc;
 
-        /* closed_loop_current_func = get_single_move_func(cur, next); */
+        adv_move_func_status = ADV_MOVE_START;
         adv_movement_func_index = get_single_move_func(cur, next);
+        report(ADV_MOVE_FUNC_TO_STRING[adv_movement_func_index]); //TODO: should I print sth here??
         //TODO: continue implementing path planning execute with new adv_movement_func_index
-        if (closed_loop_current_func == NULL) { 
+        if (adv_movement_func_index == ADV_MOVE_FUNC_NONE) { 
           execute_path_status = PATH_EXECUTE_INVALID_MOVE_WANTED;
-          closed_loop_current_func = closed_loop_move_idle;
+          adv_movement_func_index = ADV_MOVE_FUNC_NONE;
         } else {
           idx = next_idx;
           execute_path_status = PATH_EXECUTE_MOVEMENT_IN_PROGRESS;
@@ -371,7 +372,7 @@ void execute_path_process(void) {
 
       } else {
         // finished traversing all the path_node linkedlist :D
-        execute_path_status = PATH_EXECUTE_FINISHED_SUCCESSFULLY;
+        execute_path_status = PATH_EXECUTE_SUCCESSFUL;
       }
 #ifdef PATH_PLANNING_DEBUG
       printf("Path Execution Status: %s \n", EXECUTE_PATH_STATUS_TO_STRING[execute_path_status]);
@@ -379,27 +380,29 @@ void execute_path_process(void) {
       break;
 
     case PATH_EXECUTE_MOVEMENT_IN_PROGRESS:
-      switch(closed_loop_func_status) {
+      switch(adv_move_func_status) {
 
-        case CLOSED_LOOP_MOVEMENT_FAILED:
-          report("CLOSED LOOP FUNCTION FAILED!!\n");
-          report("Must Ci-1 to reset CL status!\n");
+        case ADV_MOVE_FAILED:
+          report("ADV MOVE FAILED!!\n");
+          report("Must Ai-1 to reset status!\n");
           execute_path_status = PATH_EXECUTE_MOVEMENT_FAILED;
           break;
 
-        case CLOSED_LOOP_MOVEMENT_IN_PROGRESS:
+        case ADV_MOVE_START:
+        case ADV_MOVE_IN_PROGRESS:
+          // wait till it finishes
           break;
 
-        case CLOSED_LOOP_MOVEMENT_SUCCESS:
+        case ADV_MOVE_SUCCESS:
 #ifdef PATH_PLANNING_DEBUG
           printf("current movement func finished successfully!!!\n");
 #endif
-          closed_loop_move_idle();
+          adv_move_reset_idle();
           execute_path_status = PATH_EXECUTE_GETTING_NEXT_MOVEMENT;
           break;
 
-        case CLOSED_LOOP_MOVEMENT_IDLE:
-          while(1) { report("closed loop is idle when it should never be\n"); }
+        case ADV_MOVE_IDLE:
+          while(1) { report("adv move status idle when it should never be\n"); }
           break;
       }
 #ifdef PATH_PLANNING_DEBUG
@@ -407,12 +410,13 @@ void execute_path_process(void) {
 #endif
       break;
 
-    case PATH_EXECUTE_FINISHED_SUCCESSFULLY:
+    case PATH_EXECUTE_SUCCESSFUL:
       idx = 0;
       next_idx = 0;
       closed_loop_reset_to_idle();
+      adv_move_reset_idle();
       execute_path_status = PATH_EXECUTE_IDLE;
-      report("Path Execution Finished Successfully!");
+      report("PATH_EXECUTE_SUCCESSFUL\n");
       break;
   }
 }
@@ -425,6 +429,7 @@ void execute_path_stop(void) {
   idx = 0;
   next_idx = 0;
   closed_loop_reset_to_idle();
+  adv_move_reset_idle();
   execute_path_status = PATH_EXECUTE_IDLE;
 }
 

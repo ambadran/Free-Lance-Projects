@@ -4351,6 +4351,16 @@
 			(embedded_fonts no)
 		)
 	)
+	(text "TODOs:\nadd power switch for battery\nadd motor current sensing using ADC\nadd beefier decoupling capacitors\nuse better regulator for 3.3v (LM388)\nuse mosfet and dtr pin for easy programming\nuse jst for stc debug pins\nuse better magnetometer\n"
+		(exclude_from_sim no)
+		(at 235.966 58.928 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "d536d373-835e-4cee-892c-05431d5bba3f")
+	)
 	(junction
 		(at 171.45 69.85)
 		(diameter 0)

@@ -35,6 +35,7 @@ typedef enum {
   ADV_MOVE_FUNC_STAIRS_DOWN
 } adv_movement_func_index_t;
 extern adv_movement_func_index_t adv_movement_func_index;
+extern const char* ADV_MOVE_FUNC_TO_STRING[];
 
 void adv_move_reset_idle(void);
 void adv_move_process(void);

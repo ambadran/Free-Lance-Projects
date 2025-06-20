@@ -347,7 +347,7 @@ LINE_STATUS terminal_execute_line(char* line) {
             break;
 
           case ADV_MOVE_SUCCESS:
-            adv_move_func_status = ADV_MOVE_IDLE;
+            adv_move_reset_idle();
             report("Resetting adv move to idle\n");
             break;
         }
@@ -472,11 +472,11 @@ LINE_STATUS terminal_execute_line(char* line) {
           break;
         case 10:
           orientation_unlock_yaw_measurement();
-          report("Unlocking Yaw summing from gyro!\n");
+          report("Unlocking Yaw gyro summing\n");
           break;
         case 11:
           orientation_lock_yaw_measurement();
-          report("locking Yaw summing from gyro!\n");
+          report("locking Yaw gyro summing\n");
           break;
         case 12:
           orientation_set_gyro_yaw(STARTING_YAW_VALUE);
@@ -574,7 +574,7 @@ LINE_STATUS terminal_execute_line(char* line) {
       switch(command.i) {
         case -1:
           // reset closed loop status
-          adv_move_func_status = ADV_MOVE_IDLE;
+          adv_move_reset_idle();
           report("Adv Move reset to IDLE\n");
           break;
 
@@ -588,34 +588,42 @@ LINE_STATUS terminal_execute_line(char* line) {
           adv_move_func_status = ADV_MOVE_START;
           switch(command.j) {
             case 0:
+              adv_movement_func_index = ADV_MOVE_FUNC_EXIT_ROOM;
               report("Exec Adv Move exit room\n");
               break;
 
             case 1:
+              adv_movement_func_index = ADV_MOVE_FUNC_ENTER_ROOM;
               report("Exec Adv Move enter room\n");
               break;
 
             case 2:
+              adv_movement_func_index = ADV_MOVE_FUNC_CORRIDOR_NORTH;
               report("Exec Adv Move north\n");
               break;
 
             case 3:
+              adv_movement_func_index = ADV_MOVE_FUNC_CORRIDOR_EAST;
               report("Exec Adv Move east\n");
               break;
 
             case 4:
+              adv_movement_func_index = ADV_MOVE_FUNC_CORRIDOR_WEST;
               report("Exec Adv Move west\n");
               break;
 
             case 5:
+              adv_movement_func_index = ADV_MOVE_FUNC_CORRIDOR_SOUTH;
               report("Exec Adv Move south\n");
               break;
 
             case 6:
+              adv_movement_func_index = ADV_MOVE_FUNC_STAIRS_UP;
               report("Exec Adv Move stairs up\n");
               break;
 
             case 7:
+              adv_movement_func_index = ADV_MOVE_FUNC_STAIRS_DOWN;
               report("Exec Adv Move stairs down\n");
               break;
           }

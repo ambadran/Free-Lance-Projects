@@ -188,7 +188,7 @@ void differential_control_process(void) {
     case DIFFERENTIAL_MOVE_IN_PROGRESS:
       if(get_current_time() >= differential_control_movement_ms) { 
         differential_control_stop(); 
-        report("Differential Control Finished\n");
+        /* report("Differential Control Finished\n"); //TODO: make a successful state and send that */
       }
       break;
 
