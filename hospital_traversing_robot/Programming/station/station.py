@@ -133,18 +133,68 @@ class Station:
     def print_nrf_registers(self) -> str:
         return self.send("N")
 
-    def exit_room(self):
+    def room_left(self):
         self.differential.forward(10)
         sleep_ms(1000)
-        self.differential.left(90)
+        self.differential.left(98)
+        sleep_ms(1000)
+        self.differential.forward(16)
+        sleep_ms(1000)
+        self.differential.left(95)
         sleep_ms(1000)
         self.differential.forward(10)
         sleep_ms(1000)
-        self.differential.left(90)
+        self.differential.left(187)
+        sleep_ms(1500)
+        self.differential.backward(2)
+
+    def room_right(self):
+        self.differential.forward(10)
+        sleep_ms(1000)
+        self.differential.right(110)
+        sleep_ms(1000)
+        self.differential.forward(15)
+        sleep_ms(1000)
+        self.differential.right(98)
         sleep_ms(1000)
         self.differential.forward(10)
         sleep_ms(1000)
-        self.differential.left(180)
+        self.differential.right(190)
+        sleep_ms(1500)
+        self.differential.backward(2)
+
+    def stairs_down(self):
+        self.differential.forward(21)
+        sleep_ms(1500)
+        self.differential.left(98)
+        sleep_ms(1000)
+        self.differential.forward(22)
+        sleep_ms(1500)
+        self.differential.backward(2)
+        sleep_ms(1000)
+        self.differential.left(98)
+        sleep_ms(1000)
+        self.differential.forward(17)
+        sleep_ms(1500)
+        self.differential.right(200)
+        sleep_ms(1500)
+        self.differential.backward(4)
+
+    def stairs_up(self):
+        self.differential.forward(21)
+        sleep_ms(1500)
+        self.differential.right(118)
+        sleep_ms(1500)
+        self.differential.forward(80)
+        sleep_ms(1500)
+        self.differential.right(98)
+        sleep_ms(1000)
+        self.differential.forward(17)
+        sleep_ms(1500)
+        self.differential.right(200)
+        sleep_ms(1500)
+        self.differential.backward(4)
+
 
     def process(self, exec_dict):
         """
