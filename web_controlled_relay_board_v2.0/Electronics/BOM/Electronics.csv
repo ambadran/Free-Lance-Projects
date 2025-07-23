@@ -1,0 +1,13 @@
+"Id";"Designator";"Footprint";"Quantity";"Designation";"Supplier and ref";
+1;"R3,R1,R13,R8,R15,R4,R6,R16,R2,R12,R14,R18,R9,R7,R17,R11,R19,R20,R10,R5";"R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal";20;"200";;;
+2;"U16,U14,U15,U9,U13,U4,U1,U3,U20,U19,U6,U11,U10,U5,U17,U18,U8,U12,U7,U2";"DIP-4_W7.62mm";20;"PC817";;;
+3;"K5,K7,K16,K2,K9,K15,K17,K1,K6,K11,K20,K14,K19,K12,K3,K18,K13,K4,K10,K8";"RELAY_G3MB-202P";20;"G3MB-202P";;;
+4;"C2";"CP_Radial_D8.0mm_P3.50mm";1;"C_Polarized";;;
+5;"PS1";"Converter_ACDC_Hi-Link_HLK-20Mxx";1;"HLK-20M05";;;
+6;"PowerPin1";"PinSocket_1x02_P2.54mm_Vertical";1;"Pin1x2";;;
+7;"PS2";"Converter_ACDC_Hi-Link_HLK-PMxx";1;"HLK-PM03";;;
+8;"J2,J1";"TerminalBlock_CUI_TB007-508-10_1x10_P5.08mm_Horizontal";2;"Screw_Terminal_01x10";;;
+9;"SW1";"SW_PUSH_6mm";1;"SW_MEC_5E";;;
+10;"C1";"CP_Radial_D6.3mm_P2.50mm";1;"C_Polarized";;;
+11;"J4,J3";"TerminalBlock_bornier-2_P5.08mm";2;"Screw_Terminal_01x02";;;
+12;"A1";"RaspberryPi_Pico_Common_THT";1;"RaspberryPi_Pico_W";;;
