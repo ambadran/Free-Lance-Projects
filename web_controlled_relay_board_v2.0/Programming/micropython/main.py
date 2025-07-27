@@ -2,14 +2,22 @@
 
 import socket
 import time
+from machine import Pin, Timer
 from relays import RelayController
 from wifi import WiFiManager
 
 # --- Configuration ---
 # UPDATE THESE WITH YOUR WIFI DETAILS
-WIFI_SSID = "Mr.A's Lab"
-WIFI_PASSWORD = "aslkdjf234"
+WIFI_SSID = "Fabric3"
+WIFI_PASSWORD = "3033330333fa3"
 TCP_PORT = 8888  # Must match the port used in your PC's Python GUI
+
+# --- LED Setup ---
+# Initialize the onboard LED pin as an output
+led = Pin('LED', Pin.OUT)
+# Turn the LED on immediately upon script execution
+led.on()
+print("Onboard LED is ON (Solid).")
 
 def run_server():
     """
@@ -29,6 +37,10 @@ def run_server():
         print("Halting program. Cannot connect to Wi-Fi.")
         return # Stop execution if Wi-Fi fails
 
+    print("Wi-Fi connected. Starting LED blink.")
+    blink_timer = Timer()
+    blink_timer.init(freq=2.0, mode=Timer.PERIODIC, callback=lambda t: led.toggle())
+
     # 3. Set up TCP Server Socket
     ip_address = wifi.get_ip()
     addr = socket.getaddrinfo(ip_address, TCP_PORT)[0][-1]
@@ -37,7 +49,7 @@ def run_server():
     s.bind(addr)
     s.listen(1) # Listen for one client at a time
 
-    print(f"🚀 TCP Server is listening on {ip_address}:{TCP_PORT}")
+    print(f"TCP Server is listening on {ip_address}:{TCP_PORT}")
 
     # 4. Main loop to accept connections
     while True:
@@ -46,24 +58,36 @@ def run_server():
             conn, addr = s.accept()
             print(f"Client connected from: {addr}")
 
+            buffer = "" # Create a buffer to store incoming data
+            
             # Loop to handle communication with the connected client
             while True:
                 data = conn.recv(128) # Receive up to 128 bytes
                 if not data:
                     break # Client disconnected
                 
-                # Process the received command
-                try:
-                    # Expected format from GUI: "index,state\n"
-                    command = data.decode('utf-8').strip()
-                    parts = command.split(',')
-                    if len(parts) == 2:
-                        relay_index = int(parts[0])
-                        relay_state = int(parts[1])
-                        relay_controller.set_relay(relay_index, relay_state)
-                except (ValueError, IndexError) as e:
-                    print(f"Received malformed data: '{data.decode('utf-8')}'. Error: {e}")
-
+                # Add newly received bytes to the buffer
+                buffer += data.decode('utf-8')
+                
+                # Process the buffer until no complete commands ('\n') are left
+                while '\n' in buffer:
+                    # Split at the first newline to get one complete command
+                    command, buffer = buffer.split('\n', 1)
+                    
+                    command = command.strip() # Clean up whitespace
+                    if not command:
+                        continue # Skip if the line is empty
+                    
+                    # Process the single, complete command
+                    try:
+                        parts = command.split(',')
+                        if len(parts) == 2:
+                            relay_index = int(parts[0])
+                            relay_state = int(parts[1])
+                            relay_controller.set_relay(relay_index, relay_state)
+                    except (ValueError, IndexError) as e:
+                        print(f"Received malformed command: '{command}'. Error: {e}")
+            
             conn.close()
             print("Client disconnected.")
 
@@ -83,5 +107,5 @@ def run_server():
     print("Server shut down.")
 
 # --- Start the Application ---
-# if __name__ == "__main__":
-#     run_server()
+time.sleep(3)
+run_server()
