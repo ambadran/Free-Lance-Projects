@@ -8,8 +8,8 @@ from wifi import WiFiManager
 
 # --- Configuration ---
 # UPDATE THESE WITH YOUR WIFI DETAILS
-WIFI_SSID = "Fabric3"
-WIFI_PASSWORD = "3033330333fa3"
+WIFI_SSID = "Mr.A's iPhone"
+WIFI_PASSWORD = "bdkdinvg"
 TCP_PORT = 8888  # Must match the port used in your PC's Python GUI
 
 # --- LED Setup ---
