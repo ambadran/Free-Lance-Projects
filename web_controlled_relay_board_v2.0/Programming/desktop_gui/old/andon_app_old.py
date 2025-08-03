@@ -41,7 +41,9 @@ class ControlColumn:
         self.app = app_instance
         self.column_index = column_index
         
+        # States: 'red', 'yellow', 'green', or 'none' for colors
         self.color_state = 'none'
+        # States: 0 for OFF, 1 for ON for arrows
         self.up_arrow_state = 0
         self.down_arrow_state = 0
 
@@ -81,6 +83,7 @@ class ControlColumn:
         self.all_buttons = [self.red_button, self.yellow_button, self.green_button, self.up_button, self.down_button, self.all_off_button]
 
     def get_relay_indices(self):
+        """ Returns a dict of global relay indices for this column. """
         base = self.column_index * NUM_RELAYS_PER_COLUMN
         return {
             'red': base, 'yellow': base + 1, 'green': base + 2,
@@ -88,18 +91,21 @@ class ControlColumn:
         }
 
     def set_color_state(self, color_name):
+        """ Handles clicks on Red, Yellow, Green buttons. """
         if self.app.ui_locked: return
         
         indices = self.get_relay_indices()
         commands = []
 
+        # 1. Prepare color commands
         self.color_state = color_name
-        self.status_display.config(bg=self.colors_map.get(color_name, COLOR_STATUS_OFF))
+        self.status_display.config(bg=self.colors_map[color_name])
         for color, index in indices.items():
-            if color in self.colors_map:
+            if color in self.colors_map: # only red, yellow, green
                 state = 1 if color == color_name else 0
                 commands.append((index, state))
 
+        # 2. If Red is pressed, also turn off arrows
         if color_name == 'red':
             if self.up_arrow_state == 1:
                 self.up_arrow_state = 0
@@ -114,14 +120,14 @@ class ControlColumn:
 
     def toggle_up_arrow(self):
         if self.app.ui_locked: return
-        self.up_arrow_state = 1 - self.up_arrow_state
+        self.up_arrow_state = 1 - self.up_arrow_state # Toggle 0 and 1
         self.up_button.config(bg=COLOR_ARROW_ON if self.up_arrow_state else COLOR_BUTTON)
         index = self.get_relay_indices()['up']
         self.app.dispatch_command(index, self.up_arrow_state)
 
     def toggle_down_arrow(self):
         if self.app.ui_locked: return
-        self.down_arrow_state = 1 - self.down_arrow_state
+        self.down_arrow_state = 1 - self.down_arrow_state # Toggle 0 and 1
         self.down_button.config(bg=COLOR_ARROW_ON if self.down_arrow_state else COLOR_BUTTON)
         index = self.get_relay_indices()['down']
         self.app.dispatch_command(index, self.down_arrow_state)
@@ -129,6 +135,7 @@ class ControlColumn:
     def turn_all_off(self):
         if self.app.ui_locked: return
         
+        # Update GUI immediately
         self.color_state = 'none'
         self.up_arrow_state = 0
         self.down_arrow_state = 0
@@ -136,6 +143,7 @@ class ControlColumn:
         self.up_button.config(bg=COLOR_BUTTON)
         self.down_button.config(bg=COLOR_BUTTON)
 
+        # Prepare batch of commands
         indices = self.get_relay_indices()
         commands = [(index, 0) for index in indices.values()]
         self.app.dispatch_batch(commands)
@@ -148,36 +156,29 @@ class ControlColumn:
         for btn in self.all_buttons:
             btn.config(state=state)
 
-    def apply_state(self, state_dict):
-        """ Restores the visual state of the column from a dictionary. """
-        self.color_state = state_dict.get('color_state', 'none')
-        self.up_arrow_state = state_dict.get('up_arrow_state', 0)
-        self.down_arrow_state = state_dict.get('down_arrow_state', 0)
-        
-        # Update GUI to reflect loaded state
-        self.status_display.config(bg=self.colors_map.get(self.color_state, COLOR_STATUS_OFF))
-        self.up_button.config(bg=COLOR_ARROW_ON if self.up_arrow_state else COLOR_BUTTON)
-        self.down_button.config(bg=COLOR_ARROW_ON if self.down_arrow_state else COLOR_BUTTON)
-
 
 class AndonApp(tk.Tk):
     """ The main application window. """
     def __init__(self):
         super().__init__()
-        self.title("Andon Control Panel v2 (Trial Version)")
+        self.title("Andon Control Panel v2")
         self.geometry("1100x600")
         self.configure(bg=COLOR_BG)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
+        # Network State
         self.sockets = {1: None, 2: None}
         self.connections = {1: False, 2: False}
+        self.ack_queues = {1: deque(), 2: deque()}
         self.listener_threads = {1: None, 2: None}
+        
+        # UI State
         self.ui_locked = False
         self.commands_pending = 0
 
         self.control_columns = []
         self._create_widgets()
-        self.load_state()
+        self.load_titles()
 
     def _create_widgets(self):
         title_font = tkfont.Font(family="Helvetica", size=24, weight="bold")
@@ -193,6 +194,7 @@ class AndonApp(tk.Tk):
         conn_main_frame = tk.Frame(self, bg=COLOR_BG)
         conn_main_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=5)
 
+        # Connection panels for Board 1 and 2
         self.conn_panels = {}
         self._create_conn_panel(conn_main_frame, 1, DEFAULT_IP_1)
         self._create_conn_panel(conn_main_frame, 2, DEFAULT_IP_2)
@@ -225,6 +227,7 @@ class AndonApp(tk.Tk):
             self.after(3000, lambda: self.status_var.set("Ready."))
 
     def set_ui_lock(self, locked, num_commands=0):
+        """ Locks or unlocks the entire command UI. """
         self.ui_locked = locked
         state_normal = not locked
         
@@ -239,6 +242,7 @@ class AndonApp(tk.Tk):
             col.set_button_state(state_normal)
 
     def acknowledge_command(self, board_id):
+        """ Called from listener thread when an ACK is received. """
         if self.commands_pending > 0:
             self.commands_pending -= 1
         
@@ -268,19 +272,17 @@ class AndonApp(tk.Tk):
             self.listener_threads[board_id] = threading.Thread(target=self.listen_for_acks, args=(board_id,), daemon=True)
             self.listener_threads[board_id].start()
 
-            # --- ADDED: Call the synchronization method ---
-            self.sync_board_state(board_id)
-
             panel['btn'].config(text="Disconnect", bg=COLOR_RED)
             panel['ip'].config(state='disabled')
             panel['port'].config(state='disabled')
+            self.update_status(f"Board {board_id}: Connection successful.")
 
         except Exception as e:
             self.update_status(f"Board {board_id}: Connection failed: {e}", temporary=True)
             self.sockets[board_id] = None
 
     def disconnect_tcp(self, board_id):
-        self.connections[board_id] = False
+        self.connections[board_id] = False # Signal listener to stop
         if self.sockets[board_id]:
             try:
                 self.sockets[board_id].close()
@@ -295,11 +297,12 @@ class AndonApp(tk.Tk):
         self.update_status(f"Board {board_id}: Disconnected.")
 
     def listen_for_acks(self, board_id):
+        """ Listens for 'OK\n' from a controller. Runs in a thread. """
         sock = self.sockets[board_id]
         buffer = ""
         while self.connections[board_id]:
             try:
-                sock.settimeout(1.0)
+                sock.settimeout(1.0) # Timeout to allow checking connection flag
                 data = sock.recv(64)
                 if not data:
                     self.disconnect_tcp(board_id)
@@ -320,9 +323,11 @@ class AndonApp(tk.Tk):
         print(f"Listener thread for board {board_id} finished.")
 
     def dispatch_command(self, global_index, state):
+        """ Convenience method to send a single command. """
         self.dispatch_batch([(global_index, state)])
 
     def dispatch_batch(self, command_list):
+        """ Sends a batch of commands without waiting for individual ACKs. """
         if self.ui_locked:
             self.update_status("Busy, please wait for the current operation to complete.", temporary=True)
             return
@@ -330,6 +335,7 @@ class AndonApp(tk.Tk):
         self.set_ui_lock(True, num_commands=len(command_list))
 
         for global_index, state in command_list:
+            # Determine which board and local index to use
             if global_index < NUM_RELAYS_PER_BOARD:
                 board_id = 1
                 local_index = global_index
@@ -345,132 +351,66 @@ class AndonApp(tk.Tk):
                 except Exception as e:
                     self.update_status(f"Board {board_id} send failed: {e}", temporary=True)
                     self.disconnect_tcp(board_id)
-                    self.set_ui_lock(False)
+                    self.set_ui_lock(False) # Unlock UI on error
                     return
             else:
                 self.update_status(f"Cannot send: Board {board_id} is not connected.", temporary=True)
-                self.set_ui_lock(False)
+                self.set_ui_lock(False) # Unlock UI if board is not connected
                 return
 
-    def sync_board_state(self, board_id):
-        """
-        Gathers the current GUI state and sends it to a newly connected board.
-        """
-        self.update_status(f"Board {board_id}: Syncing state...")
-        
-        all_commands = []
-        # 1. Gather the complete state from the GUI
-        for col in self.control_columns:
-            indices = col.get_relay_indices()
-            
-            # Color states
-            for color_name, index in indices.items():
-                if color_name in col.colors_map:
-                    state = 1 if col.color_state == color_name else 0
-                    all_commands.append((index, state))
-            
-            # Arrow states
-            all_commands.append((indices['up'], col.up_arrow_state))
-            all_commands.append((indices['down'], col.down_arrow_state))
+    def load_titles(self):
+        if os.path.exists(CONFIG_FILE):
+            try:
+                with open(CONFIG_FILE, 'r') as f:
+                    titles = json.load(f)
+                    if isinstance(titles, list) and len(titles) == 6:
+                        for i, col in enumerate(self.control_columns):
+                            col.title_var.set(titles[i])
+            except Exception as e:
+                print(f"Error loading config: {e}")
 
-        # 2. Filter and send commands relevant to the connected board
-        sock = self.sockets.get(board_id)
-        if not sock:
-            return
-
-        sync_count = 0
-        for global_index, state in all_commands:
-            target_board_id = 1 if global_index < NUM_RELAYS_PER_BOARD else 2
-            
-            if target_board_id == board_id:
-                local_index = global_index if board_id == 1 else global_index - NUM_RELAYS_PER_BOARD
-                
-                command = f"{local_index},{state}\n"
-                try:
-                    sock.sendall(command.encode('utf-8'))
-                    sync_count += 1
-                    print(f"Sync to Board {board_id}: Sent {command.strip()}")
-                    time.sleep(0.02) # 20ms delay between commands to avoid overwhelming the board
-                except Exception as e:
-                    self.update_status(f"Board {board_id} sync failed: {e}", temporary=True)
-                    self.disconnect_tcp(board_id)
-                    return # Stop syncing on error
-        
-        self.update_status(f"Board {board_id}: Sync complete ({sync_count} commands sent). Connection successful.")
-
-    def load_state(self):
-        """ Loads the entire application state from the config file. """
-        if not os.path.exists(CONFIG_FILE):
-            return
-        try:
-            with open(CONFIG_FILE, 'r') as f:
-                config = json.load(f)
-
-            titles = config.get('titles', DEFAULT_TITLES)
-            for i, col in enumerate(self.control_columns):
-                if i < len(titles):
-                    col.title_var.set(titles[i])
-
-            states = config.get('states', [])
-            for i, col in enumerate(self.control_columns):
-                if i < len(states):
-                    col.apply_state(states[i])
-
-            ips = config.get('ips', {})
-            self.conn_panels[1]['ip'].delete(0, tk.END)
-            self.conn_panels[1]['ip'].insert(0, ips.get('1', DEFAULT_IP_1))
-            self.conn_panels[2]['ip'].delete(0, tk.END)
-            self.conn_panels[2]['ip'].insert(0, ips.get('2', DEFAULT_IP_2))
-
-        except (json.JSONDecodeError, TypeError) as e:
-            print(f"Error reading config file: {e}. Using defaults.")
-
-    def save_state(self):
-        """ Saves the entire application state to the config file. """
-        app_state = {
-            'titles': [col.get_title() for col in self.control_columns],
-            'states': [
-                {
-                    'color_state': col.color_state,
-                    'up_arrow_state': col.up_arrow_state,
-                    'down_arrow_state': col.down_arrow_state
-                } for col in self.control_columns
-            ],
-            'ips': {
-                '1': self.conn_panels[1]['ip'].get(),
-                '2': self.conn_panels[2]['ip'].get()
-            }
-        }
+    def save_titles(self):
+        titles = [col.get_title() for col in self.control_columns]
         try:
             with open(CONFIG_FILE, 'w') as f:
-                json.dump(app_state, f, indent=4)
-        except IOError as e:
-            self.update_status(f"Error saving state: {e}")
+                json.dump(titles, f, indent=4)
+        except Exception as e:
+            self.update_status(f"Error saving titles: {e}")
 
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to exit?"):
-            self.save_state()
+            self.save_titles()
             self.disconnect_tcp(1)
             self.disconnect_tcp(2)
             self.destroy()
 
+
 if __name__ == "__main__":
+    # --- SET YOUR DESIRED EXPIRATION DATETIME HERE (YEAR, MONTH, DAY, HOUR, MINUTE, SECOND) ---
     EXPIRATION_DATETIME = datetime(2025, 8, 3, 18, 00, 00)
-    CHECK_INTERVAL_MS = 3600000 
+    # Set the check interval in milliseconds (e.g., 1 hour = 3,600,000 ms)
+    CHECK_INTERVAL_MS = 1000  # 5min 
 
     def periodic_expiration_check(app_instance):
+        """
+        Checks the datetime periodically and shuts down the app if it has expired.
+        """
         try:
             if datetime.now() > EXPIRATION_DATETIME:
+                # Use after() to ensure this runs in the main GUI thread
                 app_instance.after(0, lambda: messagebox.showerror(
                     "Trial Expired",
                     "The trial period has expired. The application will now close."
                 ))
+                # Use after() to schedule the destruction of the window safely
                 app_instance.after(100, app_instance.destroy)
             else:
+                # If not expired, schedule the next check
                 app_instance.after(CHECK_INTERVAL_MS, lambda: periodic_expiration_check(app_instance))
         except Exception as e:
             print(f"Periodic time check error: {e}")
 
+    # --- INITIAL EXPIRATION CHECK ---
     is_expired = False
     try:
         if datetime.now() > EXPIRATION_DATETIME:
@@ -487,6 +427,8 @@ if __name__ == "__main__":
         )
         root.destroy()
     else:
+        # If not expired, create and run the main application
         app = AndonApp()
+        # Start the first periodic check after the specified interval
         app.after(CHECK_INTERVAL_MS, lambda: periodic_expiration_check(app))
         app.mainloop()

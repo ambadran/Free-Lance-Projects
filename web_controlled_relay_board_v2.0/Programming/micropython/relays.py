@@ -25,11 +25,12 @@ class RelayController:
             print(f"RelayController initialized for {self.num_relays} relays.")
 
         elif configurations.get("num_relays", None) != None:
-            if not (0 < num_relays <= 20):
+            self.num_relays = configurations.get("num_relays", None)
+
+            if not (0 < self.num_relays <= 20):
                 #TODO: implement some method to detect invalid pin ranges
                 raise ValueError("Number of relays must be between 1 and 20.")
                 
-            self.num_relays = num_relays
             # Create a list of Pin objects for each relay
             self.pins = [machine.Pin(i, machine.Pin.OUT) for i in range(self.num_relays)]
             

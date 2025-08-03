@@ -1,8 +1,46 @@
-[
-    "VISUAL",
-    "BASIS WEIGHTasdf",
-    "TENSILE",
-    "AIR PERMIABILITY",
-    "HYDRO PRESSURE",
-    "SURFACTANT"
-]
+{
+    "titles": [
+        "VISUAL",
+        "BASIS WEIGHT",
+        "TENSILE",
+        "AIR PERMIABILITY",
+        "HYDRO PRESSURE",
+        "SURFACTANT"
+    ],
+    "states": [
+        {
+            "color_state": "yellow",
+            "up_arrow_state": 0,
+            "down_arrow_state": 0
+        },
+        {
+            "color_state": "green",
+            "up_arrow_state": 0,
+            "down_arrow_state": 0
+        },
+        {
+            "color_state": "green",
+            "up_arrow_state": 0,
+            "down_arrow_state": 0
+        },
+        {
+            "color_state": "red",
+            "up_arrow_state": 0,
+            "down_arrow_state": 0
+        },
+        {
+            "color_state": "red",
+            "up_arrow_state": 0,
+            "down_arrow_state": 0
+        },
+        {
+            "color_state": "yellow",
+            "up_arrow_state": 1,
+            "down_arrow_state": 1
+        }
+    ],
+    "ips": {
+        "1": "192.168.1.5",
+        "2": "192.168.1.8"
+    }
+}

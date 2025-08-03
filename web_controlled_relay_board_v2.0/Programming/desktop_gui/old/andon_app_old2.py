@@ -177,7 +177,7 @@ class AndonApp(tk.Tk):
 
         self.control_columns = []
         self._create_widgets()
-        self.load_state()
+        self.load_state() # <-- Updated method call
 
     def _create_widgets(self):
         title_font = tkfont.Font(family="Helvetica", size=24, weight="bold")
@@ -268,12 +268,10 @@ class AndonApp(tk.Tk):
             self.listener_threads[board_id] = threading.Thread(target=self.listen_for_acks, args=(board_id,), daemon=True)
             self.listener_threads[board_id].start()
 
-            # --- ADDED: Call the synchronization method ---
-            self.sync_board_state(board_id)
-
             panel['btn'].config(text="Disconnect", bg=COLOR_RED)
             panel['ip'].config(state='disabled')
             panel['port'].config(state='disabled')
+            self.update_status(f"Board {board_id}: Connection successful.")
 
         except Exception as e:
             self.update_status(f"Board {board_id}: Connection failed: {e}", temporary=True)
@@ -352,70 +350,27 @@ class AndonApp(tk.Tk):
                 self.set_ui_lock(False)
                 return
 
-    def sync_board_state(self, board_id):
-        """
-        Gathers the current GUI state and sends it to a newly connected board.
-        """
-        self.update_status(f"Board {board_id}: Syncing state...")
-        
-        all_commands = []
-        # 1. Gather the complete state from the GUI
-        for col in self.control_columns:
-            indices = col.get_relay_indices()
-            
-            # Color states
-            for color_name, index in indices.items():
-                if color_name in col.colors_map:
-                    state = 1 if col.color_state == color_name else 0
-                    all_commands.append((index, state))
-            
-            # Arrow states
-            all_commands.append((indices['up'], col.up_arrow_state))
-            all_commands.append((indices['down'], col.down_arrow_state))
-
-        # 2. Filter and send commands relevant to the connected board
-        sock = self.sockets.get(board_id)
-        if not sock:
-            return
-
-        sync_count = 0
-        for global_index, state in all_commands:
-            target_board_id = 1 if global_index < NUM_RELAYS_PER_BOARD else 2
-            
-            if target_board_id == board_id:
-                local_index = global_index if board_id == 1 else global_index - NUM_RELAYS_PER_BOARD
-                
-                command = f"{local_index},{state}\n"
-                try:
-                    sock.sendall(command.encode('utf-8'))
-                    sync_count += 1
-                    print(f"Sync to Board {board_id}: Sent {command.strip()}")
-                    time.sleep(0.02) # 20ms delay between commands to avoid overwhelming the board
-                except Exception as e:
-                    self.update_status(f"Board {board_id} sync failed: {e}", temporary=True)
-                    self.disconnect_tcp(board_id)
-                    return # Stop syncing on error
-        
-        self.update_status(f"Board {board_id}: Sync complete ({sync_count} commands sent). Connection successful.")
-
     def load_state(self):
         """ Loads the entire application state from the config file. """
         if not os.path.exists(CONFIG_FILE):
-            return
+            return # Use defaults if no file exists
         try:
             with open(CONFIG_FILE, 'r') as f:
                 config = json.load(f)
 
+            # Load titles
             titles = config.get('titles', DEFAULT_TITLES)
             for i, col in enumerate(self.control_columns):
                 if i < len(titles):
                     col.title_var.set(titles[i])
 
+            # Load relay states
             states = config.get('states', [])
             for i, col in enumerate(self.control_columns):
                 if i < len(states):
                     col.apply_state(states[i])
 
+            # Load IPs
             ips = config.get('ips', {})
             self.conn_panels[1]['ip'].delete(0, tk.END)
             self.conn_panels[1]['ip'].insert(0, ips.get('1', DEFAULT_IP_1))
@@ -449,16 +404,21 @@ class AndonApp(tk.Tk):
 
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to exit?"):
-            self.save_state()
+            self.save_state() # <-- Updated method call
             self.disconnect_tcp(1)
             self.disconnect_tcp(2)
             self.destroy()
 
 if __name__ == "__main__":
+    # --- SET YOUR DESIRED EXPIRATION DATETIME HERE (YEAR, MONTH, DAY, HOUR, MINUTE, SECOND) ---
     EXPIRATION_DATETIME = datetime(2025, 8, 3, 18, 00, 00)
+    # Set the check interval in milliseconds (e.g., 1 hour = 3,600,000 ms)
     CHECK_INTERVAL_MS = 3600000 
 
     def periodic_expiration_check(app_instance):
+        """
+        Checks the datetime periodically and shuts down the app if it has expired.
+        """
         try:
             if datetime.now() > EXPIRATION_DATETIME:
                 app_instance.after(0, lambda: messagebox.showerror(
@@ -471,6 +431,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Periodic time check error: {e}")
 
+    # --- INITIAL EXPIRATION CHECK ---
     is_expired = False
     try:
         if datetime.now() > EXPIRATION_DATETIME:

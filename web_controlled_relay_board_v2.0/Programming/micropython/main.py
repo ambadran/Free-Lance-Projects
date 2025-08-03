@@ -42,7 +42,7 @@ def run_server():
     s = socket.socket()
     s.bind(addr)
     s.listen(1)
-    print(f"🚀 TCP Server is listening on {ip_address}:{TCP_PORT}")
+    print(f" TCP Server is listening on {ip_address}:{TCP_PORT}")
 
     while True:
         try:
@@ -52,6 +52,10 @@ def run_server():
             
             buffer = ""
             while True:
+
+                # --- Poll the LED blink state continuously ---
+                led.blink_poll()
+
                 data = conn.recv(128)
                 if not data:
                     break
@@ -91,5 +95,5 @@ def run_server():
                 conn.close()
             time.sleep(5)
 
-# time.sleep(3)
-# run_server()
+time.sleep(3)
+run_server()
