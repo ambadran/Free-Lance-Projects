@@ -1,12 +1,13 @@
 # relays.py
 
 import machine
+from config import configurations
 
 class RelayController:
     """
     Manages a collection of relays connected to the Raspberry Pi Pico's GPIO pins.
     """
-    def __init__(self, num_relays: int = 20):
+    def __init__(self):
         """
         Initializes the controller for a specified number of relays.
         
@@ -14,16 +15,30 @@ class RelayController:
             num_relays (int): The number of relays to control, starting from GP0.
                               Defaults to 20 (GP0 to GP19).
         """
-        if not (0 < num_relays <= 20):
-            raise ValueError("Number of relays must be between 1 and 20.")
+        if configurations.get("allowed_pins", None) != None:
+            self.num_relays = len(configurations["allowed_pins"])
+            # Create a list of Pin objects for each relay
+            self.pins = [machine.Pin(i, machine.Pin.OUT) for i in configurations["allowed_pins"]]
             
-        self.num_relays = num_relays
-        # Create a list of Pin objects for each relay
-        self.pins = [machine.Pin(i, machine.Pin.OUT) for i in range(self.num_relays)]
-        
-        # Ensure all relays are off on startup
-        self.all_off()
-        print(f"RelayController initialized for {self.num_relays} relays.")
+            # Ensure all relays are off on startup
+            self.all_off()
+            print(f"RelayController initialized for {self.num_relays} relays.")
+
+        elif configurations.get("num_relays", None) != None:
+            if not (0 < num_relays <= 20):
+                #TODO: implement some method to detect invalid pin ranges
+                raise ValueError("Number of relays must be between 1 and 20.")
+                
+            self.num_relays = num_relays
+            # Create a list of Pin objects for each relay
+            self.pins = [machine.Pin(i, machine.Pin.OUT) for i in range(self.num_relays)]
+            
+            # Ensure all relays are off on startup
+            self.all_off()
+            print(f"RelayController initialized for {self.num_relays} relays.")
+
+        else:
+            raise ValueError("must define allowed_pins list or num_relays in the configurations dict")
 
     def set_relay(self, index: int, state: int) -> bool:
         """
