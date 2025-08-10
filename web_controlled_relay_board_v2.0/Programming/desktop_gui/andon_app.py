@@ -164,7 +164,7 @@ class AndonApp(tk.Tk):
     """ The main application window. """
     def __init__(self):
         super().__init__()
-        self.title("Andon Control Panel v2 (Trial Version)")
+        self.title("Andon Control Panel v2")
         self.geometry("1100x600")
         self.configure(bg=COLOR_BG)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -455,15 +455,15 @@ class AndonApp(tk.Tk):
             self.destroy()
 
 if __name__ == "__main__":
-    EXPIRATION_DATETIME = datetime(2025, 8, 3, 18, 00, 00)
+    EXPIRATION_DATETIME = datetime(2026, 8, 4, 18, 00, 00)
     CHECK_INTERVAL_MS = 3600000 
 
     def periodic_expiration_check(app_instance):
         try:
             if datetime.now() > EXPIRATION_DATETIME:
                 app_instance.after(0, lambda: messagebox.showerror(
-                    "Trial Expired",
-                    "The trial period has expired. The application will now close."
+                    "License Expired",
+                    "The License period has expired. The application will now close."
                 ))
                 app_instance.after(100, app_instance.destroy)
             else:
@@ -482,8 +482,8 @@ if __name__ == "__main__":
         root = tk.Tk()
         root.withdraw()
         messagebox.showerror(
-            "Trial Expired",
-            "This trial version has expired.\nPlease contact the developer for the full version."
+            "License Expired",
+            "This License version has expired.\nPlease contact the developer for the full version."
         )
         root.destroy()
     else:
